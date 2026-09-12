@@ -155,6 +155,8 @@ npm install        # install dev tools (Vite)
 npm run dev        # start dev server → http://localhost:3000
 npm run build      # build the finished site → dist/
 npm run preview    # serve the dist/ build to test it
+npm run test:smoke # open every screen in Chrome, fail on any error
+npm run test:report # view the last test run in the browser
 npm audit          # check dependencies for known security issues
 ```
 

@@ -15,3 +15,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `docs/GIT_WORKFLOW.md`: branch-per-issue workflow, commit format and branch plan.
 - `CLAUDE.md`: working rules for the AI coding assistant.
 - `.github/pull_request_template.md`: PR checklist.
+- Playwright smoke tests (`npm run test:smoke`): 12 tests covering app start, all 8 screens, search, AI chat and number-key shortcuts. They fail on any page error, and known bugs are tracked as expected failures.

@@ -7,9 +7,10 @@ Instructions for Claude Code when working in this repository.
 CircuitLab (`emb3d-circuit-lab`): a browser electronics lab with a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant. Vanilla JS, Vite 5, Three.js r128 + GSAP from CDN, Canvas 2D. No framework.
 
 ```bash
-npm run dev       # http://localhost:3000
-npm run build     # → dist/
+npm run dev          # http://localhost:3000
+npm run build        # → dist/
 npm run preview
+npm run test:smoke   # browser smoke tests
 ```
 
 - Folder map and dependency rules: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
@@ -31,8 +32,9 @@ npm run preview
 3. Fix the root cause and keep the change as small as possible.
 4. Test it:
    - `npm run build` must succeed.
-   - Run the smoke tests (`npm run test:smoke`) and lint (`npm run lint`) once those branches are merged.
-   - Until then, check with the dev server and a headless Chrome console that the affected screens throw no errors.
+   - `npm run test:smoke` must end in "passed" with no unexpected results (see **Tests** below).
+   - `npm run lint` must pass, once `chore/eslint-setup` is merged.
+   - Add or extend a test that **fails before the fix and passes after it**.
    - Report the before and after results honestly. If something still fails, say so.
 5. Update the docs:
    - Mark the issue ✅ in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
@@ -41,6 +43,17 @@ npm run preview
    - Update [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) if files moved or the load order changed.
 6. Give the user the commit commands, split into logical commits, then the push/PR/merge steps.
 7. After the user confirms the merge, give the commands to start the next branch in the plan.
+
+## Tests
+
+```bash
+npm run test:smoke    # Playwright smoke tests (tests/smoke/)
+npm run test:report   # open the HTML report
+```
+
+- Uses the locally installed Google Chrome (`channel: 'chrome'` in [playwright.config.js](playwright.config.js)). It starts the dev server on port 3000 itself, or reuses one that's already running.
+- A test fails on any uncaught exception or `console.error`. Known noise is listed in `IGNORED_CONSOLE_ERRORS` in [tests/smoke/helpers.js](tests/smoke/helpers.js), tagged with its issue code. Remove an entry when that issue is fixed.
+- Known bugs are marked `knownBug('<code>')` in [tests/smoke/app.spec.js](tests/smoke/app.spec.js) and are **expected to fail**. When a fix makes one pass, Playwright reports "Expected to fail, but passed". Remove that marker in the same branch as the fix. Never add a `knownBug()` just to hide a new failure.
 
 ## Code rules
 

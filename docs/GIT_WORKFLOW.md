@@ -53,8 +53,9 @@ git switch -c fix/short-description
 ### 2. Make the fix and test it
 ```bash
 npm run dev          # check it in the browser, with the console (F12) open
+npm run test:smoke   # must end in "passed" with no unexpected results
+npm run test:report  # optional: open the visual report
 npm run lint         # after chore/eslint-setup is merged
-npm run test:smoke   # after test/smoke-tests is merged
 ```
 
 ### 3. Commit
@@ -86,7 +87,8 @@ Then start the next issue at step 1.
 
 - [ ] Branch fixes **one** issue (reference its code, e.g. `A1`, from [FIX_PLAN.md](FIX_PLAN.md))
 - [ ] App runs with no red errors in the browser console
-- [ ] Lint and smoke tests pass (once they exist)
+- [ ] `npm run test:smoke` passes, and any `knownBug()` marker for the fixed issue has been removed
+- [ ] `npm run lint` passes (once it exists)
 - [ ] [FIX_PLAN.md](FIX_PLAN.md) status and [CHANGELOG.md](../CHANGELOG.md) updated
 - [ ] No secrets, no `dist/`, no `node_modules/`
 
@@ -114,8 +116,8 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 
 | # | Branch | Fixes | Status |
 |---|---|---|---|
-| 0 | `docs/workflow-guides` | This guide, CLAUDE.md, PR template | 🔄 In progress |
-| 1 | `test/smoke-tests` | Browser test: open every view, fail on any error | ⏳ |
+| 0 | `docs/workflow-guides` | This guide, CLAUDE.md, PR template | ✅ |
+| 1 | `test/smoke-tests` | Browser test: open every view, fail on any error | ✅ |
 | 2 | `chore/eslint-setup` | Linter to catch undefined names | ⏳ |
 | 3 | `fix/load-component-data` | A1–A8 — stops all crashes | ⏳ |
 | 4 | `fix/keyboard-shortcuts` | D2 | ⏳ |

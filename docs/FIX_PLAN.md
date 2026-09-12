@@ -56,7 +56,7 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 |---|---|---|---|---|
 | B1 | 🔴 | `ai-chat-area` | `ai-chat-messages` | [app.js:1379](../src/app/app.js#L1379) |
 | B2 | 🔴 | `ai-input` | `ai-user-query` | [app.js:1351](../src/app/app.js#L1351) |
-| B3 | 🔴 | `ai-send` | `ai-send-btn` | [app.js:1350](../src/app/app.js#L1350) |
+| B3 | 🔴 | `ai-send` | `ai-send-btn`. The only working hook is a page-wide click listener that checks `e.target.id === 'ai-send-btn'`, so clicking the **arrow icon** inside the button (where most people click) sends nothing. _Found by the smoke tests._ | [app.js:1350](../src/app/app.js#L1350), [app.js:1685-1690](../src/app/app.js#L1685-L1690) |
 | B4 | 🔴 | `viewer-sidebar` | nothing — closest is `component-list` / `pin-info-panel` | [app.js:649](../src/app/app.js#L649) |
 | B5 | 🟠 | `pin-table-body` | nothing — closest is `pin-details` | [app.js:722](../src/app/app.js#L722) |
 | B6 | 🟠 | `pin-detail-panel` | `pin-info-panel` | [app.js:756](../src/app/app.js#L756) |
@@ -102,7 +102,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E5 | ⚪ | The notifications panel shows fake hardcoded messages ("Just now", "3 mins ago"). |
 | E6 | 🟡 | `npm audit`: 3 known security issues in dev tools — `nanoid` (high), `postcss` (high), `esbuild`/`vite 5.4.21` (moderate). These only affect the dev machine, not visitors. |
 | E7 | 🟡 | Three.js **r128** (from 2021) is loaded from a CDN. It's old, and the app needs the internet to work. |
-| E8 | 🟡 | No git, no README, no linter, no tests. |
+| E8 | 🟡 | No git, no README, no linter, no tests. _Update: git, README and smoke tests added. Linter pending (`chore/eslint-setup`)._ |
 | E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
 
 ---
@@ -197,7 +197,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 
 1. **README.md**: what the app is, how to run it, the folder map, screenshots.
 2. **Linter + formatter**: `npm i -D eslint prettier`. An ESLint `no-undef` rule would have caught bug A1 instantly.
-3. **Smoke test**: add a Playwright test that opens every screen, clicks every button, and **fails if any console error appears**. That's the same check used for this report.
+3. ✅ **Smoke test**: Playwright tests that open every screen, search, send an AI message and press shortcuts, and **fail if any error appears**. Run with `npm run test:smoke`. Known bugs are tracked as expected failures.
 4. **Version control:** one branch per issue, merged through Pull Requests. See [GIT_WORKFLOW.md](GIT_WORKFLOW.md) for the full branch plan.
 
 ### Phase 7 — Optional upgrades
