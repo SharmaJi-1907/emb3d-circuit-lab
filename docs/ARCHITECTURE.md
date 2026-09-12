@@ -52,11 +52,12 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 1. `styles/main.css`
 2. `engines/background/circuit-bg.js`
-3. `engines/three-viewer/index.js` → `window.ThreeViewer`
-4. `engines/simulator/index.js` → `window.CircuitSimulator`
-5. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
+3. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
+4. `engines/three-viewer/index.js` → `window.ThreeViewer`
+5. `engines/simulator/index.js` → `window.CircuitSimulator`
+6. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
 
-> ⚠️ `data/data.js` (`window.CircuitLabData`) is **not imported yet**. This is bug A1 in [FIX_PLAN.md](FIX_PLAN.md).
+The smoke test "component data is loaded" fails if `data.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
 Three.js and GSAP are currently loaded from a CDN in `index.html` as globals (`window.THREE`, `window.gsap`). GSAP isn't used by any code (E10).
 

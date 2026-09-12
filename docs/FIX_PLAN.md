@@ -14,18 +14,20 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 |---|---|
 | App loads, background animates | ✅ Works |
 | Left menu switches screens | ✅ Works |
-| 3D viewer | ❌ Empty — no part is ever shown |
+| 3D viewer | ⚠️ Part is shown, but the layout is unstyled (F1) and the controls don't work (C1) |
 | Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
 | Component Database | ❌ Empty |
-| Board Explorer | ❌ Crashes |
-| Datasheet Viewer | ❌ Crashes |
-| AI Assistant | ❌ Crashes; answers never shown |
-| Projects | ❌ Crashes |
-| Search (Ctrl+K) | ❌ Crashes |
+| Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
+| Datasheet Viewer | ✅ Shows datasheets |
+| AI Assistant | ❌ Send button does nothing (B1, B3); answers are wrong (D1) |
+| Projects | ✅ Shows 6 projects ("New project" button still dead, C4) |
+| Search (Ctrl+K) | ✅ Works |
 | Settings (dark mode) | ❌ Button does nothing |
 | Keyboard shortcuts | ❌ Most don't work |
 
-**Root cause in one sentence:** the page (`index.html`) was built for an older version of the code (`script.js` + `database.js`, now in `legacy/`). It was later switched to a newer version (`app.js` + `data.js`), but the newer data file was never loaded and the element names were never updated to match.
+_Status updated after branch #3 (`fix/load-component-data`): no screen throws an error any more._
+
+**Root cause:** `app.js` and the CSS were written together for a page layout that isn't in this project, and most of `index.html` was built separately (F1). On top of that, `data.js` was never loaded (A1, fixed in #3).
 
 > **Paths:** this report was written before the restructure. File paths below use the new layout (see [ARCHITECTURE.md](ARCHITECTURE.md)). Line numbers are unchanged, because the files were moved without edits.
 
@@ -39,14 +41,14 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 
 | # | Sev | Problem | Where | Error seen |
 |---|---|---|---|---|
-| A1 | 🔴 | `data.js` is never loaded, so `CircuitLabData` does not exist. This one bug causes A2–A7. | [src/main.js](../src/main.js) | `ReferenceError: CircuitLabData is not defined` |
-| A2 | 🔴 | 3D Viewer: no part is selected, so it crashes reading `.id` of nothing | [app.js:644](../src/app/app.js#L644) | `TypeError: Cannot read properties of null (reading 'id')` |
-| A3 | 🔴 | 3D model loader also needs `CircuitLabData` | [three-viewer/index.js:726](../src/engines/three-viewer/index.js#L726) | (silently never called because of A2) |
-| A4 | 🔴 | Board Explorer crashes | [app.js:983](../src/app/app.js#L983) | `ReferenceError` |
-| A5 | 🔴 | Datasheet Viewer crashes | [app.js:1252](../src/app/app.js#L1252) | `ReferenceError` |
-| A6 | 🔴 | Projects crashes | [app.js:1498](../src/app/app.js#L1498) | `ReferenceError` |
-| A7 | 🔴 | Search (Ctrl+K or `/`) crashes on typing | [app.js:362](../src/app/app.js#L362) | `ReferenceError` |
-| A8 | 🔴 | AI Assistant crashes when you send a message | [app.js:1429](../src/app/app.js#L1429) | `ReferenceError` |
+| A1 | ✅ | `data.js` is never loaded, so `CircuitLabData` does not exist. This one bug causes A2–A8. _Fixed in #3: imported in `src/main.js`._ | [src/main.js](../src/main.js) | `ReferenceError: CircuitLabData is not defined` |
+| A2 | ✅ | 3D Viewer: no part is selected, so it crashes reading `.id` of nothing. _Fixed by A1: the first part is selected at startup. No extra guard was added, because it would only hide a future data-loading failure, and the "component data is loaded" test catches that._ | [app.js:644](../src/app/app.js#L644) | `TypeError: Cannot read properties of null (reading 'id')` |
+| A3 | ✅ | 3D model loader also needs `CircuitLabData`. _Fixed by A1._ | [three-viewer/index.js:726](../src/engines/three-viewer/index.js#L726) | (silently never called because of A2) |
+| A4 | ✅ | Board Explorer crashes. _Fixed by A1._ | [app.js:983](../src/app/app.js#L983) | `ReferenceError` |
+| A5 | ✅ | Datasheet Viewer crashes. _Fixed by A1._ | [app.js:1252](../src/app/app.js#L1252) | `ReferenceError` |
+| A6 | ✅ | Projects crashes. _Fixed by A1._ | [app.js:1498](../src/app/app.js#L1498) | `ReferenceError` |
+| A7 | ✅ | Search (Ctrl+K or `/`) crashes on typing. _Fixed by A1._ | [app.js:362](../src/app/app.js#L362) | `ReferenceError` |
+| A8 | ✅ | AI Assistant crashes when you send a message. _Answer engine fixed by A1. The Send button is still broken (B1, B3), and answers are wrong (D1)._ | [app.js:1429](../src/app/app.js#L1429) | `ReferenceError` |
 
 ### B. Code looks for page elements that don't exist (name mismatch)
 
@@ -110,6 +112,16 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E10 | ⚪ | **GSAP and ScrollTrigger are downloaded on every page load but never used** by any code. That's wasted network and load time. _Found while setting up ESLint._ |
 | E11 | ⚪ | **27 lint warnings** (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
 
+### F. Page layout and CSS don't match
+
+_Found in branch #3 by comparing the class and ID names in `index.html`, the CSS and the HTML that `app.js` generates._
+
+| # | Sev | Problem | Evidence |
+|---|---|---|---|
+| F1 | 🔴 | **`app.js` and the CSS were written together for a page layout that isn't in this project.** Most of `index.html`'s own markup has no styling. This explains the B bugs (missing IDs), the unstyled 3D Viewer and Board Explorer (browser-default buttons, a tiny 3D box), and the "Rendering 3D Model..." text that never goes away. | HTML generated by `app.js`: **126 of 143** classes have CSS rules (88%). HTML written in `index.html`: **38 of 217** (18%). CSS ID rules: **21 of 34** target IDs that don't exist in `index.html` (`#viewer-sidebar`, `#viewer-canvas-area`, `#sim-toolbar`, `#ai-input`…). |
+
+**Decision needed before branch #6:** for each screen, either fix the JS to match `index.html` (the current plan), or fix `index.html` to match the JS and CSS. Record the choice in `docs/decisions/0002-…` and update the branch plan.
+
 ---
 
 ## Part 2 — The fix plan (step by step)
@@ -122,12 +134,12 @@ Do the phases **in order**. Each phase ends with a check, so you always know it 
 
 ### Phase 1 — Stop the crashes (30 min) → fixes A1–A8
 
-1. **Load the data file.** In [src/main.js](../src/main.js), add this line **before** `three-viewer.js` and `app.js`:
+1. ✅ **Load the data file** (branch #3). In [src/main.js](../src/main.js), add this line **before** `three-viewer.js` and `app.js`:
    ```js
    import './data/data.js';
    ```
-2. **Guard against "nothing selected".** In `initViewerPanel` ([app.js:642-645](../src/app/app.js#L642-L645)), only call `loadComponent` when `state.selectedComponent` exists.
-3. **Fix the keyboard map.** In [app.js:1535](../src/app/app.js#L1535), change the keys to the screens that really exist:
+2. ~~Guard against "nothing selected"~~. **Not needed:** fixing A1 removes A2. See A2 above.
+3. **Fix the keyboard map** (branch #4). In [app.js:1535](../src/app/app.js#L1535), change the keys to the screens that really exist:
    `1 viewer · 2 simulator · 3 database · 4 boards · 5 datasheet · 6 ai · 7 projects · 8 settings`.
 
 ✅ **Check:** run `npm run dev`, open the browser console (F12), and click every menu item. There should be **zero red errors**, and a 3D chip should appear in the viewer.
@@ -144,6 +156,8 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 ### Phase 3 — Reconnect the page to the code (2–4 hours) → fixes B1–B9, C1–C6
 
 **Rule:** the HTML is the "real" design, so **change the JS to use the HTML's IDs**, not the other way round.
+
+> ⚠️ **Under review (F1).** The CSS matches the JS, not `index.html`, so for some screens it may be better to fix the page instead. Decide per screen before branch #6.
 
 1. **Rename IDs in the JS** using table B:
    - `ai-chat-area → ai-chat-messages`, `ai-input → ai-user-query`, `ai-send → ai-send-btn`

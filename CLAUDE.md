@@ -16,7 +16,7 @@ npm run test:smoke   # browser smoke tests only
 ```
 
 - Folder map and dependency rules: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Known bugs (codes A1…E11) and fix steps: [docs/FIX_PLAN.md](docs/FIX_PLAN.md)
+- Known bugs (codes A1…F1) and fix steps: [docs/FIX_PLAN.md](docs/FIX_PLAN.md)
 - Branch rules, commit format and branch plan: [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md)
 
 ## Git: the user runs every git command
@@ -76,7 +76,7 @@ npm run test:report   # open the HTML report
 
 ## Code rules
 
-- `index.html` is the source of truth for element IDs. Change the JS to match it, not the other way round.
+- `index.html` is the source of truth for element IDs. Change the JS to match it, not the other way round. **Under review (F1):** the CSS matches the JS rather than `index.html`, so the direction will be decided per screen (ADR 0002) before branch #6. Until then, don't rename IDs on either side.
 - Modules currently talk through `window` globals (`CircuitApp`, `ThreeViewer`, `CircuitSimulator`, `CircuitLabData`). Every file must be imported in [src/main.js](src/main.js) in dependency order.
 - Wire each button once, on the first visit to a screen, never on every visit.
 - Escape user text before putting it into `innerHTML`.

@@ -118,9 +118,10 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 0 | `docs/workflow-guides` | This guide, CLAUDE.md, PR template | ✅ |
 | 1 | `test/smoke-tests` | Browser test: open every view, fail on any error | ✅ |
 | 2 | `chore/eslint-setup` | Linter: catch mistakes before running | ✅ |
-| 3 | `fix/load-component-data` | A1–A8 — stops all crashes | ⏳ |
+| 3 | `fix/load-component-data` | A1–A8 — stops all crashes | ✅ |
 | 4 | `fix/keyboard-shortcuts` | D2 | ⏳ |
 | 5 | `chore/remove-legacy-code` | E1 | ⏳ |
+| 5b | `docs/screen-markup-decision` | **Decide F1** per screen (fix the JS or fix the page) → ADR 0002, then update branches #6–#17 | ⏳ |
 | 6 | `fix/ai-chat-wiring` | B1–B3 | ⏳ |
 | 7 | `fix/ai-answer-matching` | D1 | ⏳ |
 | 8 | `fix/chat-html-escaping` | D6, D7 | ⏳ |
