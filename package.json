@@ -7,11 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint . --max-warnings 27",
+    "test": "npm run lint && npm run test:smoke",
     "test:smoke": "playwright test tests/smoke",
     "test:report": "playwright show-report"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
     "vite": "^5.0.0"
   }
 }
