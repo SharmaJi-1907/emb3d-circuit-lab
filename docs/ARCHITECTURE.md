@@ -32,9 +32,12 @@ emmb3d/
 │   │   ├── components/        buttons, panels, modals, toasts
 │   │   └── views/             per-screen styles
 │   └── assets/                fonts, models, images imported by code
+├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
 ├── tests/
-│   ├── smoke/                 Browser click-through tests
-│   └── unit/                  Small function tests
+│   ├── smoke/                 Playwright browser tests
+│   │   ├── app.spec.js        Every screen, search, AI chat, shortcuts. Known bugs marked knownBug()
+│   │   └── helpers.js         Error collector, known-noise list, navigation helpers
+│   └── unit/                  Small function tests            (empty)
 ├── scripts/                   Developer helper scripts
 ├── docs/                      Documentation
 └── legacy/                    Old unused code — to be removed

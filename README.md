@@ -16,6 +16,10 @@ npm run dev       # http://localhost:3000
 | `npm run dev` | Start the dev server with live reload |
 | `npm run build` | Build the production site into `dist/` |
 | `npm run preview` | Serve the `dist/` build locally |
+| `npm run test:smoke` | Run the browser smoke tests (Playwright) |
+| `npm run test:report` | Open the last test report |
+
+The smoke tests use the Google Chrome installed on your machine. Without Chrome, remove `channel: 'chrome'` from `playwright.config.js` and run `npx playwright install chromium`.
 
 ## Project structure
 
