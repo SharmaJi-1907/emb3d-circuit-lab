@@ -7,7 +7,7 @@
 
 ## Version control
 
-_To be defined by the project owner (branching, commit message format, when to commit)._
+One branch per issue, created from `main` and merged through a Pull Request. Branch names, commit format and the full cycle are in [GIT_WORKFLOW.md](GIT_WORKFLOW.md).
 
 ## Code style
 
