@@ -198,7 +198,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 1. **README.md**: what the app is, how to run it, the folder map, screenshots.
 2. **Linter + formatter**: `npm i -D eslint prettier`. An ESLint `no-undef` rule would have caught bug A1 instantly.
 3. **Smoke test**: add a Playwright test that opens every screen, clicks every button, and **fails if any console error appears**. That's the same check used for this report.
-4. **Version control:** to be set up the way the project owner decides.
+4. **Version control:** one branch per issue, merged through Pull Requests. See [GIT_WORKFLOW.md](GIT_WORKFLOW.md) for the full branch plan.
 
 ### Phase 7 — Optional upgrades
 

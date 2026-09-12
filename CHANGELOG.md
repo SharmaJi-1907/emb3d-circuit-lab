@@ -12,3 +12,6 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - `README.md`, `CHANGELOG.md`, `.editorconfig`, expanded `.gitignore`.
 - `docs/` with an index, architecture, contributing guide and decision records.
+- `docs/GIT_WORKFLOW.md`: branch-per-issue workflow, commit format and branch plan.
+- `CLAUDE.md`: working rules for the AI coding assistant.
+- `.github/pull_request_template.md`: PR checklist.

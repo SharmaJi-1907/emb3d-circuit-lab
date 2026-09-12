@@ -47,6 +47,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/FIX_PLAN.md](docs/FIX_PLAN.md) — known bugs and the fix plan
 - [docs/LEARNING_GUIDE.md](docs/LEARNING_GUIDE.md) — how the code works, in plain English
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — code style rules
+- [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) — branches, commits, pull requests and the branch plan
 
 ## Tech
 
