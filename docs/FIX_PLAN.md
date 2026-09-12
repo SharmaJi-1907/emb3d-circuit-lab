@@ -1,0 +1,223 @@
+# CircuitLab (emb3d) — Bug Report & Fix Plan
+
+_Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css/`, `dist/`, `package.json`_
+
+## How this was checked
+
+1. **Static check** — every `getElementById('...')` in the JS was compared with the `id="..."` values in `index.html`.
+2. **Live check** — the app was run with `npm run dev`, opened in headless Chrome, and a script clicked every menu item, button, search box and keyboard shortcut while recording every error.
+3. **Dependency check** — `npm audit`.
+
+## Summary
+
+| Area | Status |
+|---|---|
+| App loads, background animates | ✅ Works |
+| Left menu switches screens | ✅ Works |
+| 3D viewer | ❌ Empty — no part is ever shown |
+| Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
+| Component Database | ❌ Empty |
+| Board Explorer | ❌ Crashes |
+| Datasheet Viewer | ❌ Crashes |
+| AI Assistant | ❌ Crashes; answers never shown |
+| Projects | ❌ Crashes |
+| Search (Ctrl+K) | ❌ Crashes |
+| Settings (dark mode) | ❌ Button does nothing |
+| Keyboard shortcuts | ❌ Most don't work |
+
+**Root cause in one sentence:** the page (`index.html`) was built for an older version of the code (`script.js` + `database.js`, now in `legacy/`). It was later switched to a newer version (`app.js` + `data.js`), but the newer data file was never loaded and the element names were never updated to match.
+
+> **Paths:** this report was written before the restructure. File paths below use the new layout (see [ARCHITECTURE.md](ARCHITECTURE.md)). Line numbers are unchanged, because the files were moved without edits.
+
+---
+
+## Part 1 — Everything that is broken
+
+Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · 🟡 Medium · ⚪ Low (cleanup)
+
+### A. Crashes (seen live in the browser)
+
+| # | Sev | Problem | Where | Error seen |
+|---|---|---|---|---|
+| A1 | 🔴 | `data.js` is never loaded, so `CircuitLabData` does not exist. This one bug causes A2–A7. | [src/main.js](../src/main.js) | `ReferenceError: CircuitLabData is not defined` |
+| A2 | 🔴 | 3D Viewer: no part is selected, so it crashes reading `.id` of nothing | [app.js:644](../src/app/app.js#L644) | `TypeError: Cannot read properties of null (reading 'id')` |
+| A3 | 🔴 | 3D model loader also needs `CircuitLabData` | [three-viewer/index.js:726](../src/engines/three-viewer/index.js#L726) | (silently never called because of A2) |
+| A4 | 🔴 | Board Explorer crashes | [app.js:983](../src/app/app.js#L983) | `ReferenceError` |
+| A5 | 🔴 | Datasheet Viewer crashes | [app.js:1252](../src/app/app.js#L1252) | `ReferenceError` |
+| A6 | 🔴 | Projects crashes | [app.js:1498](../src/app/app.js#L1498) | `ReferenceError` |
+| A7 | 🔴 | Search (Ctrl+K or `/`) crashes on typing | [app.js:362](../src/app/app.js#L362) | `ReferenceError` |
+| A8 | 🔴 | AI Assistant crashes when you send a message | [app.js:1429](../src/app/app.js#L1429) | `ReferenceError` |
+
+### B. Code looks for page elements that don't exist (name mismatch)
+
+`app.js` asks for these IDs, but `index.html` uses different names. Result: that part of the screen stays empty.
+
+| # | Sev | Code looks for | Page actually has | Where in code |
+|---|---|---|---|---|
+| B1 | 🔴 | `ai-chat-area` | `ai-chat-messages` | [app.js:1379](../src/app/app.js#L1379) |
+| B2 | 🔴 | `ai-input` | `ai-user-query` | [app.js:1351](../src/app/app.js#L1351) |
+| B3 | 🔴 | `ai-send` | `ai-send-btn` | [app.js:1350](../src/app/app.js#L1350) |
+| B4 | 🔴 | `viewer-sidebar` | nothing — closest is `component-list` / `pin-info-panel` | [app.js:649](../src/app/app.js#L649) |
+| B5 | 🟠 | `pin-table-body` | nothing — closest is `pin-details` | [app.js:722](../src/app/app.js#L722) |
+| B6 | 🟠 | `pin-detail-panel` | `pin-info-panel` | [app.js:756](../src/app/app.js#L756) |
+| B7 | 🟡 | `pin-tooltip` | nothing | [app.js:1598](../src/app/app.js#L1598) |
+| B8 | 🟠 | `view-dashboard`, `view-components` | these screens don't exist in the page | [app.js:386](../src/app/app.js#L386), [app.js:502](../src/app/app.js#L502) |
+| B9 | 🟠 | `mm-value` / `mm-unit` / `mm-mode-select` | `multimeter-val` / `multimeter-unit` / `mm-mode` | [simulator.js:1123-1133](../src/engines/simulator/index.js#L1123-L1133) |
+
+### C. Buttons on the page with no code behind them
+
+These are visible and clickable, but **nothing happens** (confirmed by clicking them in the live test).
+
+| # | Sev | Screen | Dead buttons / panels |
+|---|---|---|---|
+| C1 | 🔴 | 3D Viewer | Part list (`component-list`), filter box (`component-filter`), category buttons, Rotate, Wireframe, Explode, Pins, Reset camera, Screenshot, package switcher, HUD values, pin panel close |
+| C2 | 🔴 | Simulator | Run, Pause, Stop, Clear, Export, Speed slider, Upload code, all "Add Resistor / LED / Capacitor / IC / Wire" buttons. The simulator's `startSim()` is **never called** by anything, so a circuit can never run. |
+| C3 | 🔴 | Database | Component grid (`db-components-grid`), Compare button, comparison table |
+| C4 | 🟠 | Projects | "Create project" button (`create-project-btn`), project grid (`projects-grid`) |
+| C5 | 🟠 | Settings | "Toggle Dark Mode" (`theme-btn-toggle`), top-bar theme toggle |
+| C6 | 🟡 | Top bar | Notifications drawer, "Clear all", shortcuts modal (nothing can open it) |
+
+### D. Logic bugs (code runs but does the wrong thing)
+
+| # | Sev | Problem | Where |
+|---|---|---|---|
+| D1 | 🟠 | **AI always gives the wrong answer.** It matches only the first or second word of each stored question. Any message with "what" gets the LED-resistor answer; anything with "how" or "do" gets the I2C answer. Example: _"how does an esp32 work"_ → I2C wiring guide. | [app.js:1429-1434](../src/app/app.js#L1429-L1434) |
+| D2 | 🟠 | **Keyboard shortcuts are wrong.** Keys `1` and `2` go to "dashboard" and "components", which don't exist, so you get a blank screen. The shortcuts shown to the user (`W`, `E`, `R`, `Space`) are not coded at all. | [app.js:1535-1544](../src/app/app.js#L1535-L1544) |
+| D3 | 🟠 | **Simulator gets set up again on every visit.** Each time you open the Simulator screen, it adds another set of mouse handlers and another endless drawing loop. After 5 visits one click adds 5 parts, and the CPU use keeps growing. | [app.js:866-878](../src/app/app.js#L866-L878), [simulator.js:626-652](../src/engines/simulator/index.js#L626-L652) |
+| D4 | 🟡 | **Two background animations draw on the same canvas** (`circuit-bg`), which uses double the CPU and can flicker. | [app.js:87](../src/app/app.js#L87) and [circuit-bg.js:188](../src/engines/background/circuit-bg.js#L188) |
+| D5 | 🟡 | 3D and simulator drawing loops keep running when their screen is hidden, which wastes battery. | [three-viewer.js:957](../src/engines/three-viewer/index.js#L957), [simulator.js:908](../src/engines/simulator/index.js#L908) |
+| D6 | 🟡 | **Unsafe HTML in AI chat.** The user's typed text is put into the page as raw HTML (`escapeHtml` exists but isn't used here). Typing `<img src=x onerror=alert(1)>` would run code. Low risk today (no login or server), but a bad habit to fix now. | [app.js:1385](../src/app/app.js#L1385), [app.js:1631](../src/app/app.js#L1631) |
+| D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. | [app.js:1634-1635](../src/app/app.js#L1634-L1635) |
+| D8 | ⚪ | The 3D loader has cases for `nrf52840` and `bme280`, which aren't in the data. Parts that are in the data (`l298n`, `ams1117`, `nrf24l01`) all fall back to a plain 8-pin chip. | [three-viewer.js:739-770](../src/engines/three-viewer/index.js#L739-L770) |
+| D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
+
+### E. Cleanup / project health
+
+| # | Sev | Problem |
+|---|---|---|
+| E1 | 🟡 | **Two versions of the app are mixed together.** [legacy/script.js](../legacy/script.js) (old app) and [legacy/database.js](../legacy/database.js) (old data) aren't used by the new app. `script.js` would also crash if loaded: it imports `ThreeViewer` / `CircuitSimulator`, which those files don't export. |
+| E2 | 🟡 | `manifest.json` is linked in the HTML but doesn't exist (browser logs a syntax error). `favicon.ico` is missing (404). |
+| E3 | ⚪ | CSS is loaded twice: `<link>` in [index.html:28](../index.html#L28) **and** `import` in [src/main.js](../src/main.js). |
+| E4 | ⚪ | `assets/fonts`, `assets/models`, `assets/icons` are empty folders. |
+| E5 | ⚪ | The notifications panel shows fake hardcoded messages ("Just now", "3 mins ago"). |
+| E6 | 🟡 | `npm audit`: 3 known security issues in dev tools — `nanoid` (high), `postcss` (high), `esbuild`/`vite 5.4.21` (moderate). These only affect the dev machine, not visitors. |
+| E7 | 🟡 | Three.js **r128** (from 2021) is loaded from a CDN. It's old, and the app needs the internet to work. |
+| E8 | 🟡 | No git, no README, no linter, no tests. |
+| E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
+
+---
+
+## Part 2 — The fix plan (step by step)
+
+Do the phases **in order**. Each phase ends with a check, so you always know it worked before moving on.
+
+### Phase 0 — Folder structure ✅ DONE
+
+- Project restructured into `src/`, `docs/`, `public/`, `tests/`, `scripts/`, `legacy/` (files moved, code unchanged). See [decisions/0001-folder-structure.md](decisions/0001-folder-structure.md).
+
+### Phase 1 — Stop the crashes (30 min) → fixes A1–A8
+
+1. **Load the data file.** In [src/main.js](../src/main.js), add this line **before** `three-viewer.js` and `app.js`:
+   ```js
+   import './data/data.js';
+   ```
+2. **Guard against "nothing selected".** In `initViewerPanel` ([app.js:642-645](../src/app/app.js#L642-L645)), only call `loadComponent` when `state.selectedComponent` exists.
+3. **Fix the keyboard map.** In [app.js:1535](../src/app/app.js#L1535), change the keys to the screens that really exist:
+   `1 viewer · 2 simulator · 3 database · 4 boards · 5 datasheet · 6 ai · 7 projects · 8 settings`.
+
+✅ **Check:** run `npm run dev`, open the browser console (F12), and click every menu item. There should be **zero red errors**, and a 3D chip should appear in the viewer.
+
+### Phase 2 — Pick one version and delete the other (30 min) → fixes E1
+
+Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models, AI answers, datasheets and projects.
+
+1. Open [legacy/database.js](../legacy/database.js) and copy anything useful into [src/data/data.js](../src/data/data.js) that isn't already there (for example, extra Arduino Uno pin specs).
+2. Delete the `legacy/` folder. (The `database.js` import was already removed from `src/main.js` during the restructure.)
+
+✅ **Check:** the app still runs with no errors, and `grep -r "ComponentDatabase\|appState" src/` returns nothing.
+
+### Phase 3 — Reconnect the page to the code (2–4 hours) → fixes B1–B9, C1–C6
+
+**Rule:** the HTML is the "real" design, so **change the JS to use the HTML's IDs**, not the other way round.
+
+1. **Rename IDs in the JS** using table B:
+   - `ai-chat-area → ai-chat-messages`, `ai-input → ai-user-query`, `ai-send → ai-send-btn`
+   - `mm-value → multimeter-val`, `mm-unit → multimeter-unit`, `mm-mode-select → mm-mode`
+   - `pin-detail-panel → pin-info-panel`
+2. **Rewrite `renderViewerSidebar` / `renderPinTable`** so they fill the elements that exist:
+   - Part list → `#component-list` (one row per `CircuitLabData.components`, click → `selectComponent(id)`)
+   - Filter → `#component-filter` + the `.cat-btn` buttons → `setFilter(cat)`
+   - Pin details → `#pin-number-badge`, `#pin-name-display`, `#pin-type-badge`, `#pin-voltage`, `#pin-current`, `#pin-protocol`, `#pin-direction`, `#pin-alt`, `#pin-example-code`
+   - HUD → `#hud-component`, `#hud-package`, `#hud-pins`
+3. **Hook up the 3D toolbar** (in `initViewerPanel`, once):
+   `btn-rotate → ThreeViewer.setAutoRotate`, `btn-wireframe → setViewMode('wireframe')`, `btn-explode → setViewMode('explode')`, `btn-reset-cam → ThreeViewer.resetView`, `btn-pins` → show/hide `#pin-labels-layer`, `btn-screenshot` → `renderer.domElement.toDataURL()` + download.
+4. **Hook up the simulator toolbar** (once, see Phase 4.3):
+   `sim-run → CircuitSimulator.startSim`, `sim-pause/sim-stop → stopSim`, `sim-clear → resetSim`, `sim-export → exportCircuit`, `sim-speed → setSimSpeed(value)`, `ws-add-resistor/led/capacitor/ic/wire → addComponentToCanvas(type)`.
+5. **Database screen:** write `renderDatabase()` that fills `#db-components-grid` using the existing `renderComponentCard()`. Connect `#compare-mode-btn` / `#close-matrix-btn` to the existing `toggleCompare` / `clearCompare`, and fill `#comparison-table-body`.
+6. **Projects:** point `renderProjects` at `#projects-grid` and `#create-project-btn → newProject()`.
+7. **Settings:** `theme-btn-toggle` and `theme-toggle` toggle a `light` class on `<body>`. Save the choice in `localStorage`.
+8. **Top bar:** the notification bell opens and closes `#notif-drawer`, `#clear-notifs` empties it, and `?` opens `#shortcuts-modal`.
+9. **Delete the dead code paths** for `dashboard` and `components` in `navigateTo`, or add those screens to the HTML (decide one).
+
+✅ **Check:** click every button on every screen. Each one should visibly do something, and there should be no console errors.
+
+### Phase 4 — Fix the logic bugs (1–2 hours) → fixes D1–D9
+
+1. **AI matcher (D1):** replace the first/second-word check with keyword lists per answer, and pick the answer with the most keyword hits:
+   ```js
+   const topics = [
+     { keys: ['resistor', 'ohm', 'led'], answer: 'What resistor do I need for an LED at 5V?' },
+     { keys: ['i2c', 'sda', 'scl'],      answer: 'How do I wire an I2C sensor to Arduino?' },
+     // ...
+   ];
+   ```
+   Check specific part names **before** generic topics.
+2. **Safe chat HTML (D6, D7):** run `escapeHtml(text)` first, then `formatMarkdown`. Move the ```` ``` ```` block rule **above** the single-backtick rule.
+3. **Initialize once (D3):** add an `initialized` flag in `CircuitSimulator.init` (and the toolbar wiring) so it only runs the first time.
+4. **One background (D4):** keep either `circuit-bg.js` or `initBackground()` in `app.js`, not both.
+5. **Pause hidden loops (D5):** in `navigateTo`, pause the 3D/simulator loops when leaving their screen, and resume when you come back.
+6. **3D model cases (D8):** make the `switch` in `loadComponent` match the real IDs in `data.js`.
+7. **Hash routing (D9):** add a `hashchange` listener that calls `navigateTo(location.hash.slice(1))`, and set the hash inside `navigateTo`. Page refresh and the back button then work too.
+
+✅ **Check:** ask the AI "how does an esp32 work" and get the ESP32 answer. Visit the simulator 5 times, then click once and get exactly 1 part.
+
+### Phase 5 — Cleanup & dependencies (1 hour) → fixes E2–E7, E9
+
+1. Remove the `<link rel="stylesheet" href="/src/styles/main.css">` from `index.html` (Vite already loads it through `main.js`).
+2. Either add a real `manifest.json` + `favicon` or remove the `<link rel="manifest">` line.
+3. Delete the empty `assets/` folders, or put the real fonts and icons there.
+4. Replace the fake notifications with real ones pushed from `showToast()`.
+5. Run `npm audit fix` (safe, fixes `nanoid` + `postcss`). Plan a separate upgrade to Vite 6+ later, since it's a breaking change.
+6. Optional: install Three.js with `npm i three` and `import * as THREE from 'three'` instead of the r128 CDN script, so the app works offline.
+7. Run `npm run build` to regenerate `dist/`.
+
+✅ **Check:** `npm audit` shows 0 high issues, `npm run build` succeeds, and `npm run preview` works.
+
+### Phase 6 — Make it professional (half a day) → fixes E8
+
+1. **README.md**: what the app is, how to run it, the folder map, screenshots.
+2. **Linter + formatter**: `npm i -D eslint prettier`. An ESLint `no-undef` rule would have caught bug A1 instantly.
+3. **Smoke test**: add a Playwright test that opens every screen, clicks every button, and **fails if any console error appears**. That's the same check used for this report.
+4. **Version control:** to be set up the way the project owner decides.
+
+### Phase 7 — Optional upgrades
+
+- **Real AI answers:** call the Claude API from a small backend (for example a Node/Express or serverless function). **Never put an API key in browser JavaScript.**
+- **Save projects properly:** `loadProjects()` reads `localStorage`, but nothing ever saves to it. Add a save call.
+- **Move to real ES modules:** replace `window.X = (function(){...})()` with `export` / `import`. This makes mistakes like A1 impossible.
+
+---
+
+## Time estimate
+
+| Phase | Effort | Result |
+|---|---|---|
+| 0 | 10 min | Can undo anything |
+| 1 | 30 min | **No more crashes** |
+| 2 | 30 min | One clean codebase |
+| 3 | 2–4 h | **Every button works** |
+| 4 | 1–2 h | Correct behaviour |
+| 5 | 1 h | Clean + secure deps |
+| 6 | ½ day | Professional project |
+
+See [LEARNING_GUIDE.md](LEARNING_GUIDE.md) for a plain-English explanation of how the code works.
