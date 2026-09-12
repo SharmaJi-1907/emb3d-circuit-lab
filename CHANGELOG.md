@@ -16,3 +16,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `CLAUDE.md`: working rules for the AI coding assistant.
 - `.github/pull_request_template.md`: PR checklist.
 - Playwright smoke tests (`npm run test:smoke`): 12 tests covering app start, all 8 screens, search, AI chat and number-key shortcuts. They fail on any page error, and known bugs are tracked as expected failures.
+- ESLint 10 (`npm run lint`) with the recommended rules. New mistakes are errors; the 27 known leftovers are warnings capped with `--max-warnings`. `npm test` now runs lint and smoke tests together.
+
+### Found
+- New issues from linting: D8 (4 unused 3D models), D10 (sort ignores its option), D11 (chip labels never drawn), D12 (unused simulator values), E10 (GSAP loaded but unused), E11 (lint warning cap).
