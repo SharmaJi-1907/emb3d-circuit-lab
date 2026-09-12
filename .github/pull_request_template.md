@@ -11,7 +11,8 @@ Fixes:
 
 - [ ] `npm run build` succeeds
 - [ ] No red errors in the browser console on the affected screens
-- [ ] Smoke tests pass (`npm run test:smoke`, once available)
+- [ ] Smoke tests pass (`npm run test:smoke`)
+- [ ] `knownBug()` markers removed for the issues this PR fixes
 - [ ] Lint passes (`npm run lint`, once available)
 
 ## Checklist
