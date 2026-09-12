@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CircuitLab — Professional Electronics Component Visualization & Simulation Platform" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>CircuitLab — Electronics Visualization Platform</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+
+  <!-- Animated Circuit Background -->
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <!-- Particle Field -->
+  <div id="particle-field" aria-hidden="true"></div>
+
+  <!-- App Shell -->
+  <div id="app" class="app-shell">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-logo">
+        <div class="logo-mark">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#logoGrad)"/>
+            <path d="M8 16h4l2-6 4 12 2-6h4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                <stop offset="0%" stop-color="#00d4ff"/>
+                <stop offset="100%" stop-color="#7b2fff"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">Circuit<span class="logo-accent">Lab</span></span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="viewer" aria-label="3D Viewer" title="3D Component Viewer">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </span>
+          <span class="nav-label">3D Viewer</span>
+          <span class="nav-badge">NEW</span>
+        </button>
+
+        <button class="nav-item" data-view="simulator" aria-label="Circuit Simulator" title="Circuit Simulator">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+          </span>
+          <span class="nav-label">Simulator</span>
+        </button>
+
+        <button class="nav-item" data-view="database" aria-label="Component Database" title="Component Database">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </span>
+          <span class="nav-label">Database</span>
+        </button>
+
+        <button class="nav-item" data-view="boards" aria-label="Board Explorer" title="Board Explorer">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="7" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="17" cy="10" r="1" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="nav-label">Boards</span>
+        </button>
+
+        <button class="nav-item" data-view="datasheet" aria-label="Datasheets" title="Datasheet Viewer">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </span>
+          <span class="nav-label">Datasheets</span>
+        </button>
+
+        <button class="nav-item" data-view="ai" aria-label="AI Assistant" title="AI Electronics Assistant">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="19" cy="5" r="3" fill="url(#aiGrad)"/>
+              <defs><linearGradient id="aiGrad" x1="16" y1="2" x2="22" y2="8"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs>
+            </svg>
+          </span>
+          <span class="nav-label">AI Assistant</span>
+          <span class="nav-pulse"></span>
+        </button>
+
+        <button class="nav-item" data-view="projects" aria-label="Projects" title="My Projects">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Projects</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-view="settings" title="Settings">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Settings</span>
+        </button>
+        <div class="user-avatar" title="User Profile">
+          <span>JD</span>
+          <div class="avatar-status"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-area">
+
+      <!-- Top Header -->
+      <header class="top-header" role="banner">
+        <div class="header-left">
+          <button id="sidebar-toggle" class="icon-btn" aria-label="Toggle sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="breadcrumb">
+            <span class="breadcrumb-root">CircuitLab</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" id="breadcrumb-current">3D Viewer</span>
+          </div>
+        </div>
+
+        <div class="header-center">
+          <div class="global-search" role="search">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="search" id="global-search" placeholder="Search components, boards, datasheets..." aria-label="Global search" autocomplete="off" />
+            <kbd class="search-kbd">⌘K</kbd>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="notif-btn" aria-label="Notifications" title="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-dot"></span>
+          </button>
+          <button class="icon-btn" aria-label="Share" title="Share project" id="export-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </button>
+          <button class="btn-primary" id="new-project-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New Project
+          </button>
+        </div>
+      </header>
+
+      <!-- View Container -->
+      <main class="view-container" id="view-container" role="main">
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: 3D COMPONENT VIEWER                              -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view active" id="view-viewer" aria-label="3D Component Viewer">
+          <div class="viewer-layout">
+
+            <!-- Component Selector Panel -->
+            <aside class="panel component-selector-panel glass-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Components</h2>
+                <div class="panel-search">
+                  <input type="search" placeholder="Filter..." class="mini-search" id="component-filter" />
+                </div>
+              </div>
+              <div class="component-categories">
+                <button class="cat-btn active" data-cat="all">All</button>
+                <button class="cat-btn" data-cat="mcu">MCU</button>
+                <button class="cat-btn" data-cat="passive">Passive</button>
+                <button class="cat-btn" data-cat="sensor">Sensor</button>
+                <button class="cat-btn" data-cat="power">Power</button>
+                <button class="cat-btn" data-cat="connector">Connector</button>
+              </div>
+              <div class="component-list" id="component-list" role="listbox" aria-label="Component list">
+                <!-- Populated by JS -->
+              </div>
+            </aside>
+
+            <!-- 3D Viewport -->
+            <div class="viewer-viewport" style="position: relative; width: 100%; height: 100%;">
+              <canvas id="three-canvas" aria-label="3D component viewer"></canvas>
+
+              <!-- Viewer Controls Overlay -->
+              <div class="viewer-controls-overlay">
+                <div class="viewer-toolbar glass-panel">
+                  <button class="tool-btn active" id="btn-rotate" title="Rotate (R)" data-action="rotate">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                  </button>
+                  <button class="tool-btn" id="btn-wireframe" title="Wireframe (W)" data-action="wireframe">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                    </svg>
+                  </button>
+                  <button class="tool-btn" id="btn-explode" title="Explode View (E)" data-action="explode">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                  </button>
+                  <button class="tool-btn" id="btn-pins" title="Show Pins (P)" data-action="pins">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="21"/>
+                    </svg>
+                  </button>
+                  <div class="tool-divider"></div>
+                  <button class="tool-btn" id="btn-reset-cam" title="Reset Camera (Home)" data-action="reset">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    </svg>
+                  </button>
+                  <button class="tool-btn" id="btn-screenshot" title="Screenshot" data-action="screenshot">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Package Type Switcher -->
+                <div class="package-switcher glass-panel" id="package-selector-hud">
+                  <span class="pkg-label">Package</span>
+                  <button class="pkg-btn active" data-pkg="dip">DIP</button>
+                  <button class="pkg-btn" data-pkg="smd">SMD</button>
+                  <button class="pkg-btn" data-pkg="qfp">QFP</button>
+                  <button class="pkg-btn" data-pkg="bga">BGA</button>
+                </div>
+
+                <!-- Viewer Info HUD -->
+                <div class="viewer-hud glass-panel">
+                  <div class="hud-item">
+                    <span class="hud-label">Component</span>
+                    <span class="hud-value" id="hud-component">ATmega328P</span>
+                  </div>
+                  <div class="hud-item">
+                    <span class="hud-label">Package</span>
+                    <span class="hud-value" id="hud-package">DIP-28</span>
+                  </div>
+                  <div class="hud-item">
+                    <span class="hud-label">Pins</span>
+                    <span class="hud-value" id="hud-pins">28</span>
+                  </div>
+                  <div class="hud-item">
+                    <span class="hud-label">Voltage</span>
+                    <span class="hud-value neon-text">1.8–5.5V</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Real-time 3D projected pin labels will anchor here dynamically -->
+              <div id="pin-labels-layer" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
+
+              <!-- Loading Overlay -->
+              <div class="viewer-loading" id="viewer-loading">
+                <div class="loading-spinner"></div>
+                <span>Rendering 3D Model...</span>
+              </div>
+            </div>
+
+            <!-- Pin Info Panel -->
+            <aside class="panel pin-info-panel glass-panel" id="pin-info-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Pin Inspector</h2>
+                <button class="icon-btn panel-close" id="pin-panel-close" aria-label="Close pin panel">×</button>
+              </div>
+
+              <div class="pin-active-profile" id="pin-active-profile">
+                <!-- Fallback/placeholder when no pin is active -->
+                <div class="pin-overview" id="pin-overview">
+                  <div class="pin-number-badge" id="pin-number-badge">14</div>
+                  <div class="pin-name-display" id="pin-name-display">PB0 / ICP1</div>
+                  <div class="pin-type-badge" id="pin-type-badge" data-type="digital">Digital I/O</div>
+                </div>
+
+                <div class="pin-details" id="pin-details">
+                  <div class="detail-row">
+                    <span class="detail-label">Voltage</span>
+                    <span class="detail-value" id="pin-voltage">0 – 5V</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Max Current</span>
+                    <span class="detail-value" id="pin-current">40 mA</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Protocol</span>
+                    <span class="detail-value" id="pin-protocol">GPIO / Timer1</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Direction</span>
+                    <span class="detail-value" id="pin-direction">Bidirectional</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Alt Functions</span>
+                    <span class="detail-value" id="pin-alt">ICP1, CLKO, PCINT0</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pin-warning" id="pin-warning" style="display:none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span id="pin-warning-text">Do not exceed 40mA per pin</span>
+              </div>
+
+              <div class="signal-flow-section">
+                <h3 class="section-subtitle">Signal Flow</h3>
+                <div class="signal-flow-viz" id="signal-flow-viz">
+                  <div class="signal-line">
+                    <div class="signal-node source">MCU</div>
+                    <div class="signal-wire">
+                      <div class="signal-pulse"></div>
+                    </div>
+                    <div class="signal-node dest">GPIO</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pin-legend">
+                <h3 class="section-subtitle">Pin Legend</h3>
+                <div class="legend-grid">
+                  <div class="legend-item"><span class="legend-dot" data-type="power"></span>Power</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="ground"></span>Ground</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="digital"></span>Digital</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="analog"></span>Analog</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="pwm"></span>PWM</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="uart"></span>UART</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="spi"></span>SPI</div>
+                  <div class="legend-item"><span class="legend-dot" data-type="i2c"></span>I2C</div>
+                </div>
+              </div>
+
+              <div class="pin-example">
+                <h3 class="section-subtitle">Example Usage</h3>
+                <pre class="code-snippet" id="pin-example-code"><code>// Arduino example
+pinMode(8, OUTPUT);
+digitalWrite(8, HIGH);</code></pre>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: CIRCUIT SIMULATOR                                -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-simulator" aria-label="Circuit Simulator">
+          <div class="simulator-layout">
+
+            <!-- Simulator Toolbar -->
+            <div class="sim-toolbar glass-panel">
+              <div class="sim-toolbar-left" style="display:flex; align-items:center; gap:8px;">
+                <button class="sim-btn" id="sim-run" title="Run Simulation (Space)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Run
+                </button>
+                <button class="sim-btn" id="sim-pause" title="Pause">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  Pause
+                </button>
+                <button class="sim-btn" id="sim-stop" title="Stop" disabled>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  Stop
+                </button>
+                <div class="sim-speed">
+                  <label>Speed</label>
+                  <input type="range" min="0.1" max="10" step="0.1" value="1.0" id="sim-speed" />
+                  <span id="sim-speed-val">1x</span>
+                </div>
+              </div>
+              <div class="sim-toolbar-right" style="display:flex; align-items:center; gap:8px;">
+                <button class="sim-btn" id="sim-clear" title="Clear Circuit">Clear</button>
+                <button class="sim-btn" id="sim-export" title="Export Circuit">Export</button>
+                <button class="sim-btn" id="sim-upload-code" title="Upload Code">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  Upload Code
+                </button>
+              </div>
+            </div>
+
+            <div class="simulator-main">
+              <!-- Component Palette -->
+              <aside class="panel sim-palette glass-panel">
+                <div class="panel-header"><h2 class="panel-title">Components</h2></div>
+                <div class="palette-section">
+                  <h3 class="palette-cat">Basic</h3>
+                  <div class="palette-grid">
+                    <button class="palette-item ws-btn" id="ws-add-resistor" data-component="resistor" title="Resistor">
+                      <div class="palette-icon resistor-icon"></div>
+                      <span>Resistor</span>
+                    </button>
+                    <button class="palette-item ws-btn" id="ws-add-capacitor" data-component="capacitor" title="Capacitor">
+                      <div class="palette-icon capacitor-icon"></div>
+                      <span>Capacitor</span>
+                    </button>
+                    <button class="palette-item ws-btn" id="ws-add-led" data-component="led" title="LED">
+                      <div class="palette-icon led-icon"></div>
+                      <span>LED</span>
+                    </button>
+                    <button class="palette-item ws-btn" id="ws-add-wire" data-component="wire" title="Wire">
+                      <div class="palette-icon switch-icon"></div>
+                      <span>Wire</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="palette-section">
+                  <h3 class="palette-cat">Active</h3>
+                  <div class="palette-grid">
+                    <button class="palette-item ws-btn" id="ws-add-ic" data-component="ic" title="Add 555 IC">
+                      <div class="palette-icon npn-icon"></div>
+                      <span>NE555 IC</span>
+                    </button>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Breadboard Canvas -->
+              <div class="sim-canvas-area" style="position: relative; flex: 1; display: flex; flex-direction: column;">
+                <canvas id="sim-canvas" aria-label="Circuit simulation canvas" style="width: 100%; flex: 1;"></canvas>
+                <div class="sim-status-bar glass-panel">
+                  <span class="sim-status" id="sim-status">
+                    <span class="status-dot idle" id="sim-indicator"></span>
+                    <span id="sim-status-text">Ready</span>
+                  </span>
+                  <span class="sim-time" id="sim-time">t = 0.000s</span>
+                  <span class="sim-nodes" id="sim-nodes">Nodes: 0</span>
+                </div>
+              </div>
+
+              <!-- Instruments Panel -->
+              <aside class="panel instruments-panel glass-panel">
+                <div class="panel-header"><h2 class="panel-title">Instruments</h2></div>
+
+                <!-- Oscilloscope -->
+                <div class="instrument-card" id="oscilloscope">
+                  <div class="instrument-header">
+                    <span class="instrument-name">Oscilloscope</span>
+                    <button class="instrument-toggle active" data-instrument="osc">ON</button>
+                  </div>
+                  <canvas id="osc-canvas" width="240" height="100" aria-label="Oscilloscope display"></canvas>
+                  <div class="osc-controls">
+                    <div class="osc-ctrl">
+                      <label>V/div</label>
+                      <div class="dial" id="dial-ch1-volt" data-val="2" style="width:30px; height:30px; border-radius:50%; border:2px solid #555; cursor:pointer;"></div>
+                      <span id="scope-volt-read">2.0V</span>
+                    </div>
+                    <div class="osc-ctrl">
+                      <label>T/div</label>
+                      <div class="dial" id="dial-timebase" data-val="10" style="width:30px; height:30px; border-radius:50%; border:2px solid #555; cursor:pointer;"></div>
+                      <span id="scope-time-read">10 ms</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Multimeter -->
+                <div class="instrument-card" id="multimeter">
+                  <div class="instrument-header">
+                    <span class="instrument-name">Multimeter</span>
+                    <select id="mm-mode" class="mm-mode-select">
+                      <option value="voltage">Voltage</option>
+                      <option value="current">Current</option>
+                      <option value="resistance">Resistance</option>
+                    </select>
+                  </div>
+                  <div class="mm-display" style="background:#050508; border:1px solid #222; border-radius:4px; padding:10px; text-align:center; font-family:'JetBrains Mono', monospace;">
+                    <span class="mm-value" id="multimeter-val" style="font-size:24px; color:#00ff88; font-weight:700;">0.00</span>
+                    <span class="mm-unit" id="multimeter-unit" style="font-size:12px; color:#666;">V</span>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: COMPONENT DATABASE                               -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-database" aria-label="Component Database">
+          <div class="database-layout">
+            <div class="database-header">
+              <h1 class="view-title">Component Database</h1>
+              <p class="view-subtitle">Browse 10,000+ electronic components with full specifications</p>
+            </div>
+
+            <div class="database-filters glass-panel" style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin-bottom:20px;">
+              <div class="filter-group component-categories" style="display:flex; gap:8px;">
+                <button class="filter-chip cat-btn active" data-cat="all">All</button>
+                <button class="filter-chip cat-btn" data-cat="mcu">Microcontrollers</button>
+                <button class="filter-chip cat-btn" data-cat="ic">ICs</button>
+                <button class="filter-chip cat-btn" data-cat="passive">Passives</button>
+              </div>
+              <button class="btn-secondary" id="compare-mode-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                Compare Mode
+              </button>
+            </div>
+
+            <div class="database-results">
+              <div class="component-grid" id="db-components-grid" role="list">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Compare Panel / Matrix overlay -->
+            <div class="comparison-matrix-overlay hidden" id="comparison-matrix" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:9999;">
+              <div class="matrix-card glass-panel" style="width:90%; max-width:800px; padding:30px; border-radius:12px;">
+                <div class="matrix-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                  <h3>Component Comparison</h3>
+                  <button class="icon-btn" id="close-matrix-btn" style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;">&times;</button>
+                </div>
+                <div class="matrix-body">
+                  <table class="comparison-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead>
+                      <tr style="border-bottom:2px solid #333;">
+                        <th style="padding:10px;">Specification</th>
+                        <th id="comp-col-1" style="padding:10px;">Select A</th>
+                        <th id="comp-col-2" style="padding:10px;">Select B</th>
+                      </tr>
+                    </thead>
+                    <tbody id="comparison-table-body">
+                      <!-- Dynamically filled -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: BOARD EXPLORER                                   -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-boards" aria-label="Board Explorer">
+          <div class="boards-layout">
+            <div class="boards-header">
+              <h1 class="view-title">Development Board Explorer</h1>
+              <p class="view-subtitle">Interactive pinout maps for popular development boards</p>
+            </div>
+
+            <div class="board-selector-row">
+              <button class="board-tab active" data-board="arduino-uno">Arduino Uno</button>
+              <button class="board-tab" data-board="arduino-mega">Arduino Mega</button>
+              <button class="board-tab" data-board="esp32">ESP32</button>
+              <button class="board-tab" data-board="esp8266">ESP8266</button>
+              <button class="board-tab" data-board="rpi4">Raspberry Pi 4</button>
+              <button class="board-tab" data-board="rpi-pico">RPi Pico</button>
+              <button class="board-tab" data-board="stm32">STM32 Nucleo</button>
+            </div>
+
+            <div class="board-explorer-main">
+              <div class="board-canvas-area glass-panel">
+                <canvas id="board-canvas" aria-label="Board pinout diagram"></canvas>
+                <div class="board-controls">
+                  <button class="tool-btn" id="board-zoom-in" title="Zoom In">+</button>
+                  <button class="tool-btn" id="board-zoom-out" title="Zoom Out">−</button>
+                  <button class="tool-btn" id="board-reset" title="Reset View">⌂</button>
+                </div>
+              </div>
+
+              <aside class="panel board-info-panel glass-panel">
+                <div class="board-overview" id="board-overview">
+                  <h2 class="board-name" id="board-name">Arduino Uno</h2>
+                  <div class="board-specs-grid" id="board-specs-grid">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+
+                <div class="pin-filter-section">
+                  <h3 class="section-subtitle">Filter Pins</h3>
+                  <div class="pin-filter-btns">
+                    <button class="pin-filter-btn active" data-filter="all">All</button>
+                    <button class="pin-filter-btn" data-filter="power">Power</button>
+                    <button class="pin-filter-btn" data-filter="digital">Digital</button>
+                    <button class="pin-filter-btn" data-filter="analog">Analog</button>
+                    <button class="pin-filter-btn" data-filter="pwm">PWM</button>
+                    <button class="pin-filter-btn" data-filter="uart">UART</button>
+                    <button class="pin-filter-btn" data-filter="spi">SPI</button>
+                    <button class="pin-filter-btn" data-filter="i2c">I2C</button>
+                  </div>
+                </div>
+
+                <div class="board-pin-list" id="board-pin-list">
+                  <!-- Populated by JS -->
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: DATASHEET VIEWER                                 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-datasheet" aria-label="Datasheet Viewer">
+          <div class="datasheet-layout">
+            <aside class="panel datasheet-sidebar glass-panel">
+              <div class="panel-header"><h2 class="panel-title">Datasheets</h2></div>
+              <div class="ds-search">
+                <input type="search" placeholder="Search datasheets..." id="ds-search" />
+              </div>
+              <div class="ds-list" id="ds-list">
+                <!-- Populated by JS -->
+              </div>
+            </aside>
+
+            <div class="datasheet-viewer-area glass-panel">
+              <div class="ds-viewer-header">
+                <div class="ds-title-area">
+                  <h2 class="ds-component-name" id="ds-component-name">ATmega328P</h2>
+                  <span class="ds-mfr" id="ds-mfr">Microchip Technology</span>
+                </div>
+                <div class="ds-actions">
+                  <button class="btn-secondary" id="ds-download">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download PDF
+                  </button>
+                  <button class="btn-secondary" id="ds-ai-explain">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    AI Explain
+                  </button>
+                </div>
+              </div>
+
+              <div class="ds-toc glass-panel">
+                <span class="toc-label">Sections:</span>
+                <button class="toc-btn active" data-section="overview">Overview</button>
+                <button class="toc-btn" data-section="pinout">Pinout</button>
+                <button class="toc-btn" data-section="electrical">Electrical</button>
+                <button class="toc-btn" data-section="timing">Timing</button>
+                <button class="toc-btn" data-section="memory">Memory</button>
+                <button class="toc-btn" data-section="examples">Examples</button>
+              </div>
+
+              <div class="ds-content scrollable" id="ds-content">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: AI ASSISTANT                                     -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-ai" aria-label="AI Electronics Assistant">
+          <div class="ai-layout" style="display:flex; flex-direction:column; gap:20px; height:100%;">
+            <div class="ai-header" style="display:flex; align-items:center; gap:16px;">
+              <div class="ai-avatar-large" style="width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg, #00d4ff, #7b2fff); display:flex; align-items:center; justify-content:center;">
+                <i class="fa-solid fa-robot" style="font-size:24px; color:#fff;"></i>
+              </div>
+              <div>
+                <h1 class="view-title" style="font-size:24px; margin:0;">AI Electronics Assistant</h1>
+                <p class="view-subtitle" style="margin:0; opacity:0.7;">Powered by CircuitLab AI — Ask anything about electronics</p>
+              </div>
+            </div>
+
+            <div class="ai-suggestions ai-suggested-queries" style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="ai-suggestion-chip query-tab" data-query="How do I connect the RESET pin?">Reset Hookup</button>
+              <button class="ai-suggestion-chip query-tab" data-query="What is the timing equation for NE555 Astable Mode?">555 Astable Eq</button>
+              <button class="ai-suggestion-chip query-tab" data-query="Can ESP32 pins tolerate 5V signals?">ESP32 5V Tolerance</button>
+            </div>
+
+            <div class="ai-chat-area ai-messages-area scrollable" id="ai-chat-messages" role="log" aria-live="polite" style="flex:1; overflow-y:auto; padding:20px; border:1px solid #222; border-radius:6px; background:#07070a; display:flex; flex-direction:column; gap:12px;">
+              <div class="chat-bubble ai-msg">
+                <p>Hello! I'm your AI Electronics Assistant. I can help you with:</p>
+                <ul>
+                  <li>Circuit design and component selection</li>
+                  <li>Wiring diagrams and pin configurations</li>
+                  <li>Code generation for Arduino, ESP32, and more</li>
+                  <li>Debugging electrical issues</li>
+                  <li>Explaining datasheets and specifications</li>
+                </ul>
+                <p>What would you like to explore today?</p>
+              </div>
+            </div>
+
+            <div class="ai-input-area glass-panel" style="padding:15px; border-radius:6px;">
+              <div class="ai-input-row" style="display:flex; gap:10px;">
+                <input type="text" id="ai-user-query" placeholder="Ask about circuits, components, wiring, code..." style="flex:1; background:#0c0c14; border:1px solid #222; color:#fff; border-radius:4px; padding:12px;" />
+                <button class="ai-send-btn btn btn-primary" id="ai-send-btn" aria-label="Send message" style="padding:0 20px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: PROJECTS                                         -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-projects" aria-label="My Projects">
+          <div class="projects-layout">
+            <div class="projects-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+              <h1 class="view-title">My Projects</h1>
+              <button class="btn-primary" id="create-project-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                New Project
+              </button>
+            </div>
+            <div class="projects-grid" id="projects-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
+              <div class="database-card glass-panel" style="padding:20px; border-radius:8px;">
+                <h3>Astable Multivibrator</h3>
+                <p style="opacity:0.7; font-size:13px; margin:8px 0 15px 0;">NE555 Timer simulated oscillator circuit with LED feedback visual display.</p>
+                <button class="btn btn-primary" onclick="window.location.hash='#simulator'">Open Workspace</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: SETTINGS                                         -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="view" id="view-settings" aria-label="Settings">
+          <div class="settings-layout" style="display:flex; flex-direction:column; gap:20px;">
+            <h1 class="view-title">Settings</h1>
+            <div class="settings-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+              <div class="settings-card glass-panel" style="padding:20px; border-radius:8px;">
+                <h3>Appearance Settings</h3>
+                <div class="setting-row" style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                  <label>Contrast Dark System Mode</label>
+                  <button class="btn btn-secondary" id="theme-btn-toggle">Toggle Dark Mode</button>
+                </div>
+              </div>
+              <div class="settings-card glass-panel" style="padding:20px; border-radius:8px;">
+                <h3>Keyboard Shortcuts</h3>
+                <div class="shortcuts-list" style="margin-top:15px; display:flex; flex-direction:column; gap:8px; font-size:14px;">
+                  <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">Space</kbd><span>Run/Pause Simulation</span></div>
+                  <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">W</kbd><span>Wireframe Toggle Mode</span></div>
+                  <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">E</kbd><span>Explode 3D View layers</span></div>
+                  <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">R</kbd><span>Reset 3D View camera angle</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+    <div class="search-modal-backdrop" id="search-backdrop"></div>
+    <div class="search-modal-content glass-panel">
+      <div class="search-modal-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="search" id="modal-search-input" placeholder="Search components, boards, datasheets..." autofocus />
+        <kbd>Esc</kbd>
+      </div>
+      <div class="search-results" id="modal-search-results">
+        <!-- Populated by JS -->
+      </div>
+      <div class="search-footer">
+        <span><kbd>↑↓</kbd> Navigate</span>
+        <span><kbd>↵</kbd> Select</span>
+        <span><kbd>Esc</kbd> Close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Keyboard Shortcuts Overlay Panel -->
+  <div class="modal-overlay hidden" id="shortcuts-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:9999;">
+      <div class="modal-card glass-panel" style="width:90%; max-width:500px; padding:30px; border-radius:12px;">
+          <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+              <h3>Keyboard Shortcuts</h3>
+              <button class="icon-btn" id="close-shortcuts-btn" style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;">&times;</button>
+          </div>
+          <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">W</kbd> <span>Toggle Shaded / Wireframe in 3D Viewer</span></div>
+              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">E</kbd> <span>Toggle Explode Mode in 3D Viewer</span></div>
+              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">R</kbd> <span>Reset 3D Viewer Camera</span></div>
+              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">Space</kbd> <span>Toggle Circuit Simulation Run/Pause</span></div>
+              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">Esc</kbd> <span>Close current active dialogs / overlay tables</span></div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Notifications Drawer -->
+  <div class="notif-drawer hidden" id="notif-drawer" style="position:fixed; top:70px; right:20px; width:360px; max-height:480px; overflow-y:auto; z-index:999; border-radius:8px;">
+      <div class="notif-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #222;">
+          <h4>Live Feed & Status Log</h4>
+          <button class="clear-notif-btn" id="clear-notifs" style="background:none; border:none; color:#00d4ff; font-size:12px; cursor:pointer;">Clear All</button>
+      </div>
+      <div class="notif-list" id="notif-list-body" style="padding:15px; display:flex; flex-direction:column; gap:12px; font-size:13px;">
+          <div class="notif-item unread">
+              <span class="n-dot"></span>
+              <div class="n-text">
+                  <strong>3D Scene Instantiated:</strong> Procedural shapes compiled with zero cache misses.
+                  <span class="n-time" style="display:block; opacity:0.5; font-size:11px; margin-top:4px;">Just Now</span>
+              </div>
+          </div>
+          <div class="notif-item unread">
+              <span class="n-dot"></span>
+              <div class="n-text">
+                  <strong>Oscilloscope Calibrated:</strong> 2-channel grid locked onto realtime canvas plotter.
+                  <span class="n-time" style="display:block; opacity:0.5; font-size:11px; margin-top:4px;">3 mins ago</span>
+              </div>
+          </div>
+          <div class="notif-item">
+              <div class="n-text">
+                  <strong>Database Sync Successful:</strong> Pin map datasets for MCU boards and passive axial packages verified.
+                  <span class="n-time" style="display:block; opacity:0.5; font-size:11px; margin-top:4px;">10 mins ago</span>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Entry Script module load -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
