@@ -85,11 +85,14 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D2 | 🟠 | **Keyboard shortcuts are wrong.** Keys `1` and `2` go to "dashboard" and "components", which don't exist, so you get a blank screen. The shortcuts shown to the user (`W`, `E`, `R`, `Space`) are not coded at all. | [app.js:1535-1544](../src/app/app.js#L1535-L1544) |
 | D3 | 🟠 | **Simulator gets set up again on every visit.** Each time you open the Simulator screen, it adds another set of mouse handlers and another endless drawing loop. After 5 visits one click adds 5 parts, and the CPU use keeps growing. | [app.js:866-878](../src/app/app.js#L866-L878), [simulator.js:626-652](../src/engines/simulator/index.js#L626-L652) |
 | D4 | 🟡 | **Two background animations draw on the same canvas** (`circuit-bg`), which uses double the CPU and can flicker. | [app.js:87](../src/app/app.js#L87) and [circuit-bg.js:188](../src/engines/background/circuit-bg.js#L188) |
-| D5 | 🟡 | 3D and simulator drawing loops keep running when their screen is hidden, which wastes battery. | [three-viewer.js:957](../src/engines/three-viewer/index.js#L957), [simulator.js:908](../src/engines/simulator/index.js#L908) |
+| D5 | 🟡 | 3D and simulator drawing loops keep running when their screen is hidden, which wastes battery. _ESLint confirms: `animationId` and `animId` are stored but never used to cancel the loops._ | [three-viewer.js:957](../src/engines/three-viewer/index.js#L957), [simulator.js:908](../src/engines/simulator/index.js#L908) |
 | D6 | 🟡 | **Unsafe HTML in AI chat.** The user's typed text is put into the page as raw HTML (`escapeHtml` exists but isn't used here). Typing `<img src=x onerror=alert(1)>` would run code. Low risk today (no login or server), but a bad habit to fix now. | [app.js:1385](../src/app/app.js#L1385), [app.js:1631](../src/app/app.js#L1631) |
 | D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. | [app.js:1634-1635](../src/app/app.js#L1634-L1635) |
-| D8 | ⚪ | The 3D loader has cases for `nrf52840` and `bme280`, which aren't in the data. Parts that are in the data (`l298n`, `ams1117`, `nrf24l01`) all fall back to a plain 8-pin chip. | [three-viewer.js:739-770](../src/engines/three-viewer/index.js#L739-L770) |
+| D8 | ⚪ | The 3D loader has cases for `nrf52840` and `bme280`, which aren't in the data. Parts that are in the data (`l298n`, `ams1117`, `nrf24l01`) all fall back to a plain 8-pin chip. _ESLint found more: 4 finished models (`buildArduinoUno`, `buildResistor`, `buildCapacitor`, `buildLED`) are never called, so they can never be shown._ | [three-viewer.js:739-770](../src/engines/three-viewer/index.js#L739-L770), [three-viewer.js:423](../src/engines/three-viewer/index.js#L423), [:553](../src/engines/three-viewer/index.js#L553), [:590](../src/engines/three-viewer/index.js#L590), [:628](../src/engines/three-viewer/index.js#L628) |
 | D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
+| D10 | ⚪ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ | [app.js:1704](../src/app/app.js#L1704) |
+| D11 | 🟡 | **Chip names are never drawn on the 3D chips.** `buildDIP` and `buildQFP` take a `label` (e.g. "ATmega328P") but never use it. _Found by ESLint._ | [three-viewer.js:295](../src/engines/three-viewer/index.js#L295), [three-viewer.js:368](../src/engines/three-viewer/index.js#L368) |
+| D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:827-828](../src/engines/simulator/index.js#L827-L828) |
 
 ### E. Cleanup / project health
 
@@ -102,8 +105,10 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E5 | ⚪ | The notifications panel shows fake hardcoded messages ("Just now", "3 mins ago"). |
 | E6 | 🟡 | `npm audit`: 3 known security issues in dev tools — `nanoid` (high), `postcss` (high), `esbuild`/`vite 5.4.21` (moderate). These only affect the dev machine, not visitors. |
 | E7 | 🟡 | Three.js **r128** (from 2021) is loaded from a CDN. It's old, and the app needs the internet to work. |
-| E8 | 🟡 | No git, no README, no linter, no tests. _Update: git, README and smoke tests added. Linter pending (`chore/eslint-setup`)._ |
+| E8 | ✅ | No git, no README, no linter, no tests. _Fixed: git, README, smoke tests (`npm run test:smoke`) and ESLint (`npm run lint`) added._ |
 | E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
+| E10 | ⚪ | **GSAP and ScrollTrigger are downloaded on every page load but never used** by any code. That's wasted network and load time. _Found while setting up ESLint._ |
+| E11 | ⚪ | **27 lint warnings** (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
 
 ---
 
@@ -196,7 +201,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 ### Phase 6 — Make it professional (half a day) → fixes E8
 
 1. **README.md**: what the app is, how to run it, the folder map, screenshots.
-2. **Linter + formatter**: `npm i -D eslint prettier`. An ESLint `no-undef` rule would have caught bug A1 instantly.
+2. ✅ **Linter**: ESLint 10 with the recommended rules (`npm run lint`). New mistakes are errors; the 27 known leftovers are capped warnings (E11). _Correction:_ ESLint **can't** catch A1-type bugs while files share names through `window`, because it can't tell a loaded file from a forgotten one. The smoke tests catch them at runtime, and moving to real `import`/`export` (the `refactor/split-*` branches) will make them build errors. Prettier is postponed until after the refactor, so it doesn't cause merge conflicts in every fix branch.
 3. ✅ **Smoke test**: Playwright tests that open every screen, search, send an AI message and press shortcuts, and **fail if any error appears**. Run with `npm run test:smoke`. Known bugs are tracked as expected failures.
 4. **Version control:** one branch per issue, merged through Pull Requests. See [GIT_WORKFLOW.md](GIT_WORKFLOW.md) for the full branch plan.
 
