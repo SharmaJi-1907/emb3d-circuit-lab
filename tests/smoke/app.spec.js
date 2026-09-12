@@ -15,14 +15,6 @@ function knownBug(...codes) {
   test.fail(true, `Known bug ${codes.join(', ')} — see docs/FIX_PLAN.md`);
 }
 
-// Screens that currently crash when opened. The root cause of all four is A1 (data.js not loaded).
-const VIEW_BUGS = {
-  viewer: ['A2'],
-  boards: ['A4'],
-  datasheet: ['A5'],
-  projects: ['A6'],
-};
-
 /* ── Boot ─────────────────────────────────────────────────────── */
 test('app boots without errors', async ({ page, errors }) => {
   await openApp(page);
@@ -32,11 +24,31 @@ test('app boots without errors', async ({ page, errors }) => {
   expectNoErrors(errors);
 });
 
+/* ── Data ─────────────────────────────────────────────────────── */
+test('component data is loaded', async ({ page, errors }) => {
+  await openApp(page);
+
+  const data = await page.evaluate(() => {
+    const d = window.CircuitLabData;
+    if (!d) return null;
+    return {
+      components: d.components?.length ?? 0,
+      boards: Object.keys(d.boards ?? {}).length,
+      datasheets: d.datasheets?.length ?? 0,
+      projects: d.projects?.length ?? 0,
+      aiResponses: Object.keys(d.aiResponses ?? {}).length,
+    };
+  });
+  expect(data, 'window.CircuitLabData should exist (src/data/data.js imported in src/main.js)').not.toBeNull();
+  for (const [key, count] of Object.entries(data)) {
+    expect(count, `${key} should not be empty`).toBeGreaterThan(0);
+  }
+  expectNoErrors(errors);
+});
+
 /* ── Every screen ─────────────────────────────────────────────── */
 for (const view of VIEWS) {
   test(`opens the ${view} screen`, async ({ page, errors }) => {
-    if (VIEW_BUGS[view]) knownBug(...VIEW_BUGS[view]);
-
     await openApp(page);
     await goToView(page, view);
     await settle(page);
@@ -51,8 +63,6 @@ for (const view of VIEWS) {
 
 /* ── Search ───────────────────────────────────────────────────── */
 test('search finds a component', async ({ page, errors }) => {
-  knownBug('A7');
-
   await openApp(page);
   await page.keyboard.press('Control+k');
   const input = page.locator('#modal-search-input');
@@ -64,8 +74,22 @@ test('search finds a component', async ({ page, errors }) => {
 });
 
 /* ── AI assistant ─────────────────────────────────────────────── */
+// Calls the answer engine directly, so it is tested separately from the Send button (B1/B3).
+// Answer quality is D1 and is not checked here.
+test('AI answer engine replies without errors', async ({ page, errors }) => {
+  await openApp(page);
+  await page.evaluate(() => window.CircuitApp.sendAIMessage('how does an esp32 work'));
+
+  await expect
+    .poll(() => page.evaluate(() => window.CircuitApp.getState().aiMessages.filter((m) => m.role === 'assistant').length), {
+      message: 'an assistant reply should be added',
+    })
+    .toBeGreaterThan(0);
+  expectNoErrors(errors);
+});
+
 test('AI assistant replies to a question', async ({ page, errors }) => {
-  knownBug('A8', 'B1', 'B3');
+  knownBug('B1', 'B3');
 
   const question = 'how does an esp32 work';
   await openApp(page);
