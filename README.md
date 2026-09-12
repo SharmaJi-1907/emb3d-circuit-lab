@@ -16,6 +16,8 @@ npm run dev       # http://localhost:3000
 | `npm run dev` | Start the dev server with live reload |
 | `npm run build` | Build the production site into `dist/` |
 | `npm run preview` | Serve the `dist/` build locally |
+| `npm test` | Run lint, then the smoke tests (use before every commit) |
+| `npm run lint` | Check the code for mistakes with ESLint |
 | `npm run test:smoke` | Run the browser smoke tests (Playwright) |
 | `npm run test:report` | Open the last test report |
 
