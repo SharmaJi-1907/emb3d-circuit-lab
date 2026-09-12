@@ -3,7 +3,10 @@
 ## Workflow
 
 1. Make **one** focused change.
-2. Run the app (`npm run dev`) and open the browser console (F12). There must be **no red errors** on the screens you touched.
+2. Run `npm test` (lint and smoke tests). It must pass.
+3. Run the app (`npm run dev`) and open the browser console (F12). There must be **no red errors** on the screens you touched.
+
+Tip: install the **ESLint** extension in VS Code to see lint problems as you type.
 
 ## Version control
 

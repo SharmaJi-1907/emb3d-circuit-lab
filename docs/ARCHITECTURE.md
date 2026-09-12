@@ -32,6 +32,7 @@ emmb3d/
 │   │   ├── components/        buttons, panels, modals, toasts
 │   │   └── views/             per-screen styles
 │   └── assets/                fonts, models, images imported by code
+├── eslint.config.js           Lint rules, allowed globals, ignored folders
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
 ├── tests/
 │   ├── smoke/                 Playwright browser tests
@@ -57,7 +58,9 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 > ⚠️ `data/data.js` (`window.CircuitLabData`) is **not imported yet**. This is bug A1 in [FIX_PLAN.md](FIX_PLAN.md).
 
-Three.js and GSAP are currently loaded from a CDN in `index.html` as globals (`window.THREE`, `window.gsap`).
+Three.js and GSAP are currently loaded from a CDN in `index.html` as globals (`window.THREE`, `window.gsap`). GSAP isn't used by any code (E10).
+
+The cross-file globals are declared for ESLint in [eslint.config.js](../eslint.config.js). Only `app/app.js` reads them by bare name.
 
 ## Dependency rules (target)
 

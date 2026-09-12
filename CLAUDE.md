@@ -4,17 +4,19 @@ Instructions for Claude Code when working in this repository.
 
 ## Project
 
-CircuitLab (`emb3d-circuit-lab`): a browser electronics lab with a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant. Vanilla JS, Vite 5, Three.js r128 + GSAP from CDN, Canvas 2D. No framework.
+CircuitLab (`emb3d-circuit-lab`): a browser electronics lab with a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant. Vanilla JS, Vite 5, Three.js r128 from CDN (GSAP is also loaded but unused, E10), Canvas 2D. No framework.
 
 ```bash
 npm run dev          # http://localhost:3000
 npm run build        # → dist/
 npm run preview
-npm run test:smoke   # browser smoke tests
+npm test             # lint + smoke tests
+npm run lint         # ESLint only
+npm run test:smoke   # browser smoke tests only
 ```
 
 - Folder map and dependency rules: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Known bugs (codes A1…E9) and fix steps: [docs/FIX_PLAN.md](docs/FIX_PLAN.md)
+- Known bugs (codes A1…E11) and fix steps: [docs/FIX_PLAN.md](docs/FIX_PLAN.md)
 - Branch rules, commit format and branch plan: [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md)
 
 ## Git: the user runs every git command
@@ -28,28 +30,45 @@ npm run test:smoke   # browser smoke tests
 ## Workflow for each issue
 
 1. Check the branch with `git branch --show-current`. If it's `main`, **stop** and give the user the branch command from the branch plan. Don't edit code on `main`.
-2. Work on **only** the issue(s) this branch is for, as listed in the branch plan. Note anything else you notice, but don't fix it here.
-3. Fix the root cause and keep the change as small as possible.
-4. Test it:
+2. **Analyse first, then wait for "go".** Before changing anything, present:
+   - what the branch does and why
+   - findings, verified by running or reading the code (never guessed)
+   - constraints
+   - the test plan
+   - a "done when" checklist
+
+   Edit no files until the user says go.
+3. Work on **only** the issue(s) this branch is for, as listed in the branch plan. Note anything else you notice (add it to FIX_PLAN), but don't fix it here.
+4. Fix the root cause and keep the change as small as possible.
+5. Verify, test and validate:
+   - `npm test` must pass (lint and smoke tests; see **Tests** below).
    - `npm run build` must succeed.
-   - `npm run test:smoke` must end in "passed" with no unexpected results (see **Tests** below).
-   - `npm run lint` must pass, once `chore/eslint-setup` is merged.
-   - Add or extend a test that **fails before the fix and passes after it**.
+   - Add or extend a test that **fails before the fix and passes after it**, and prove both.
    - Report the before and after results honestly. If something still fails, say so.
-5. Update the docs:
+6. Update the docs:
    - Mark the issue ✅ in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
    - Set the branch status in [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md).
    - Add a line under **Unreleased** in [CHANGELOG.md](CHANGELOG.md).
    - Update [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) if files moved or the load order changed.
-6. Give the user the commit commands, split into logical commits, then the push/PR/merge steps.
-7. After the user confirms the merge, give the commands to start the next branch in the plan.
+7. Present the results. Include **how the user can verify it themselves**, the commit commands split into logical commits, the PR title and description, and the push/merge steps.
+8. After the user confirms the merge, give the commands to start the next branch in the plan.
 
 ## Tests
 
 ```bash
+npm test              # lint, then smoke tests
+npm run lint          # ESLint 10 (eslint.config.js)
 npm run test:smoke    # Playwright smoke tests (tests/smoke/)
 npm run test:report   # open the HTML report
 ```
+
+**Lint**
+- New mistakes (undefined names, duplicate keys, unreachable code…) are **errors**.
+- Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 27, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
+- Cross-file `window` globals are declared only for `src/app/app.js` in [eslint.config.js](eslint.config.js). If another file starts using one by bare name, declare it there for that file.
+- `legacy/`, `dist/` and test output are ignored.
+
+**Smoke tests**
 
 - Uses the locally installed Google Chrome (`channel: 'chrome'` in [playwright.config.js](playwright.config.js)). It starts the dev server on port 3000 itself, or reuses one that's already running.
 - A test fails on any uncaught exception or `console.error`. Known noise is listed in `IGNORED_CONSOLE_ERRORS` in [tests/smoke/helpers.js](tests/smoke/helpers.js), tagged with its issue code. Remove an entry when that issue is fixed.

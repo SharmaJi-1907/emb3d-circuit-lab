@@ -142,7 +142,7 @@ The chips aren't loaded from model files. They're **built from boxes and cylinde
 | What happened | Lesson |
 |---|---|
 | The page was designed for the old code, then the code was swapped for a new version without updating the page | When you replace a big file, check what it depends on (IDs, data, globals) |
-| `data.js` was forgotten in `main.js` | Use a linter (ESLint `no-undef`). It warns "`CircuitLabData` is not defined" before you even run the app |
+| `data.js` was forgotten in `main.js` | Run tests that open every screen (`npm run test:smoke`), and prefer real `import`/`export` over `window` globals so a missing file breaks the build. A linter alone can't catch this while files share names through `window`. |
 | Old files (`script.js`, `database.js`) were left behind | Delete dead code once anything useful has been copied out of it |
 | There was no git and no tests | Commit often. One small automated test that opens each screen would catch all the crashes |
 
@@ -155,6 +155,8 @@ npm install        # install dev tools (Vite)
 npm run dev        # start dev server → http://localhost:3000
 npm run build      # build the finished site → dist/
 npm run preview    # serve the dist/ build to test it
+npm run lint       # check the code for mistakes without running it
+npm test           # lint + smoke tests (run before every commit)
 npm run test:smoke # open every screen in Chrome, fail on any error
 npm run test:report # view the last test run in the browser
 npm audit          # check dependencies for known security issues
