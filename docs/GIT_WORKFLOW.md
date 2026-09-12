@@ -53,9 +53,8 @@ git switch -c fix/short-description
 ### 2. Make the fix and test it
 ```bash
 npm run dev          # check it in the browser, with the console (F12) open
-npm run test:smoke   # must end in "passed" with no unexpected results
-npm run test:report  # optional: open the visual report
-npm run lint         # after chore/eslint-setup is merged
+npm test             # lint + smoke tests; must finish with no errors
+npm run test:report  # optional: open the visual test report
 ```
 
 ### 3. Commit
@@ -88,7 +87,7 @@ Then start the next issue at step 1.
 - [ ] Branch fixes **one** issue (reference its code, e.g. `A1`, from [FIX_PLAN.md](FIX_PLAN.md))
 - [ ] App runs with no red errors in the browser console
 - [ ] `npm run test:smoke` passes, and any `knownBug()` marker for the fixed issue has been removed
-- [ ] `npm run lint` passes (once it exists)
+- [ ] `npm run lint` passes. If this branch removed warnings, `--max-warnings` in `package.json` is lowered to the new count.
 - [ ] [FIX_PLAN.md](FIX_PLAN.md) status and [CHANGELOG.md](../CHANGELOG.md) updated
 - [ ] No secrets, no `dist/`, no `node_modules/`
 
@@ -118,7 +117,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 |---|---|---|---|
 | 0 | `docs/workflow-guides` | This guide, CLAUDE.md, PR template | ✅ |
 | 1 | `test/smoke-tests` | Browser test: open every view, fail on any error | ✅ |
-| 2 | `chore/eslint-setup` | Linter to catch undefined names | ⏳ |
+| 2 | `chore/eslint-setup` | Linter: catch mistakes before running | ✅ |
 | 3 | `fix/load-component-data` | A1–A8 — stops all crashes | ⏳ |
 | 4 | `fix/keyboard-shortcuts` | D2 | ⏳ |
 | 5 | `chore/remove-legacy-code` | E1 | ⏳ |
@@ -128,16 +127,16 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 9 | `fix/viewer-component-list` | B4, C1 (part list) | ⏳ |
 | 10 | `fix/viewer-pin-panel` | B5–B7 | ⏳ |
 | 11 | `fix/viewer-toolbar` | C1 (toolbar) | ⏳ |
-| 12 | `fix/simulator-controls` | C2, B9 | ⏳ |
+| 12 | `fix/simulator-controls` | C2, B9, D12 | ⏳ |
 | 13 | `fix/simulator-init-once` | D3, D5 | ⏳ |
-| 14 | `fix/database-view` | C3 | ⏳ |
+| 14 | `fix/database-view` | C3, B8, D10 (reuse the component-library code) | ⏳ |
 | 15 | `fix/projects-view` | C4 | ⏳ |
 | 16 | `fix/settings-theme` | C5 | ⏳ |
 | 17 | `fix/topbar-panels` | C6 | ⏳ |
 | 18 | `fix/single-background` | D4 | ⏳ |
 | 19 | `feat/hash-routing` | D9 | ⏳ |
-| 20 | `fix/3d-model-mapping` | D8 | ⏳ |
-| 21 | `chore/cleanup-assets` | E2–E5 | ⏳ |
+| 20 | `fix/3d-model-mapping` | D8, D11 | ⏳ |
+| 21 | `chore/cleanup-assets` | E2–E5, E10 | ⏳ |
 | 22 | `chore/update-dependencies` | E6 | ⏳ |
 | 23+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
 

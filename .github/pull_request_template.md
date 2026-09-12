@@ -13,7 +13,7 @@ Fixes:
 - [ ] No red errors in the browser console on the affected screens
 - [ ] Smoke tests pass (`npm run test:smoke`)
 - [ ] `knownBug()` markers removed for the issues this PR fixes
-- [ ] Lint passes (`npm run lint`, once available)
+- [ ] Lint passes (`npm run lint`), and `--max-warnings` is lowered if warnings were removed
 
 ## Checklist
 
