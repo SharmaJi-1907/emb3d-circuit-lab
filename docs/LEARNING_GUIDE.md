@@ -46,11 +46,10 @@ index.html  ── the page: all 8 screens, buttons, panels (each with an id="..
       src/main.js ── the entry point: imports everything in order
          ├─ styles/main.css                   how it looks
          ├─ engines/background/circuit-bg.js  animated background
+         ├─ data/data.js                      all the data   → window.CircuitLabData
          ├─ engines/three-viewer/index.js     3D engine      → window.ThreeViewer
          ├─ engines/simulator/index.js        circuit engine → window.CircuitSimulator
          └─ app/app.js                        the "brain"    → window.CircuitApp
-                                              uses window.CircuitLabData … which comes from
-                                              data/data.js ← NOT IMPORTED  ❌  (bug A1)
 
       legacy/script.js    ── OLD brain from an earlier version. Not loaded anywhere. ⚠️
       legacy/database.js  ── OLD data, only used by legacy/script.js. ⚠️
@@ -58,7 +57,7 @@ index.html  ── the page: all 8 screens, buttons, panels (each with an id="..
 
 For the full folder map, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Key idea:** each JS file puts one object on `window` (the browser's global scope), and the other files use it by name. If a file is never loaded, its object doesn't exist. That's exactly why most screens crash.
+**Key idea:** each JS file puts one object on `window` (the browser's global scope), and the other files use it by name. If a file is never loaded, its object doesn't exist. That's exactly why most screens crashed until branch #3 added the missing `data/data.js` line (bug A1).
 
 ---
 
