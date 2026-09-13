@@ -733,6 +733,7 @@ window.ThreeViewer = (function () {
       scene.remove(currentModel);
       currentModel = null;
     }
+    explodeMode = false; // a new model starts assembled
 
     // Build model based on component
     let model;
@@ -921,9 +922,11 @@ window.ThreeViewer = (function () {
     if (!currentModel) return;
     const children = currentModel.children;
     children.forEach((child, i) => {
-      const targetY = enabled ? child.userData.origY + (i % 3 - 1) * 0.3 : child.userData.origY || 0;
-      if (!child.userData.origY) child.userData.origY = child.position.y;
-      // Animate
+      // Remember the resting position before using it (0 is a valid position, so check for undefined).
+      if (child.userData.origY === undefined) child.userData.origY = child.position.y;
+      const targetY = enabled ? child.userData.origY + (i % 3 - 1) * 0.3 : child.userData.origY;
+      // Animate (stop any animation still running from a quick earlier toggle, so they don't fight)
+      clearInterval(child.userData.explodeAnim);
       let t = 0;
       const startY = child.position.y;
       const anim = setInterval(() => {
@@ -931,7 +934,15 @@ window.ThreeViewer = (function () {
         child.position.y = startY + (targetY - startY) * Math.min(1, t);
         if (t >= 1) clearInterval(anim);
       }, 16);
+      child.userData.explodeAnim = anim;
     });
+  }
+
+  // Bounding box of the current model ({ min, max } as [x, y, z]), or null when nothing is loaded.
+  function getModelBounds() {
+    if (!currentModel) return null;
+    const box = new THREE.Box3().setFromObject(currentModel);
+    return { min: box.min.toArray(), max: box.max.toArray() };
   }
 
   function setAutoRotate(enabled) {
@@ -997,5 +1008,8 @@ window.ThreeViewer = (function () {
     onMouseClick,
     onResize,
     isReady: () => isInitialized,
+    isWireframe: () => wireframeMode,
+    isExploded: () => explodeMode,
+    getModelBounds,
   };
 })();

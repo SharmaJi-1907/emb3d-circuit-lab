@@ -180,9 +180,12 @@ window.CircuitApp = (function () {
   /* ── Navigation ─────────────────────────────────────────────── */
   function initNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         const view = item.dataset.view;
         if (view) navigateTo(view);
+        // After a mouse click, drop focus so Space goes to the screen's shortcut, not this button.
+        // Keyboard activation (e.detail === 0) keeps focus for keyboard users.
+        if (e.detail > 0) item.blur();
       });
     });
 
@@ -1530,26 +1533,13 @@ Could you be more specific about what you're trying to build? For example:
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (isTextField(e.target)) return;
+      const key = e.key.toLowerCase();
 
-      const shortcuts = {
-        '1': 'dashboard',
-        '2': 'components',
-        '3': 'viewer',
-        '4': 'simulator',
-        '5': 'boards',
-        '6': 'datasheet',
-        '7': 'ai',
-        '8': 'projects',
-      };
-
-      if (shortcuts[e.key]) {
-        navigateTo(shortcuts[e.key]);
-      }
-
-      if (e.key === '/' || (e.ctrlKey && e.key === 'k')) {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && key === 'k') {
         e.preventDefault();
         showSearchModal();
+        return;
       }
 
       if (e.key === 'Escape') {
@@ -1557,8 +1547,48 @@ Could you be more specific about what you're trying to build? For example:
         if (shortcutsModal) {
           shortcutsModal.classList.add('hidden');
         }
+        return;
+      }
+
+      // Leave browser shortcuts (Ctrl+3, Alt+←, …) alone, and ignore auto-repeat from a held key.
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+
+      // 1–8: screens in sidebar order
+      const views = [...document.querySelectorAll('.nav-item')].map(item => item.dataset.view);
+      if (/^[1-9]$/.test(e.key) && views[Number(e.key) - 1]) {
+        navigateTo(views[Number(e.key) - 1]);
+        return;
+      }
+
+      if (e.key === '/') {
+        e.preventDefault();
+        showSearchModal();
+        return;
+      }
+
+      if (e.key === '?') {
+        if (shortcutsModal) shortcutsModal.classList.remove('hidden');
+        return;
+      }
+
+      if (state.currentView === 'viewer' && window.ThreeViewer && ThreeViewer.isReady()) {
+        if (key === 'w') ThreeViewer.setWireframe(!ThreeViewer.isWireframe());
+        if (key === 'e') ThreeViewer.setExplode(!ThreeViewer.isExploded());
+        if (key === 'r') ThreeViewer.resetView();
+        return;
+      }
+
+      // Space on a focused button or link must still press it.
+      if (state.currentView === 'simulator' && e.key === ' ' && !e.target.closest('button, a, [role="button"]')) {
+        e.preventDefault();
+        if (CircuitSimulator.isRunning()) CircuitSimulator.stopSim();
+        else CircuitSimulator.startSim();
       }
     });
+  }
+
+  function isTextField(el) {
+    return el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
   }
 
   /* ── Notifications ──────────────────────────────────────────── */

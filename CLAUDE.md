@@ -64,7 +64,7 @@ npm run test:report   # open the HTML report
 
 **Lint**
 - New mistakes (undefined names, duplicate keys, unreachable code…) are **errors**.
-- Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 27, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
+- Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 25, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
 - Cross-file `window` globals are declared only for `src/app/app.js` in [eslint.config.js](eslint.config.js). If another file starts using one by bare name, declare it there for that file.
 - `legacy/`, `dist/` and test output are ignored.
 
@@ -72,7 +72,11 @@ npm run test:report   # open the HTML report
 
 - Uses the locally installed Google Chrome (`channel: 'chrome'` in [playwright.config.js](playwright.config.js)). It starts the dev server on port 3000 itself, or reuses one that's already running.
 - A test fails on any uncaught exception or `console.error`. Known noise is listed in `IGNORED_CONSOLE_ERRORS` in [tests/smoke/helpers.js](tests/smoke/helpers.js), tagged with its issue code. Remove an entry when that issue is fixed.
-- Known bugs are marked `knownBug('<code>')` in [tests/smoke/app.spec.js](tests/smoke/app.spec.js) and are **expected to fail**. When a fix makes one pass, Playwright reports "Expected to fail, but passed". Remove that marker in the same branch as the fix. Never add a `knownBug()` just to hide a new failure.
+- Known bugs are marked `knownBug('<code>')` in the spec files and are **expected to fail**. When a fix makes one pass, Playwright reports "Expected to fail, but passed". Remove that marker in the same branch as the fix. Never add a `knownBug()` just to hide a new failure.
+- Files: `app.spec.js` (screens, data, search, AI), `keyboard.spec.js` (shortcuts, explode).
+- **Wait for conditions, not fixed times.** Headless Chrome renders 3D in software, so timers and animations run several times slower under load. Use `expect.poll` or `expect(locator)` waits, and use `settle()` only to let pending timers fire.
+- **3D checks use model data, not pixels.** Use `modelSize()` / `waitForStableModel()` from `helpers.js` (built on `ThreeViewer.getModelBounds()`). Colour and pixel counts change with camera angle and lighting, and proved flaky.
+- Before merging a branch that touches tests, run `npx playwright test tests/smoke --repeat-each=4` and expect **0 unexpected**.
 
 ## Code rules
 

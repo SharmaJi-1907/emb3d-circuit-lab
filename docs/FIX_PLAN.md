@@ -14,7 +14,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 |---|---|
 | App loads, background animates | ✅ Works |
 | Left menu switches screens | ✅ Works |
-| 3D viewer | ⚠️ Part is shown, but the layout is unstyled (F1) and the controls don't work (C1) |
+| 3D viewer | ⚠️ Empty at first load (D15). The part shows after reopening the Viewer. Layout unstyled (F1), toolbar buttons dead (C1). W/E/R keys work. |
 | Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
 | Component Database | ❌ Empty |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
@@ -23,7 +23,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Projects | ✅ Shows 6 projects ("New project" button still dead, C4) |
 | Search (Ctrl+K) | ✅ Works |
 | Settings (dark mode) | ❌ Button does nothing |
-| Keyboard shortcuts | ❌ Most don't work |
+| Keyboard shortcuts | ✅ Every listed shortcut works (1–8, / Ctrl/⌘ K, ?, W, E, R, Space, Esc) |
 
 _Status updated after branch #3 (`fix/load-component-data`): no screen throws an error any more._
 
@@ -84,7 +84,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | # | Sev | Problem | Where |
 |---|---|---|---|
 | D1 | 🟠 | **AI always gives the wrong answer.** It matches only the first or second word of each stored question. Any message with "what" gets the LED-resistor answer; anything with "how" or "do" gets the I2C answer. Example: _"how does an esp32 work"_ → I2C wiring guide. | [app.js:1429-1434](../src/app/app.js#L1429-L1434) |
-| D2 | 🟠 | **Keyboard shortcuts are wrong.** Keys `1` and `2` go to "dashboard" and "components", which don't exist, so you get a blank screen. The shortcuts shown to the user (`W`, `E`, `R`, `Space`) are not coded at all. | [app.js:1535-1544](../src/app/app.js#L1535-L1544) |
+| D2 | ✅ | **Keyboard shortcuts are wrong.** Keys `1` and `2` go to "dashboard" and "components", which don't exist, so you get a blank screen. The shortcuts shown to the user (`W`, `E`, `R`, `Space`) are not coded at all. _Also found: ⌘K didn't work, Ctrl+3 (a browser shortcut) switched screens, `?` couldn't open the list, and Space re-clicked the focused sidebar button._ **Fixed in #4:** `1–8` follow the sidebar order; `W`/`E`/`R` work on the Viewer; `Space` works on the Simulator; `?` opens the list; Ctrl/⌘+K and `/` open search; keys are ignored while typing, with Ctrl/⌘/Alt, and on auto-repeat. Both shortcut lists now show every key. | [app.js:1526](../src/app/app.js#L1526) |
 | D3 | 🟠 | **Simulator gets set up again on every visit.** Each time you open the Simulator screen, it adds another set of mouse handlers and another endless drawing loop. After 5 visits one click adds 5 parts, and the CPU use keeps growing. | [app.js:866-878](../src/app/app.js#L866-L878), [simulator.js:626-652](../src/engines/simulator/index.js#L626-L652) |
 | D4 | 🟡 | **Two background animations draw on the same canvas** (`circuit-bg`), which uses double the CPU and can flicker. | [app.js:87](../src/app/app.js#L87) and [circuit-bg.js:188](../src/engines/background/circuit-bg.js#L188) |
 | D5 | 🟡 | 3D and simulator drawing loops keep running when their screen is hidden, which wastes battery. _ESLint confirms: `animationId` and `animId` are stored but never used to cancel the loops._ | [three-viewer.js:957](../src/engines/three-viewer/index.js#L957), [simulator.js:908](../src/engines/simulator/index.js#L908) |
@@ -95,6 +95,9 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D10 | ⚪ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ | [app.js:1704](../src/app/app.js#L1704) |
 | D11 | 🟡 | **Chip names are never drawn on the 3D chips.** `buildDIP` and `buildQFP` take a `label` (e.g. "ATmega328P") but never use it. _Found by ESLint._ | [three-viewer.js:295](../src/engines/three-viewer/index.js#L295), [three-viewer.js:368](../src/engines/three-viewer/index.js#L368) |
 | D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:827-828](../src/engines/simulator/index.js#L827-L828) |
+| D13 | ✅ | **Explode destroyed the 3D model.** The target position was calculated from the saved position **before** it was saved (`undefined + 0.3 = NaN`), so the parts vanished and never came back. Toggling quickly also made two animations fight (parts bounced). _Found in #4._ **Fixed in #4:** save first (checking for `undefined`, since 0 is valid), and stop the previous animation before starting a new one. | [three-viewer.js:920](../src/engines/three-viewer/index.js#L920) |
+| D14 | 🟡 | The search popup footer shows **↑↓ Navigate** and **↵ Select**, but those keys do nothing (only Esc is handled). _Found in #4._ | [app.js:314](../src/app/app.js#L314) |
+| D15 | 🟠 | **The 3D Viewer is empty when the app first opens.** At startup the app asks for the model before the 3D engine is ready (the engine starts 300 ms later), and nothing asks again. The chip only appears after leaving and returning to the Viewer. _Found in #4 (`getModelBounds()` returns `null` at first load)._ | [app.js:635](../src/app/app.js#L635), [app.js:70](../src/app/app.js#L70) |
 
 ### E. Cleanup / project health
 
@@ -110,7 +113,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E8 | ✅ | No git, no README, no linter, no tests. _Fixed: git, README, smoke tests (`npm run test:smoke`) and ESLint (`npm run lint`) added._ |
 | E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
 | E10 | ⚪ | **GSAP and ScrollTrigger are downloaded on every page load but never used** by any code. That's wasted network and load time. _Found while setting up ESLint._ |
-| E11 | ⚪ | **27 lint warnings** (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
+| E11 | ⚪ | **27 lint warnings** (25 after #4) (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
 
 ### F. Page layout and CSS don't match
 
@@ -139,7 +142,7 @@ Do the phases **in order**. Each phase ends with a check, so you always know it 
    import './data/data.js';
    ```
 2. ~~Guard against "nothing selected"~~. **Not needed:** fixing A1 removes A2. See A2 above.
-3. **Fix the keyboard map** (branch #4). In [app.js:1535](../src/app/app.js#L1535), change the keys to the screens that really exist:
+3. ✅ **Fix the keyboard map** (branch #4). Keys `1–8` now follow the sidebar order:
    `1 viewer · 2 simulator · 3 database · 4 boards · 5 datasheet · 6 ai · 7 projects · 8 settings`.
 
 ✅ **Check:** run `npm run dev`, open the browser console (F12), and click every menu item. There should be **zero red errors**, and a 3D chip should appear in the viewer.
