@@ -16,7 +16,7 @@ npm run test:smoke   # browser smoke tests only
 ```
 
 - Folder map and dependency rules: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Known bugs (codes A1…F1) and fix steps: [docs/FIX_PLAN.md](docs/FIX_PLAN.md)
+- Known bugs (codes A1…F6) and fix steps: [docs/FIX_PLAN.md](docs/FIX_PLAN.md)
 - Branch rules, commit format and branch plan: [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md)
 
 ## Git: the user runs every git command
@@ -80,13 +80,15 @@ npm run test:report   # open the HTML report
 
 ## Code rules
 
-- `index.html` is the source of truth for element IDs. Change the JS to match it, not the other way round. **Under review (F1):** the CSS matches the JS rather than `index.html`, so the direction will be decided per screen (ADR 0002) before branch #6. Until then, don't rename IDs on either side.
+- **Page markup follows [ADR 0002](docs/decisions/0002-screen-markup.md), per screen.**
+  - **Viewer, Database (→ Component Library) and Dashboard** use the markup that `app.js` and `main.css` expect. Change `index.html` to match them.
+  - **All other screens** (Simulator, Boards, Datasheet, AI, Projects, Settings, sidebar, top bar) keep `index.html`. Change the JS or CSS to match the page.
 - Modules currently talk through `window` globals (`CircuitApp`, `ThreeViewer`, `CircuitSimulator`, `CircuitLabData`). Every file must be imported in [src/main.js](src/main.js) in dependency order.
 - Wire each button once, on the first visit to a screen, never on every visit.
 - Escape user text before putting it into `innerHTML`.
 - No secrets or API keys in browser code.
 - Match the existing style: 2-space indent, IIFE modules, `/* ── Section ── */` comment headers.
-- Don't edit `dist/` (generated) or `node_modules/`. `legacy/` is reference-only until `chore/remove-legacy-code`.
+- Don't edit `dist/` (generated) or `node_modules/`. `legacy/` is reference-only and is deleted in `chore/remove-legacy-code`. The old data worth restoring later is listed under E1 in FIX_PLAN.
 
 ## Communication
 

@@ -9,6 +9,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
 - Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
 - Lint warning cap lowered from 27 to 25.
+- Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
 - `README.md`, `CHANGELOG.md`, `.editorconfig`, expanded `.gitignore`.
@@ -22,6 +23,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/keyboard.spec.js`: 9 tests covering every keyboard shortcut and the 3D explode fix (22 tests in total).
 - Smoke tests: "3D viewer shows a model at first load" and "loading text is hidden once the model is shown" (24 tests in total).
 - 3D viewer: read-only `isWireframe()`, `isExploded()` and `getModelBounds()`.
+- [ADR 0002](docs/decisions/0002-screen-markup.md): which page markup each screen uses. Includes per-screen measurements and prototype screenshots in `docs/images/`.
 
 ### Fixed
 - The component data (`src/data/data.js`) is now loaded, so the 3D Viewer, Board Explorer, Datasheet Viewer, Projects, Search and the AI answer engine no longer crash (A1–A8). No screen throws an error any more.
@@ -37,6 +39,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The 3D Viewer shows the part as soon as the app opens (it used to stay empty until you reopened it), and the "Rendering 3D Model..." text now hides once the part is drawn (D15).
 ### Found
 - New issues from linting: D8 (4 unused 3D models), D10 (sort ignores its option), D11 (chip labels never drawn), D12 (unused simulator values), E10 (GSAP loaded but unused), E11 (lint warning cap).
-- F1: most of `index.html` has no matching CSS. The CSS and `app.js` were written for a different page layout. A decision is needed before the UI-wiring branches.
+- F1: most of `index.html` has no matching CSS. The CSS and `app.js` were written for a different page layout. Decided in ADR 0002.
+- F2–F6: per-screen styling gaps (shared panels, simulator layout, board explorer, datasheet sidebar, AI message classes).
 - D14: search popup ↑↓/↵ keys do nothing. D15: the 3D Viewer is empty when the app first opens (fixed in #4b).
 - D16: each visit to the 3D Viewer leaks graphics memory (old models are never freed).
