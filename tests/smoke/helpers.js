@@ -54,6 +54,30 @@ export async function settle(page, ms = 300) {
   await page.waitForTimeout(ms);
 }
 
+// Size of the loaded 3D model as [x, y, z], or null if there is no model or its position is broken (NaN).
+export async function modelSize(page) {
+  const bounds = await page.evaluate(() => window.ThreeViewer.getModelBounds());
+  if (!bounds) return null;
+  const size = bounds.max.map((max, i) => max - bounds.min[i]);
+  return size.every((n) => Number.isFinite(n) && n > 0) ? size : null;
+}
+
+// Wait until a 3D model is loaded and its grow-in animation has finished:
+// the same size 3 readings in a row, 300 ms apart. (Timers run slowly in headless Chrome.)
+export async function waitForStableModel(page) {
+  const readings = [];
+  await expect
+    .poll(
+      async () => {
+        readings.push(await modelSize(page));
+        const [a, b, c] = readings.slice(-3);
+        return Boolean(a && b && c && a.every((n, i) => n === b[i] && n === c[i]));
+      },
+      { message: 'a 3D model should finish loading', timeout: 10_000, intervals: [300] },
+    )
+    .toBe(true);
+}
+
 // Fail with the full list of errors, so the report shows exactly what broke.
 export function expectNoErrors(errors) {
   expect(errors, `Page errors:\n${errors.join('\n')}`).toEqual([]);

@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
    Smoke tests — open every screen and use the main features.
+   Keyboard shortcuts are tested in keyboard.spec.js.
    A test fails on any uncaught exception or console.error.
 
    Known bugs are marked with knownBug('<code>'). Those tests are
@@ -101,18 +102,5 @@ test('AI assistant replies to a question', async ({ page, errors }) => {
   const chat = page.locator('#ai-chat-messages');
   await expect(chat).toContainText(question);
   await expect(chat.locator('.ai-message.assistant').first()).toBeVisible();
-  expectNoErrors(errors);
-});
-
-/* ── Keyboard shortcuts ───────────────────────────────────────── */
-test('number keys 1-8 open the matching screens', async ({ page, errors }) => {
-  knownBug('D2');
-
-  await openApp(page);
-  for (const [i, view] of VIEWS.entries()) {
-    await page.locator('body').press(String(i + 1));
-    await expect(page.locator(`#view-${view}`), `key ${i + 1} should open ${view}`).toBeVisible();
-  }
-  await settle(page);
   expectNoErrors(errors);
 });
