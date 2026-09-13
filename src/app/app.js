@@ -76,6 +76,7 @@ window.CircuitApp = (function () {
         viewerCanvas.addEventListener('click', ThreeViewer.onMouseClick);
         document.addEventListener('pin-hover', onPinHover);
         document.addEventListener('pin-select', onPinSelect);
+        showSelectedModel(); // the Viewer was opened before the engine was ready (D15)
       }
     }, 300);
 
@@ -643,9 +644,14 @@ window.CircuitApp = (function () {
     renderViewerSidebar();
     renderPinTable();
 
-    if (window.ThreeViewer && ThreeViewer.isReady()) {
-      ThreeViewer.loadComponent(state.selectedComponent.id);
-    }
+    showSelectedModel();
+  }
+
+  // Draw the selected component in the 3D viewer, once the engine is ready.
+  function showSelectedModel() {
+    if (!state.selectedComponent || !window.ThreeViewer || !ThreeViewer.isReady()) return;
+    ThreeViewer.loadComponent(state.selectedComponent.id);
+    document.getElementById('viewer-loading')?.classList.add('hidden');
   }
 
   function renderViewerSidebar() {
