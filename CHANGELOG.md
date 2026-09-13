@@ -20,6 +20,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ESLint 10 (`npm run lint`) with the recommended rules. New mistakes are errors; the 27 known leftovers are warnings capped with `--max-warnings`. `npm test` now runs lint and smoke tests together.
 - Smoke tests: "component data is loaded" and "AI answer engine replies without errors" (14 tests in total).
 - `tests/smoke/keyboard.spec.js`: 9 tests covering every keyboard shortcut and the 3D explode fix (22 tests in total).
+- Smoke tests: "3D viewer shows a model at first load" and "loading text is hidden once the model is shown" (24 tests in total).
 - 3D viewer: read-only `isWireframe()`, `isExploded()` and `getModelBounds()`.
 
 ### Fixed
@@ -33,7 +34,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - shortcuts are ignored while typing, with Ctrl/⌘/Alt, and on key auto-repeat
   - both shortcut lists show every key
 - Exploding the 3D model no longer makes it vanish, and quick toggling no longer makes the parts bounce (D13).
+- The 3D Viewer shows the part as soon as the app opens (it used to stay empty until you reopened it), and the "Rendering 3D Model..." text now hides once the part is drawn (D15).
 ### Found
 - New issues from linting: D8 (4 unused 3D models), D10 (sort ignores its option), D11 (chip labels never drawn), D12 (unused simulator values), E10 (GSAP loaded but unused), E11 (lint warning cap).
 - F1: most of `index.html` has no matching CSS. The CSS and `app.js` were written for a different page layout. A decision is needed before the UI-wiring branches.
-- D14: search popup ↑↓/↵ keys do nothing. D15: the 3D Viewer is empty when the app first opens.
+- D14: search popup ↑↓/↵ keys do nothing. D15: the 3D Viewer is empty when the app first opens (fixed in #4b).
+- D16: each visit to the 3D Viewer leaks graphics memory (old models are never freed).
