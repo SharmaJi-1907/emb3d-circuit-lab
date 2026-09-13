@@ -10,7 +10,7 @@
    Codes refer to docs/FIX_PLAN.md.
 ═══════════════════════════════════════════════════════════════════ */
 
-import { test, expect, VIEWS, openApp, goToView, settle, expectNoErrors } from './helpers.js';
+import { test, expect, VIEWS, openApp, goToView, settle, expectNoErrors, waitForStableModel } from './helpers.js';
 
 function knownBug(...codes) {
   test.fail(true, `Known bug ${codes.join(', ')} — see docs/FIX_PLAN.md`);
@@ -61,6 +61,21 @@ for (const view of VIEWS) {
     }
   });
 }
+
+/* ── 3D viewer first load ─────────────────────────────────────── */
+test('3D viewer shows a model at first load', async ({ page, errors }) => {
+  await openApp(page);
+  await waitForStableModel(page); // no clicks: the start screen itself must show the part (D15)
+  expectNoErrors(errors);
+});
+
+test('loading text is hidden once the model is shown', async ({ page, errors }) => {
+  await openApp(page);
+  await goToView(page, 'viewer'); // makes sure a model is drawn, so only the text is being tested
+  await waitForStableModel(page);
+  await expect(page.locator('#viewer-loading')).toBeHidden();
+  expectNoErrors(errors);
+});
 
 /* ── Search ───────────────────────────────────────────────────── */
 test('search finds a component', async ({ page, errors }) => {

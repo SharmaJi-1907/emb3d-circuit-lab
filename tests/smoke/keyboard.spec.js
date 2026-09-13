@@ -10,12 +10,6 @@ import {
 
 const currentView = (page) => page.evaluate(() => window.CircuitApp.getState().currentView);
 
-// The 3D model only appears after the Viewer is opened again (D15), so open it before 3D checks.
-async function openViewerWithModel(page) {
-  await goToView(page, 'viewer');
-  await waitForStableModel(page);
-}
-
 /* ── Screens ──────────────────────────────────────────────────── */
 test('number keys 1-8 open the screens in sidebar order', async ({ page, errors }) => {
   await openApp(page);
@@ -76,7 +70,7 @@ test('? opens the shortcuts list and Esc closes it', async ({ page, errors }) =>
 /* ── 3D viewer ────────────────────────────────────────────────── */
 test('W toggles wireframe in the 3D viewer', async ({ page, errors }) => {
   await openApp(page);
-  await openViewerWithModel(page);
+  await waitForStableModel(page); // the Viewer is the start screen
   const wireframe = () => page.evaluate(() => window.ThreeViewer.isWireframe());
 
   await page.locator('body').press('w');
@@ -94,7 +88,7 @@ test('W toggles wireframe in the 3D viewer', async ({ page, errors }) => {
 
 test('E toggles explode in the 3D viewer', async ({ page, errors }) => {
   await openApp(page);
-  await openViewerWithModel(page);
+  await waitForStableModel(page); // the Viewer is the start screen
   const exploded = () => page.evaluate(() => window.ThreeViewer.isExploded());
 
   await page.locator('body').press('e');
@@ -109,7 +103,7 @@ test('E toggles explode in the 3D viewer', async ({ page, errors }) => {
 
 test('exploding and restoring the 3D model keeps it intact (D13)', async ({ page, errors }) => {
   await openApp(page);
-  await openViewerWithModel(page);
+  await waitForStableModel(page); // the Viewer is the start screen
   const before = await modelSize(page);
   expect(before, 'a model should be loaded before the test').not.toBeNull();
 
