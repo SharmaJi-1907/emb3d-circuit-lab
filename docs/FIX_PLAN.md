@@ -14,7 +14,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 |---|---|
 | App loads, background animates | ✅ Works |
 | Left menu switches screens | ✅ Works |
-| 3D viewer | ⚠️ Empty at first load (D15). The part shows after reopening the Viewer. Layout unstyled (F1), toolbar buttons dead (C1). W/E/R keys work. |
+| 3D viewer | ⚠️ Shows the part from the first screen. Layout unstyled (F1), toolbar buttons dead (C1), memory grows on each visit (D16). W/E/R keys work. |
 | Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
 | Component Database | ❌ Empty |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
@@ -97,7 +97,8 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:827-828](../src/engines/simulator/index.js#L827-L828) |
 | D13 | ✅ | **Explode destroyed the 3D model.** The target position was calculated from the saved position **before** it was saved (`undefined + 0.3 = NaN`), so the parts vanished and never came back. Toggling quickly also made two animations fight (parts bounced). _Found in #4._ **Fixed in #4:** save first (checking for `undefined`, since 0 is valid), and stop the previous animation before starting a new one. | [three-viewer.js:920](../src/engines/three-viewer/index.js#L920) |
 | D14 | 🟡 | The search popup footer shows **↑↓ Navigate** and **↵ Select**, but those keys do nothing (only Esc is handled). _Found in #4._ | [app.js:314](../src/app/app.js#L314) |
-| D15 | 🟠 | **The 3D Viewer is empty when the app first opens.** At startup the app asks for the model before the 3D engine is ready (the engine starts 300 ms later), and nothing asks again. The chip only appears after leaving and returning to the Viewer. _Found in #4 (`getModelBounds()` returns `null` at first load)._ | [app.js:635](../src/app/app.js#L635), [app.js:70](../src/app/app.js#L70) |
+| D15 | ✅ | **The 3D Viewer is empty when the app first opens.** At startup the app asks for the model before the 3D engine is ready (the engine starts 300 ms later), and nothing asks again. The chip only appears after leaving and returning to the Viewer. The "Rendering 3D Model..." text also never hid. _Found in #4 (`getModelBounds()` returns `null` at first load)._ **Fixed in #4b:** a `showSelectedModel()` helper draws the part and hides the loading text. It's called when the Viewer opens **and** as soon as the engine is ready. | [app.js:651](../src/app/app.js#L651), [app.js:79](../src/app/app.js#L79) |
+| D16 | 🟡 | **Each visit to the Viewer leaks graphics memory.** Every visit rebuilds the model, and the old one is removed with `scene.remove()` but never freed with `dispose()`. Measured: **2 → 297 geometries after 5 visits** (about 59 per visit). _Found in #4b._ | [three-viewer.js:733](../src/engines/three-viewer/index.js#L733) |
 
 ### E. Cleanup / project health
 
