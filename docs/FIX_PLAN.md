@@ -16,7 +16,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Left menu switches screens | ✅ Works |
 | 3D viewer | ⚠️ Shows the part from the first screen. Layout unstyled (F1), toolbar buttons dead (C1), memory grows on each visit (D16). W/E/R keys work. |
 | Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
-| Component Database | ❌ Empty |
+| Component Database | ❌ Empty (to be replaced by the Component Library, [ADR 0002](decisions/0002-screen-markup.md)) |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
 | Datasheet Viewer | ✅ Shows datasheets |
 | AI Assistant | ❌ Send button does nothing (B1, B3); answers are wrong (D1) |
@@ -27,7 +27,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 
 _Status updated after branch #3 (`fix/load-component-data`): no screen throws an error any more._
 
-**Root cause:** `app.js` and the CSS were written together for a page layout that isn't in this project, and most of `index.html` was built separately (F1). On top of that, `data.js` was never loaded (A1, fixed in #3).
+**Root cause:** `app.js` and the CSS were written together for a page layout that isn't in this project, and most of `index.html` was built separately (F1). On top of that, `data.js` was never loaded (A1, fixed in #3). **Which markup each screen uses is decided in [ADR 0002](decisions/0002-screen-markup.md).**
 
 > **Paths:** this report was written before the restructure. File paths below use the new layout (see [ARCHITECTURE.md](ARCHITECTURE.md)). Line numbers are unchanged, because the files were moved without edits.
 
@@ -54,6 +54,8 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 
 `app.js` asks for these IDs, but `index.html` uses different names. Result: that part of the screen stays empty.
 
+> Per [ADR 0002](decisions/0002-screen-markup.md): **B4–B7** are fixed by switching the Viewer to the new layout (the page gets the IDs the JS expects). **B8** is fixed by adding the Dashboard and showing the Component Library in the Database screen. **B1–B3 and B9** are fixed on the JS side (those screens keep the current page).
+
 | # | Sev | Code looks for | Page actually has | Where in code |
 |---|---|---|---|---|
 | B1 | 🔴 | `ai-chat-area` | `ai-chat-messages` | [app.js:1379](../src/app/app.js#L1379) |
@@ -72,9 +74,9 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 
 | # | Sev | Screen | Dead buttons / panels |
 |---|---|---|---|
-| C1 | 🔴 | 3D Viewer | Part list (`component-list`), filter box (`component-filter`), category buttons, Rotate, Wireframe, Explode, Pins, Reset camera, Screenshot, package switcher, HUD values, pin panel close |
+| C1 | 🔴 | 3D Viewer | Part list (`component-list`), filter box (`component-filter`), category buttons, Rotate, Wireframe, Explode, Pins, Reset camera, Screenshot, package switcher, HUD values, pin panel close. _ADR 0002: replaced by the new layout's working controls (part switcher, Solid/Wire/Explode, auto-rotate, zoom/reset). The package buttons, HUD and screenshot button are dropped (see Future ideas)._ |
 | C2 | 🔴 | Simulator | Run, Pause, Stop, Clear, Export, Speed slider, Upload code, all "Add Resistor / LED / Capacitor / IC / Wire" buttons. The simulator's `startSim()` is **never called** by anything, so a circuit can never run. |
-| C3 | 🔴 | Database | Component grid (`db-components-grid`), Compare button, comparison table |
+| C3 | 🔴 | Database | Component grid (`db-components-grid`), Compare button, comparison table. _ADR 0002: replaced by the Component Library (grid, filters, compare, sort)._ |
 | C4 | 🟠 | Projects | "Create project" button (`create-project-btn`), project grid (`projects-grid`) |
 | C5 | 🟠 | Settings | "Toggle Dark Mode" (`theme-btn-toggle`), top-bar theme toggle |
 | C6 | 🟡 | Top bar | Notifications drawer, "Clear all", shortcuts modal (nothing can open it) |
@@ -104,7 +106,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 
 | # | Sev | Problem |
 |---|---|---|
-| E1 | 🟡 | **Two versions of the app are mixed together.** [legacy/script.js](../legacy/script.js) (old app) and [legacy/database.js](../legacy/database.js) (old data) aren't used by the new app. `script.js` would also crash if loaded: it imports `ThreeViewer` / `CircuitSimulator`, which those files don't export. |
+| E1 | 🟡 | **Two versions of the app are mixed together.** [legacy/script.js](../legacy/script.js) (old app) and [legacy/database.js](../legacy/database.js) (old data) aren't used by the new app. `script.js` would also crash if loaded: it imports `ThreeViewer` / `CircuitSimulator`, which those files don't export. _After ADR 0002 it is no longer needed as a reference, so delete it next. **Old data worth restoring later** (in a different format from `data.js`; restore with `git show 3cd518a:legacy/database.js`): resistor and capacitor entries (for D8's unused models), a description for every Arduino Uno pin, and datasheet electrical tables for 5 parts (Arduino Uno, ESP32, NE555, resistor, capacitor)._ |
 | E2 | 🟡 | `manifest.json` is linked in the HTML but doesn't exist (browser logs a syntax error). `favicon.ico` is missing (404). |
 | E3 | ⚪ | CSS is loaded twice: `<link>` in [index.html:28](../index.html#L28) **and** `import` in [src/main.js](../src/main.js). |
 | E4 | ⚪ | `assets/fonts`, `assets/models`, `assets/icons` are empty folders. |
@@ -122,9 +124,21 @@ _Found in branch #3 by comparing the class and ID names in `index.html`, the CSS
 
 | # | Sev | Problem | Evidence |
 |---|---|---|---|
-| F1 | 🔴 | **`app.js` and the CSS were written together for a page layout that isn't in this project.** Most of `index.html`'s own markup has no styling. This explains the B bugs (missing IDs), the unstyled 3D Viewer and Board Explorer (browser-default buttons, a tiny 3D box), and the "Rendering 3D Model..." text that never goes away. | HTML generated by `app.js`: **126 of 143** classes have CSS rules (88%). HTML written in `index.html`: **38 of 217** (18%). CSS ID rules: **21 of 34** target IDs that don't exist in `index.html` (`#viewer-sidebar`, `#viewer-canvas-area`, `#sim-toolbar`, `#ai-input`…). |
+| F1 | ✅ | **`app.js` and the CSS were written together for a page layout that isn't in this project.** Most of `index.html`'s own markup has no styling. This explains the B bugs (missing IDs), the unstyled 3D Viewer and Board Explorer (browser-default buttons, a tiny 3D box), and the "Rendering 3D Model..." text that never goes away. **Decided in [ADR 0002](decisions/0002-screen-markup.md):** the Viewer and Database switch to the new layout, the Dashboard is added as the home screen, and the other screens keep the current page (F2–F6). | HTML generated by `app.js`: **126 of 143** classes have CSS rules (88%). HTML written in `index.html`: **38 of 217** (18%). CSS ID rules: **21 of 34** target IDs that don't exist in `index.html` (`#viewer-sidebar`, `#viewer-canvas-area`, `#sim-toolbar`, `#ai-input`…). |
+| F2 | 🟠 | **Shared building blocks are unstyled on every current-page screen:** `glass-panel` (22 uses), `panel`, `panel-header`, `panel-title`, `view-title`, `view-subtitle` and the shared buttons have no CSS. | [ADR 0002](decisions/0002-screen-markup.md) measurements |
+| F3 | 🔴 | **Simulator layout is broken:** it's stacked and unstyled, and the breadboard canvas isn't visible. The CSS styles `#sim-toolbar`, `#sim-palette`, `#sim-canvas-area` and `#sim-instruments` as **IDs**, while the page uses those names as **classes**. Only 7 of the CSS's 26 simulator classes appear in the page. | [screenshot](images/f1-simulator-current.png) |
+| F4 | 🟡 | **Board Explorer unstyled.** The page and the JS draw the board on a canvas, but the CSS describes an element-based board (`board-visual`, `board-pin-dot`…). The page's classes (`board-tab`, `pin-filter-btn`, `board-info-panel`…) have no CSS. | 3 of 23 page classes styled |
+| F5 | 🟡 | **Datasheet sidebar unstyled** (`ds-list`, `ds-search`, `toc-btn`…). The content area is already styled by the JS. | 4 of 22 page classes styled |
+| F6 | 🟡 | **AI message classes don't match the CSS:** the JS generates `ai-msg-avatar` / `ai-msg-content` / `ai-msg-time`, and the CSS styles `ai-message-avatar` / `-content` / `-time`. The suggestion buttons are unstyled. | 1 of 5 JS classes styled |
 
-**Decision needed before branch #6:** for each screen, either fix the JS to match `index.html` (the current plan), or fix `index.html` to match the JS and CSS. Record the choice in `docs/decisions/0002-…` and update the branch plan.
+### Future ideas (not bugs)
+
+Features of the old 3D Viewer that the new layout doesn't have ([ADR 0002](decisions/0002-screen-markup.md)). Re-add them only if wanted:
+- pin legend (colour key for pin types)
+- "example usage" code for the selected pin
+- info overlay on the 3D view (component, package, pins, voltage)
+- DIP / SMD / QFP / BGA package buttons (never worked)
+- screenshot button
 
 ---
 
@@ -152,16 +166,16 @@ Do the phases **in order**. Each phase ends with a check, so you always know it 
 
 Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models, AI answers, datasheets and projects.
 
-1. Open [legacy/database.js](../legacy/database.js) and copy anything useful into [src/data/data.js](../src/data/data.js) that isn't already there (for example, extra Arduino Uno pin specs).
-2. Delete the `legacy/` folder. (The `database.js` import was already removed from `src/main.js` during the restructure.)
+1. ~~Copy anything useful from `legacy/database.js` into `src/data/data.js` first.~~ **Changed (ADR 0002 analysis):** the old data uses a different format, and adding the resistor and capacitor now would show them as an 8-pin chip until D8 is fixed. So they're listed under E1 instead, and restored from git in the branch that needs them.
+2. Delete the `legacy/` folder, and its entry in `eslint.config.js`. (The `database.js` import was already removed from `src/main.js` during the restructure.)
 
 ✅ **Check:** the app still runs with no errors, and `grep -r "ComponentDatabase\|appState" src/` returns nothing.
 
 ### Phase 3 — Reconnect the page to the code (2–4 hours) → fixes B1–B9, C1–C6
 
-**Rule:** the HTML is the "real" design, so **change the JS to use the HTML's IDs**, not the other way round.
+**Rule ([ADR 0002](decisions/0002-screen-markup.md)):** follow the per-screen table. The Viewer, Database (→ Component Library) and Dashboard use the markup the JS and CSS expect. All other screens keep `index.html`, and the JS and CSS adapt to it.
 
-> ⚠️ **Under review (F1).** The CSS matches the JS, not `index.html`, so for some screens it may be better to fix the page instead. Decide per screen before branch #6.
+> **Replaced by ADR 0002:** steps 2–3 (Viewer: use the new layout instead of rewiring the old panel), step 5 (Database: use the Component Library instead of writing `renderDatabase()`), and step 9 (Dashboard: added as the home screen). Steps 1, 4, 6, 7 and 8 still apply. The styling work is F2–F6.
 
 1. **Rename IDs in the JS** using table B:
    - `ai-chat-area → ai-chat-messages`, `ai-input → ai-user-query`, `ai-send → ai-send-btn`
