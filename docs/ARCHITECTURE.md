@@ -36,7 +36,7 @@ emmb3d/
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
 ├── tests/
 │   ├── smoke/                 Playwright browser tests
-│   │   ├── app.spec.js        Every screen, data, search, AI chat. Known bugs marked knownBug()
+│   │   ├── app.spec.js        Every screen, data, 3D first load, search, AI chat. Known bugs marked knownBug()
 │   │   ├── keyboard.spec.js   Every keyboard shortcut, plus the 3D explode fix (D13)
 │   │   └── helpers.js         Error collector, known-noise list, navigation and 3D-model helpers
 │   └── unit/                  Small function tests            (empty)

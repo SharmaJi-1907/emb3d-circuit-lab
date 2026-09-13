@@ -120,7 +120,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 2 | `chore/eslint-setup` | Linter: catch mistakes before running | ✅ |
 | 3 | `fix/load-component-data` | A1–A8 — stops all crashes | ✅ |
 | 4 | `fix/keyboard-shortcuts` | D2, D13 | ✅ |
-| 4b | `fix/viewer-first-load` | D15: 3D Viewer empty at startup (small, high-visibility) | ⏳ |
+| 4b | `fix/viewer-first-load` | D15: 3D Viewer empty at startup (small, high-visibility) | ✅ |
 | 5 | `chore/remove-legacy-code` | E1 | ⏳ |
 | 5b | `docs/screen-markup-decision` | **Decide F1** per screen (fix the JS or fix the page) → ADR 0002, then update branches #6–#17 | ⏳ |
 | 6 | `fix/ai-chat-wiring` | B1–B3 | ⏳ |
@@ -137,7 +137,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 17 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ⏳ |
 | 18 | `fix/single-background` | D4 | ⏳ |
 | 19 | `feat/hash-routing` | D9 | ⏳ |
-| 20 | `fix/3d-model-mapping` | D8, D11 | ⏳ |
+| 20 | `fix/3d-model-mapping` | D8, D11, D16 (free old models) | ⏳ |
 | 21 | `chore/cleanup-assets` | E2–E5, E10 | ⏳ |
 | 22 | `chore/update-dependencies` | E6 | ⏳ |
 | 23+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
