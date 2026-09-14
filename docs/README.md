@@ -13,3 +13,10 @@
 
 - `decisions/` — Architecture Decision Records (ADRs). One short file per big decision, numbered `0001-…`, `0002-…`. Never edit an old one; write a new one that replaces it.
 - `images/` — screenshots and diagrams used by these docs.
+
+## Decisions so far
+
+| ADR | Decision |
+|---|---|
+| [0001](decisions/0001-folder-structure.md) | Folder structure (`src/`, `docs/`, `tests/`…) |
+| [0002](decisions/0002-screen-markup.md) | Which page markup each screen uses: new layout for Viewer, Database and Dashboard; current page for the rest |

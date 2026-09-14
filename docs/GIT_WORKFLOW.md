@@ -22,6 +22,7 @@ Format: `type/short-description` (lowercase, words joined with `-`).
 | `refactor/` | Code change with no behaviour change | `refactor/split-app-js` |
 | `docs/` | Documentation only | `docs/git-workflow` |
 | `chore/` | Tooling, config, dependencies, cleanup | `chore/eslint-setup` |
+| `style/` | Visual styling only (CSS), no behaviour change | `style/shared-panels` |
 
 ## Commit messages
 
@@ -111,7 +112,7 @@ Anything that rewrites history (`--amend`, `reset`) is only safe **before** you 
 
 ## Branch plan
 
-The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_PLAN.md).
+The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_PLAN.md). From #5 on, the plan follows [ADR 0002](decisions/0002-screen-markup.md).
 
 | # | Branch | Fixes | Status |
 |---|---|---|---|
@@ -120,26 +121,29 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 2 | `chore/eslint-setup` | Linter: catch mistakes before running | ✅ |
 | 3 | `fix/load-component-data` | A1–A8 — stops all crashes | ✅ |
 | 4 | `fix/keyboard-shortcuts` | D2, D13 | ✅ |
-| 4b | `fix/viewer-first-load` | D15: 3D Viewer empty at startup (small, high-visibility) | ✅ |
-| 5 | `chore/remove-legacy-code` | E1 | ⏳ |
-| 5b | `docs/screen-markup-decision` | **Decide F1** per screen (fix the JS or fix the page) → ADR 0002, then update branches #6–#17 | ⏳ |
-| 6 | `fix/ai-chat-wiring` | B1–B3 | ⏳ |
-| 7 | `fix/ai-answer-matching` | D1 | ⏳ |
-| 8 | `fix/chat-html-escaping` | D6, D7 | ⏳ |
-| 9 | `fix/viewer-component-list` | B4, C1 (part list) | ⏳ |
-| 10 | `fix/viewer-pin-panel` | B5–B7 | ⏳ |
-| 11 | `fix/viewer-toolbar` | C1 (toolbar) | ⏳ |
-| 12 | `fix/simulator-controls` | C2, B9, D12 | ⏳ |
-| 13 | `fix/simulator-init-once` | D3, D5 | ⏳ |
-| 14 | `fix/database-view` | C3, B8, D10 (reuse the component-library code) | ⏳ |
-| 15 | `fix/projects-view` | C4 | ⏳ |
-| 16 | `fix/settings-theme` | C5 | ⏳ |
-| 17 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ⏳ |
-| 18 | `fix/single-background` | D4 | ⏳ |
-| 19 | `feat/hash-routing` | D9 | ⏳ |
-| 20 | `fix/3d-model-mapping` | D8, D11, D16 (free old models) | ⏳ |
-| 21 | `chore/cleanup-assets` | E2–E5, E10 | ⏳ |
-| 22 | `chore/update-dependencies` | E6 | ⏳ |
-| 23+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
+| 4b | `fix/viewer-first-load` | D15: 3D Viewer empty at startup | ✅ |
+| 5 | `docs/screen-markup-decision` | F1 decided per screen → ADR 0002, new plan below | ✅ |
+| 6 | `chore/remove-legacy-code` | E1: delete `legacy/` (old data listed in FIX_PLAN) | ⏳ |
+| 7 | `style/shared-panels` | F2: shared styles for panels, titles and buttons on every screen | ⏳ |
+| 8 | `feat/dashboard-home` | B8 (part): add the Dashboard as the home screen; keys `1–9` | ⏳ |
+| 9 | `fix/viewer-new-layout` | B4–B7, C1: switch the Viewer to the new layout (replaces the old #9–#11) | ⏳ |
+| 10 | `fix/database-library` | C3, B8 (part), D10: show the Component Library in the Database screen | ⏳ |
+| 11 | `fix/ai-chat-wiring` | B1–B3, F6 | ⏳ |
+| 12 | `fix/ai-answer-matching` | D1 | ⏳ |
+| 13 | `fix/chat-html-escaping` | D6, D7 | ⏳ |
+| 14 | `fix/simulator-layout-controls` | F3, C2, B9, D12 | ⏳ |
+| 15 | `fix/simulator-init-once` | D3, D5 | ⏳ |
+| 16 | `style/board-explorer` | F4 | ⏳ |
+| 17 | `style/datasheet-sidebar` | F5 | ⏳ |
+| 18 | `fix/projects-view` | C4 | ⏳ |
+| 19 | `fix/settings-theme` | C5 | ⏳ |
+| 20 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ⏳ |
+| 21 | `fix/single-background` | D4 | ⏳ |
+| 22 | `feat/hash-routing` | D9 | ⏳ |
+| 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models); restore resistor/capacitor data from `legacy/` history | ⏳ |
+| 24 | `chore/upgrade-threejs` | E7 | ⏳ |
+| 25 | `chore/cleanup-assets` | E2–E5, E10 | ⏳ |
+| 26 | `chore/update-dependencies` | E6 | ⏳ |
+| 27+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
 
 Status: ⏳ not started · 🔄 in progress · ✅ merged
