@@ -1,0 +1,81 @@
+/* ── Shared page building blocks (F2, ADR 0002) ─────────────────
+   Used by the screens that keep index.html markup: Simulator, Boards,
+   Datasheet, AI, Projects, Settings and the pop-ups. Values come from
+   the design tokens in main.css, matching the Dashboard cards.
+──────────────────────────────────────────────────────────────── */
+
+/* Screen titles */
+.view-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.view-subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Cards and panels */
+.glass-panel {
+  background: rgba(17, 17, 40, 0.85);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.scrollable {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Shared buttons. The page uses <button> elements, so clear the browser's default grey. */
+.nav-item {
+  background: transparent;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+
+.icon-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--cyan);
+}
