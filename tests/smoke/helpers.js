@@ -9,7 +9,8 @@ const IGNORED_CONSOLE_ERRORS = [
   { issue: 'E2', match: (text, url) => /manifest\.json/.test(url) || /^Manifest:/.test(text) },
 ];
 
-export const VIEWS = ['viewer', 'simulator', 'database', 'boards', 'datasheet', 'ai', 'projects', 'settings'];
+// Sidebar order. The Dashboard is the home screen (ADR 0002).
+export const VIEWS = ['dashboard', 'viewer', 'simulator', 'database', 'boards', 'datasheet', 'ai', 'projects', 'settings'];
 
 /* ── Fixtures ─────────────────────────────────────────────────── */
 export const test = base.extend({
@@ -41,6 +42,13 @@ export { expect };
 export async function openApp(page) {
   await page.goto('/');
   await page.waitForFunction(() => window.CircuitApp && window.ThreeViewer && window.ThreeViewer.isReady());
+}
+
+// Open the app, go to the 3D Viewer and wait until its model has finished loading.
+export async function openViewer(page) {
+  await openApp(page);
+  await goToView(page, 'viewer');
+  await waitForStableModel(page);
 }
 
 // Click a sidebar menu item and wait for its screen to show.

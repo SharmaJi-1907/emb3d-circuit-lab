@@ -5,13 +5,13 @@
 ═══════════════════════════════════════════════════════════════════ */
 
 import {
-  test, expect, VIEWS, openApp, goToView, settle, expectNoErrors, modelSize, waitForStableModel,
+  test, expect, VIEWS, openApp, openViewer, goToView, settle, expectNoErrors, modelSize,
 } from './helpers.js';
 
 const currentView = (page) => page.evaluate(() => window.CircuitApp.getState().currentView);
 
 /* ── Screens ──────────────────────────────────────────────────── */
-test('number keys 1-8 open the screens in sidebar order', async ({ page, errors }) => {
+test('number keys 1-9 open the screens in sidebar order', async ({ page, errors }) => {
   await openApp(page);
   const sidebar = await page.locator('.nav-item').evaluateAll((items) => items.map((i) => i.dataset.view));
   expect(sidebar).toEqual(VIEWS);
@@ -69,8 +69,7 @@ test('? opens the shortcuts list and Esc closes it', async ({ page, errors }) =>
 
 /* ── 3D viewer ────────────────────────────────────────────────── */
 test('W toggles wireframe in the 3D viewer', async ({ page, errors }) => {
-  await openApp(page);
-  await waitForStableModel(page); // the Viewer is the start screen
+  await openViewer(page);
   const wireframe = () => page.evaluate(() => window.ThreeViewer.isWireframe());
 
   await page.locator('body').press('w');
@@ -87,8 +86,7 @@ test('W toggles wireframe in the 3D viewer', async ({ page, errors }) => {
 });
 
 test('E toggles explode in the 3D viewer', async ({ page, errors }) => {
-  await openApp(page);
-  await waitForStableModel(page); // the Viewer is the start screen
+  await openViewer(page);
   const exploded = () => page.evaluate(() => window.ThreeViewer.isExploded());
 
   await page.locator('body').press('e');
@@ -102,8 +100,7 @@ test('E toggles explode in the 3D viewer', async ({ page, errors }) => {
 });
 
 test('exploding and restoring the 3D model keeps it intact (D13)', async ({ page, errors }) => {
-  await openApp(page);
-  await waitForStableModel(page); // the Viewer is the start screen
+  await openViewer(page);
   const before = await modelSize(page);
   expect(before, 'a model should be loaded before the test').not.toBeNull();
 
@@ -126,7 +123,7 @@ test('exploding and restoring the 3D model keeps it intact (D13)', async ({ page
 });
 
 test('R resets the 3D camera, only on the viewer screen', async ({ page, errors }) => {
-  await openApp(page);
+  await openViewer(page);
   await page.evaluate(() => {
     window.__resets = 0;
     const original = window.ThreeViewer.resetView;
