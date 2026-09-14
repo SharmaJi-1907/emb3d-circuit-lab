@@ -41,8 +41,7 @@ The smoke tests use the Google Chrome installed on your machine. Without Chrome,
 │   └── assets/         Fonts, models, images imported by code
 ├── tests/              Smoke and unit tests
 ├── scripts/            Developer helper scripts
-├── docs/               All documentation
-└── legacy/             Old code awaiting review (to be removed)
+└── docs/               All documentation
 ```
 
 Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
