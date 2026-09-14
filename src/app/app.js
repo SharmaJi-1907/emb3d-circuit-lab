@@ -69,7 +69,7 @@ window.CircuitApp = (function () {
 
     // Init Three.js viewer after a tick
     setTimeout(() => {
-      const viewerCanvas = document.getElementById('three-canvas');
+      const viewerCanvas = document.getElementById('viewer-canvas');
       if (viewerCanvas && window.THREE && window.ThreeViewer) {
         ThreeViewer.init(viewerCanvas);
         viewerCanvas.addEventListener('mousemove', ThreeViewer.onMouseMove);
@@ -644,6 +644,8 @@ window.CircuitApp = (function () {
     renderViewerSidebar();
     renderPinTable();
 
+    // The window may have changed size while the Viewer was hidden.
+    if (window.ThreeViewer && ThreeViewer.isReady()) ThreeViewer.onResize();
     showSelectedModel();
   }
 

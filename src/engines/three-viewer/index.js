@@ -45,8 +45,7 @@ window.ThreeViewer = (function () {
     scene.fog = new THREE.FogExp2(0x05050a, 0.08);
 
     // Camera
-    const w = canvas.clientWidth || 600;
-    const h = canvas.clientHeight || 400;
+    const [w, h] = containerSize();
     camera = new THREE.PerspectiveCamera(45, w / h, 0.01, 100);
     camera.position.set(0, 3, 6);
 
@@ -57,7 +56,7 @@ window.ThreeViewer = (function () {
       alpha: true,
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h);
+    renderer.setSize(w, h, false); // false: leave the display size to CSS, so the canvas can follow its container
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -774,13 +773,12 @@ window.ThreeViewer = (function () {
     scene.add(model);
     currentModel = model;
 
-    // Scale up animation
-    let t = 0;
+    // Scale up animation (time-based, so it lasts ~200 ms even when frames are slow)
+    const start = performance.now();
     const scaleIn = setInterval(() => {
-      t += 0.08;
-      const s = Math.min(1, t);
+      const s = Math.min(1, (performance.now() - start) / 200);
       model.scale.set(s, s, s);
-      if (t >= 1) clearInterval(scaleIn);
+      if (s >= 1) clearInterval(scaleIn);
     }, 16);
 
     // Reset camera
@@ -927,11 +925,12 @@ window.ThreeViewer = (function () {
       const targetY = enabled ? child.userData.origY + (i % 3 - 1) * 0.3 : child.userData.origY;
       // Animate (stop any animation still running from a quick earlier toggle, so they don't fight)
       clearInterval(child.userData.explodeAnim);
-      let t = 0;
       const startY = child.position.y;
+      const start = performance.now();
       const anim = setInterval(() => {
-        t += 0.05;
-        child.position.y = startY + (targetY - startY) * Math.min(1, t);
+        // Time-based, so it lasts ~320 ms even when frames are slow.
+        const t = Math.min(1, (performance.now() - start) / 320);
+        child.position.y = startY + (targetY - startY) * t;
         if (t >= 1) clearInterval(anim);
       }, 16);
       child.userData.explodeAnim = anim;
@@ -966,6 +965,8 @@ window.ThreeViewer = (function () {
 
   function animate() {
     animationId = requestAnimationFrame(animate);
+    // Don't draw while the Viewer screen is hidden (D5): offsetParent is null under display:none.
+    if (canvas.offsetParent === null) return;
     time += 0.01;
 
     // Auto rotate
@@ -984,13 +985,18 @@ window.ThreeViewer = (function () {
     renderer.render(scene, camera);
   }
 
+  // Size of the element the canvas sits in. Falls back to 600×400 while it is hidden (0×0).
+  function containerSize() {
+    const box = canvas.parentElement || canvas;
+    return [box.clientWidth || 600, box.clientHeight || 400];
+  }
+
   function onResize() {
-    if (!canvas) return;
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
+    if (!canvas || !renderer) return;
+    const [w, h] = containerSize();
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
+    renderer.setSize(w, h, false);
   }
 
   /* ── Public API ───────────────────────────────────────────── */
@@ -1011,5 +1017,6 @@ window.ThreeViewer = (function () {
     isWireframe: () => wireframeMode,
     isExploded: () => explodeMode,
     getModelBounds,
+    getFrameCount: () => (renderer ? renderer.info.render.frame : 0),
   };
 })();

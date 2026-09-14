@@ -40,6 +40,7 @@ emmb3d/
 │   │   ├── app.spec.js        Every screen, data, 3D first load, search, AI chat. Known bugs marked knownBug()
 │   │   ├── keyboard.spec.js   Every keyboard shortcut, plus the 3D explode fix (D13)
 │   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
+│   │   ├── viewer.spec.js     3D Viewer layout: canvas sizing, sidebar, pin table/detail, tooltip, controls
 │   │   └── helpers.js         Error collector, known-noise list, navigation and 3D-model helpers
 │   └── unit/                  Small function tests            (empty)
 ├── scripts/                   Developer helper scripts

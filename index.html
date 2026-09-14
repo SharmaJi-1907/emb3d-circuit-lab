@@ -201,195 +201,24 @@
         <!-- VIEW: 3D COMPONENT VIEWER                              -->
         <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view active" id="view-viewer" aria-label="3D Component Viewer">
-          <div class="viewer-layout">
-
-            <!-- Component Selector Panel -->
-            <aside class="panel component-selector-panel glass-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">Components</h2>
-                <div class="panel-search">
-                  <input type="search" placeholder="Filter..." class="mini-search" id="component-filter" />
-                </div>
-              </div>
-              <div class="component-categories">
-                <button class="cat-btn active" data-cat="all">All</button>
-                <button class="cat-btn" data-cat="mcu">MCU</button>
-                <button class="cat-btn" data-cat="passive">Passive</button>
-                <button class="cat-btn" data-cat="sensor">Sensor</button>
-                <button class="cat-btn" data-cat="power">Power</button>
-                <button class="cat-btn" data-cat="connector">Connector</button>
-              </div>
-              <div class="component-list" id="component-list" role="listbox" aria-label="Component list">
-                <!-- Populated by JS -->
-              </div>
-            </aside>
-
-            <!-- 3D Viewport -->
-            <div class="viewer-viewport" style="position: relative; width: 100%; height: 100%;">
-              <canvas id="three-canvas" aria-label="3D component viewer"></canvas>
-
-              <!-- Viewer Controls Overlay -->
-              <div class="viewer-controls-overlay">
-                <div class="viewer-toolbar glass-panel">
-                  <button class="tool-btn active" id="btn-rotate" title="Rotate (R)" data-action="rotate">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                  </button>
-                  <button class="tool-btn" id="btn-wireframe" title="Wireframe (W)" data-action="wireframe">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
-                    </svg>
-                  </button>
-                  <button class="tool-btn" id="btn-explode" title="Explode View (E)" data-action="explode">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                    </svg>
-                  </button>
-                  <button class="tool-btn" id="btn-pins" title="Show Pins (P)" data-action="pins">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="21"/>
-                    </svg>
-                  </button>
-                  <div class="tool-divider"></div>
-                  <button class="tool-btn" id="btn-reset-cam" title="Reset Camera (Home)" data-action="reset">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    </svg>
-                  </button>
-                  <button class="tool-btn" id="btn-screenshot" title="Screenshot" data-action="screenshot">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- Package Type Switcher -->
-                <div class="package-switcher glass-panel" id="package-selector-hud">
-                  <span class="pkg-label">Package</span>
-                  <button class="pkg-btn active" data-pkg="dip">DIP</button>
-                  <button class="pkg-btn" data-pkg="smd">SMD</button>
-                  <button class="pkg-btn" data-pkg="qfp">QFP</button>
-                  <button class="pkg-btn" data-pkg="bga">BGA</button>
-                </div>
-
-                <!-- Viewer Info HUD -->
-                <div class="viewer-hud glass-panel">
-                  <div class="hud-item">
-                    <span class="hud-label">Component</span>
-                    <span class="hud-value" id="hud-component">ATmega328P</span>
-                  </div>
-                  <div class="hud-item">
-                    <span class="hud-label">Package</span>
-                    <span class="hud-value" id="hud-package">DIP-28</span>
-                  </div>
-                  <div class="hud-item">
-                    <span class="hud-label">Pins</span>
-                    <span class="hud-value" id="hud-pins">28</span>
-                  </div>
-                  <div class="hud-item">
-                    <span class="hud-label">Voltage</span>
-                    <span class="hud-value neon-text">1.8–5.5V</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Real-time 3D projected pin labels will anchor here dynamically -->
-              <div id="pin-labels-layer" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
-
-              <!-- Loading Overlay -->
-              <div class="viewer-loading" id="viewer-loading">
-                <div class="loading-spinner"></div>
-                <span>Rendering 3D Model...</span>
-              </div>
-            </div>
-
-            <!-- Pin Info Panel -->
-            <aside class="panel pin-info-panel glass-panel" id="pin-info-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">Pin Inspector</h2>
-                <button class="icon-btn panel-close" id="pin-panel-close" aria-label="Close pin panel">×</button>
-              </div>
-
-              <div class="pin-active-profile" id="pin-active-profile">
-                <!-- Fallback/placeholder when no pin is active -->
-                <div class="pin-overview" id="pin-overview">
-                  <div class="pin-number-badge" id="pin-number-badge">14</div>
-                  <div class="pin-name-display" id="pin-name-display">PB0 / ICP1</div>
-                  <div class="pin-type-badge" id="pin-type-badge" data-type="digital">Digital I/O</div>
-                </div>
-
-                <div class="pin-details" id="pin-details">
-                  <div class="detail-row">
-                    <span class="detail-label">Voltage</span>
-                    <span class="detail-value" id="pin-voltage">0 – 5V</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Max Current</span>
-                    <span class="detail-value" id="pin-current">40 mA</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Protocol</span>
-                    <span class="detail-value" id="pin-protocol">GPIO / Timer1</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Direction</span>
-                    <span class="detail-value" id="pin-direction">Bidirectional</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Alt Functions</span>
-                    <span class="detail-value" id="pin-alt">ICP1, CLKO, PCINT0</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="pin-warning" id="pin-warning" style="display:none">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                <span id="pin-warning-text">Do not exceed 40mA per pin</span>
-              </div>
-
-              <div class="signal-flow-section">
-                <h3 class="section-subtitle">Signal Flow</h3>
-                <div class="signal-flow-viz" id="signal-flow-viz">
-                  <div class="signal-line">
-                    <div class="signal-node source">MCU</div>
-                    <div class="signal-wire">
-                      <div class="signal-pulse"></div>
-                    </div>
-                    <div class="signal-node dest">GPIO</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="pin-legend">
-                <h3 class="section-subtitle">Pin Legend</h3>
-                <div class="legend-grid">
-                  <div class="legend-item"><span class="legend-dot" data-type="power"></span>Power</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="ground"></span>Ground</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="digital"></span>Digital</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="analog"></span>Analog</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="pwm"></span>PWM</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="uart"></span>UART</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="spi"></span>SPI</div>
-                  <div class="legend-item"><span class="legend-dot" data-type="i2c"></span>I2C</div>
-                </div>
-              </div>
-
-              <div class="pin-example">
-                <h3 class="section-subtitle">Example Usage</h3>
-                <pre class="code-snippet" id="pin-example-code"><code>// Arduino example
-pinMode(8, OUTPUT);
-digitalWrite(8, HIGH);</code></pre>
-              </div>
-            </aside>
+          <aside id="viewer-sidebar"></aside>
+          <div id="viewer-canvas-area">
+            <canvas id="viewer-canvas" aria-label="3D component viewer"></canvas>
+            <div class="viewer-loading" id="viewer-loading"><span>Rendering 3D Model...</span></div>
           </div>
+          <div id="pin-detail-panel"></div>
+          <aside id="viewer-pin-panel">
+            <div class="pin-panel-header">Pinout</div>
+            <div class="pin-table-wrapper">
+              <table class="pin-table">
+                <thead><tr><th>#</th><th>Name</th><th>Alt</th><th>Type</th><th>Voltage</th><th>Protocol</th><th></th></tr></thead>
+                <tbody id="pin-table-body"></tbody>
+              </table>
+            </div>
+          </aside>
         </section>
+        <div id="pin-tooltip"></div>
 
-        <!-- ═══════════════════════════════════════════════════════ -->
-        <!-- VIEW: CIRCUIT SIMULATOR                                -->
-        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view" id="view-simulator" aria-label="Circuit Simulator">
           <div class="simulator-layout">
 
