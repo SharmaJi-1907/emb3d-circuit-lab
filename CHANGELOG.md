@@ -29,6 +29,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `src/styles/components/panels.css`: shared styles for cards, panels, titles and icon buttons (F2).
 - `tests/smoke/styles.spec.js`: 5 computed-style tests for the shared building blocks (29 tests in total).
 - `tests/smoke/viewer.spec.js`: 9 tests for the new 3D Viewer layout (38 tests in total). 3D viewer: read-only `getFrameCount()`.
+- **Dashboard home screen** (ADR 0002): stats, quick access, recently viewed parts and sample projects. It's the first sidebar item and the screen the app opens on; the number keys are now `1–9`. Plus 2 new dashboard tests (41 tests in total).
 
 ### Removed
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
