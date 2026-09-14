@@ -57,7 +57,16 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-item active" data-view="viewer" aria-label="3D Viewer" title="3D Component Viewer">
+        <button class="nav-item active" data-view="dashboard" aria-label="Dashboard" title="Dashboard">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-view="viewer" aria-label="3D Viewer" title="3D Component Viewer">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
@@ -200,7 +209,9 @@
         <!-- ═══════════════════════════════════════════════════════ -->
         <!-- VIEW: 3D COMPONENT VIEWER                              -->
         <!-- ═══════════════════════════════════════════════════════ -->
-        <section class="view active" id="view-viewer" aria-label="3D Component Viewer">
+        <section class="view active" id="view-dashboard" aria-label="Dashboard"></section>
+
+        <section class="view" id="view-viewer" aria-label="3D Component Viewer">
           <aside id="viewer-sidebar"></aside>
           <div id="viewer-canvas-area">
             <canvas id="viewer-canvas" aria-label="3D component viewer"></canvas>
@@ -609,7 +620,7 @@
               <div class="settings-card glass-panel" style="padding:20px; border-radius:8px;">
                 <h3>Keyboard Shortcuts</h3>
                 <div class="shortcuts-list" style="margin-top:15px; display:flex; flex-direction:column; gap:8px; font-size:14px;">
-                  <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">1–8</kbd><span>Switch screen (sidebar order)</span></div>
+                  <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">1–9</kbd><span>Switch screen (sidebar order)</span></div>
                   <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">/ or Ctrl/⌘ K</kbd><span>Search</span></div>
                   <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">?</kbd><span>Show all shortcuts</span></div>
                   <div class="shortcut-row" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">Space</kbd><span>Run/Pause Simulation</span></div>
@@ -656,7 +667,7 @@
               <button class="icon-btn" id="close-shortcuts-btn" style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;">&times;</button>
           </div>
           <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
-              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">1–8</kbd> <span>Switch screen (sidebar order)</span></div>
+              <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">1–9</kbd> <span>Switch screen (sidebar order)</span></div>
               <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">/ or Ctrl/⌘ K</kbd> <span>Search</span></div>
               <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">?</kbd> <span>Show this list</span></div>
               <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd style="background:#222; padding:2px 6px; border-radius:3px;">W</kbd> <span>Toggle Shaded / Wireframe in 3D Viewer</span></div>

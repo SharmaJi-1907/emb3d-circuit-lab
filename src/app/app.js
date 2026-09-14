@@ -64,8 +64,8 @@ window.CircuitApp = (function () {
       state.selectedComponent = CircuitLabData.components[0];
     }
 
-    // Load default view
-    navigateTo('viewer');
+    // Load default view (the Dashboard is the home screen, ADR 0002)
+    navigateTo('dashboard');
 
     // Init Three.js viewer after a tick
     setTimeout(() => {
@@ -424,7 +424,7 @@ window.CircuitApp = (function () {
               { view: 'boards',    icon: '📟', label: 'Board Explorer',desc: 'Interactive pinout maps' },
               { view: 'ai',        icon: '🤖', label: 'AI Assistant', desc: 'Get electronics help' },
               { view: 'datasheet', icon: '📄', label: 'Datasheets',   desc: 'Component specifications' },
-              { view: 'components',icon: '🔲', label: 'Components',   desc: 'Browse component library' },
+              { view: 'database',  icon: '🔲', label: 'Components',   desc: 'Browse component library' },
             ].map(q => `
               <div class="quick-card" onclick="CircuitApp.navigate('${q.view}')">
                 <div class="quick-card-icon">${q.icon}</div>
