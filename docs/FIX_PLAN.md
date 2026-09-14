@@ -13,6 +13,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Area | Status |
 |---|---|
 | App loads, background animates | ✅ Works |
+| Dashboard (home screen) | ✅ Stats, quick access, recently viewed, sample projects (#8) |
 | Left menu switches screens | ✅ Works |
 | 3D viewer | ✅ New layout (#9): part info, controls, full pin table, pin details, tooltip; canvas fills its area. Memory still grows on each visit (D16). |
 | Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
@@ -23,7 +24,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Projects | ✅ Shows 6 projects ("New project" button still dead, C4) |
 | Search (Ctrl+K) | ✅ Works |
 | Settings (dark mode) | ❌ Button does nothing |
-| Keyboard shortcuts | ✅ Every listed shortcut works (1–8, / Ctrl/⌘ K, ?, W, E, R, Space, Esc) |
+| Keyboard shortcuts | ✅ Every listed shortcut works (1–9, / Ctrl/⌘ K, ?, W, E, R, Space, Esc) |
 
 _Status updated after branch #3 (`fix/load-component-data`): no screen throws an error any more._
 
@@ -65,7 +66,7 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 | B5 | ✅ | `pin-table-body` | nothing — closest is `pin-details` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:722](../src/app/app.js#L722) |
 | B6 | ✅ | `pin-detail-panel` | `pin-info-panel` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:756](../src/app/app.js#L756) |
 | B7 | ✅ | `pin-tooltip` | nothing _**Fixed in #9:** the tooltip element exists and shows on pin hover (tested)._ | [app.js:1598](../src/app/app.js#L1598) |
-| B8 | 🟠 | `view-dashboard`, `view-components` | these screens don't exist in the page | [app.js:386](../src/app/app.js#L386), [app.js:502](../src/app/app.js#L502) |
+| B8 | 🟡 | `view-dashboard`, `view-components` | these screens don't exist in the page _**Dashboard part fixed in #8:** it is added as the home screen. The Component Library part follows in #10 (`fix/database-library`)._ | [app.js:386](../src/app/app.js#L386), [app.js:502](../src/app/app.js#L502) |
 | B9 | 🟠 | `mm-value` / `mm-unit` / `mm-mode-select` | `multimeter-val` / `multimeter-unit` / `mm-mode` | [simulator.js:1123-1133](../src/engines/simulator/index.js#L1123-L1133) |
 
 ### C. Buttons on the page with no code behind them
@@ -157,8 +158,8 @@ Do the phases **in order**. Each phase ends with a check, so you always know it 
    import './data/data.js';
    ```
 2. ~~Guard against "nothing selected"~~. **Not needed:** fixing A1 removes A2. See A2 above.
-3. ✅ **Fix the keyboard map** (branch #4). Keys `1–8` now follow the sidebar order:
-   `1 viewer · 2 simulator · 3 database · 4 boards · 5 datasheet · 6 ai · 7 projects · 8 settings`.
+3. ✅ **Fix the keyboard map** (branch #4). Keys follow the sidebar order, so they update when screens are added. After #8:
+   `1 dashboard · 2 viewer · 3 simulator · 4 database · 5 boards · 6 datasheet · 7 ai · 8 projects · 9 settings`.
 
 ✅ **Check:** run `npm run dev`, open the browser console (F12), and click every menu item. There should be **zero red errors**, and a 3D chip should appear in the viewer.
 

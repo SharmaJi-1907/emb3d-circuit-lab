@@ -21,7 +21,31 @@ test('app boots without errors', async ({ page, errors }) => {
   await openApp(page);
 
   await expect(page.locator('.nav-item')).toHaveCount(VIEWS.length);
-  await expect(page.locator('#view-viewer')).toBeVisible();
+  await expect(page.locator('#view-dashboard')).toBeVisible();
+  expectNoErrors(errors);
+});
+
+/* ── Dashboard (home screen) ──────────────────────────────────── */
+test('dashboard is the home screen and shows the stats', async ({ page, errors }) => {
+  await openApp(page);
+  expect(await page.evaluate(() => window.CircuitApp.getState().currentView)).toBe('dashboard');
+  await expect(page.locator('.nav-item[data-view="dashboard"]')).toHaveClass(/active/);
+  await expect(page.locator('#view-dashboard .stat-card')).toHaveCount(4);
+  expectNoErrors(errors);
+});
+
+test('every dashboard quick-access card opens a real screen', async ({ page, errors }) => {
+  await openApp(page);
+  const cards = page.locator('#view-dashboard .quick-card');
+  const count = await cards.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i++) {
+    await goToView(page, 'dashboard');
+    const label = (await cards.nth(i).locator('.quick-card-label').textContent()).trim();
+    await cards.nth(i).click();
+    const view = await page.evaluate(() => window.CircuitApp.getState().currentView);
+    await expect(page.locator(`#view-${view}`), `"${label}" card should open a screen that exists`).toBeVisible();
+  }
   expectNoErrors(errors);
 });
 
@@ -63,9 +87,10 @@ for (const view of VIEWS) {
 }
 
 /* ── 3D viewer first load ─────────────────────────────────────── */
-test('3D viewer shows a model at first load', async ({ page, errors }) => {
+test('3D viewer shows a model the first time it is opened', async ({ page, errors }) => {
   await openApp(page);
-  await waitForStableModel(page); // no clicks: the start screen itself must show the part (D15)
+  await goToView(page, 'viewer'); // one visit only: the model must not need a second visit (D15)
+  await waitForStableModel(page);
   expectNoErrors(errors);
 });
 
