@@ -73,7 +73,8 @@ npm run test:report   # open the HTML report
 - Uses the locally installed Google Chrome (`channel: 'chrome'` in [playwright.config.js](playwright.config.js)). It starts the dev server on port 3000 itself, or reuses one that's already running.
 - A test fails on any uncaught exception or `console.error`. Known noise is listed in `IGNORED_CONSOLE_ERRORS` in [tests/smoke/helpers.js](tests/smoke/helpers.js), tagged with its issue code. Remove an entry when that issue is fixed.
 - Known bugs are marked `knownBug('<code>')` in the spec files and are **expected to fail**. When a fix makes one pass, Playwright reports "Expected to fail, but passed". Remove that marker in the same branch as the fix. Never add a `knownBug()` just to hide a new failure.
-- Files: `app.spec.js` (screens, data, 3D first load, search, AI), `keyboard.spec.js` (shortcuts, explode).
+- Files: `app.spec.js` (screens, data, 3D first load, search, AI), `keyboard.spec.js` (shortcuts, explode), `styles.spec.js` (computed styles of shared building blocks).
+- **Style checks use computed styles, not screenshots.** Assert `getComputedStyle` values (see `styleOf()` in `styles.spec.js`), and check the element has no inline style overriding the property first.
 - **Wait for conditions, not fixed times.** Headless Chrome renders 3D in software, so timers and animations run several times slower under load. Use `expect.poll` or `expect(locator)` waits, and use `settle()` only to let pending timers fire.
 - **3D checks use model data, not pixels.** Use `modelSize()` / `waitForStableModel()` from `helpers.js` (built on `ThreeViewer.getModelBounds()`). Colour and pixel counts change with camera angle and lighting, and proved flaky.
 - Before merging a branch that touches tests, run `npx playwright test tests/smoke --repeat-each=4` and expect **0 unexpected**.
@@ -88,6 +89,7 @@ npm run test:report   # open the HTML report
 - Escape user text before putting it into `innerHTML`.
 - No secrets or API keys in browser code.
 - Match the existing style: 2-space indent, IIFE modules, `/* ── Section ── */` comment headers.
+- **CSS:** use the design tokens in `main.css` (`--bg-card`, `--border`, `--radius-lg`…), never hard-coded colours. Shared building blocks go in `src/styles/components/`, and styles for one screen go in `src/styles/views/<screen>.css`. Import new CSS files in `src/main.js` after `main.css`.
 - Don't edit `dist/` (generated) or `node_modules/`.
 - The old `legacy/` folder was deleted in branch #6. Old data worth restoring (resistor/capacitor entries, pin descriptions, datasheet tables) is listed under E1 in FIX_PLAN, with the `git show` command to get it back.
 
