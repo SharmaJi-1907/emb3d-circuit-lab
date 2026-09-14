@@ -9,6 +9,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
 - Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
 - Lint warning cap lowered from 27 to 25.
+- 3D explode and grow-in animations are time-based (~320 ms / ~200 ms), so slow frames no longer stretch them.
+- The 3D canvas sizes itself from its container and is resized whenever the Viewer is shown.
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
@@ -26,11 +28,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [ADR 0002](docs/decisions/0002-screen-markup.md): which page markup each screen uses. Includes per-screen measurements and prototype screenshots in `docs/images/`.
 - `src/styles/components/panels.css`: shared styles for cards, panels, titles and icon buttons (F2).
 - `tests/smoke/styles.spec.js`: 5 computed-style tests for the shared building blocks (29 tests in total).
+- `tests/smoke/viewer.spec.js`: 9 tests for the new 3D Viewer layout (38 tests in total). 3D viewer: read-only `getFrameCount()`.
 
 ### Removed
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- 3D Viewer uses the new layout (ADR 0002). It shows the part info and specs, working controls (part switcher, Solid/Wire/Explode, auto-rotate, zoom), the full pin table, pin details with a signal view and a pin tooltip, and a canvas that fills its area (B4–B7, C1).
+- The 3D scene is no longer drawn while its screen is hidden (D5, 3D part).
 - Sidebar and top-bar buttons no longer show the browser's grey button background. Cards, panels, panel titles and screen titles are styled on Settings, Datasheet, Simulator, AI, Boards, Projects and the shortcuts popup (F2).
 - The component data (`src/data/data.js`) is now loaded, so the 3D Viewer, Board Explorer, Datasheet Viewer, Projects, Search and the AI answer engine no longer crash (A1–A8). No screen throws an error any more.
 - Keyboard shortcuts (D2):
