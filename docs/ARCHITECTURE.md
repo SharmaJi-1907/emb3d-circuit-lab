@@ -29,7 +29,8 @@ emmb3d/
 │   │   ├── main.css           All styles (to be split into the folders below)
 │   │   ├── base/              variables, reset, typography
 │   │   ├── layout/            sidebar, topbar
-│   │   ├── components/        buttons, panels, modals, toasts
+│   │   ├── components/
+│   │   │   └── panels.css     Shared cards, panels, titles, sidebar/top-bar buttons (F2)
 │   │   └── views/             per-screen styles
 │   └── assets/                fonts, models, images imported by code
 ├── eslint.config.js           Lint rules, allowed globals, ignored folders
@@ -38,6 +39,7 @@ emmb3d/
 │   ├── smoke/                 Playwright browser tests
 │   │   ├── app.spec.js        Every screen, data, 3D first load, search, AI chat. Known bugs marked knownBug()
 │   │   ├── keyboard.spec.js   Every keyboard shortcut, plus the 3D explode fix (D13)
+│   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
 │   │   └── helpers.js         Error collector, known-noise list, navigation and 3D-model helpers
 │   └── unit/                  Small function tests            (empty)
 ├── scripts/                   Developer helper scripts
@@ -51,11 +53,12 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 `index.html` → `src/main.js` imports, in order:
 
 1. `styles/main.css`
-2. `engines/background/circuit-bg.js`
-3. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
-4. `engines/three-viewer/index.js` → `window.ThreeViewer`
-5. `engines/simulator/index.js` → `window.CircuitSimulator`
-6. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
+2. `styles/components/panels.css`: shared page styles. Must come after `main.css` so it can build on its design tokens.
+3. `engines/background/circuit-bg.js`
+4. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
+5. `engines/three-viewer/index.js` → `window.ThreeViewer`
+6. `engines/simulator/index.js` → `window.CircuitSimulator`
+7. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
 
 The smoke test "component data is loaded" fails if `data.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
