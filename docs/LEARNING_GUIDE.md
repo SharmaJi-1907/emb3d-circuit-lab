@@ -7,10 +7,11 @@ For the list of bugs and the step-by-step fixes, see [FIX_PLAN.md](FIX_PLAN.md).
 
 ## 1. What the app is
 
-A single-page website for learning electronics. It has one HTML page with 8 "screens" (views) that are shown and hidden with JavaScript:
+A single-page website for learning electronics. It has one HTML page with 9 "screens" (views) that are shown and hidden with JavaScript:
 
 | Screen | What it's meant to do |
 |---|---|
+| Dashboard | Home screen: stats, quick access to every screen, recently viewed parts |
 | 3D Viewer | Spin a 3D chip or board and click its pins to learn what each pin does |
 | Circuit Simulator | Drag parts onto a breadboard, wire them up, watch an oscilloscope |
 | Component Database | Browse and compare parts |
