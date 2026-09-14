@@ -106,7 +106,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 
 | # | Sev | Problem |
 |---|---|---|
-| E1 | 🟡 | **Two versions of the app are mixed together.** [legacy/script.js](../legacy/script.js) (old app) and [legacy/database.js](../legacy/database.js) (old data) aren't used by the new app. `script.js` would also crash if loaded: it imports `ThreeViewer` / `CircuitSimulator`, which those files don't export. _After ADR 0002 it is no longer needed as a reference, so delete it next. **Old data worth restoring later** (in a different format from `data.js`; restore with `git show 3cd518a:legacy/database.js`): resistor and capacitor entries (for D8's unused models), a description for every Arduino Uno pin, and datasheet electrical tables for 5 parts (Arduino Uno, ESP32, NE555, resistor, capacitor)._ |
+| E1 | ✅ | **Two versions of the app are mixed together.** `legacy/script.js` (old app) and `legacy/database.js` (old data) aren't used by the new app. `script.js` would also crash if loaded: it imports `ThreeViewer` / `CircuitSimulator`, which those files don't export. **Fixed in #6:** `legacy/` deleted, and the build output is byte-identical before and after. **Old data worth restoring later** (in a different format from `data.js`; restore with `git show 3cd518a:legacy/database.js`): resistor and capacitor entries (for D8's unused models), a description for every Arduino Uno pin, and datasheet electrical tables for 5 parts (Arduino Uno, ESP32, NE555, resistor, capacitor). The old wiring code is at `git show 3cd518a:legacy/script.js`. |
 | E2 | 🟡 | `manifest.json` is linked in the HTML but doesn't exist (browser logs a syntax error). `favicon.ico` is missing (404). |
 | E3 | ⚪ | CSS is loaded twice: `<link>` in [index.html:28](../index.html#L28) **and** `import` in [src/main.js](../src/main.js). |
 | E4 | ⚪ | `assets/fonts`, `assets/models`, `assets/icons` are empty folders. |
@@ -162,12 +162,12 @@ Do the phases **in order**. Each phase ends with a check, so you always know it 
 
 ✅ **Check:** run `npm run dev`, open the browser console (F12), and click every menu item. There should be **zero red errors**, and a 3D chip should appear in the viewer.
 
-### Phase 2 — Pick one version and delete the other (30 min) → fixes E1
+### Phase 2 — Pick one version and delete the other (30 min) → fixes E1 ✅ DONE (#6)
 
 Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models, AI answers, datasheets and projects.
 
 1. ~~Copy anything useful from `legacy/database.js` into `src/data/data.js` first.~~ **Changed (ADR 0002 analysis):** the old data uses a different format, and adding the resistor and capacitor now would show them as an 8-pin chip until D8 is fixed. So they're listed under E1 instead, and restored from git in the branch that needs them.
-2. Delete the `legacy/` folder, and its entry in `eslint.config.js`. (The `database.js` import was already removed from `src/main.js` during the restructure.)
+2. ✅ Delete the `legacy/` folder, and its entry in `eslint.config.js`. (The `database.js` import was already removed from `src/main.js` during the restructure.)
 
 ✅ **Check:** the app still runs with no errors, and `grep -r "ComponentDatabase\|appState" src/` returns nothing.
 

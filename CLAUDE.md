@@ -66,7 +66,7 @@ npm run test:report   # open the HTML report
 - New mistakes (undefined names, duplicate keys, unreachable code…) are **errors**.
 - Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 25, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
 - Cross-file `window` globals are declared only for `src/app/app.js` in [eslint.config.js](eslint.config.js). If another file starts using one by bare name, declare it there for that file.
-- `legacy/`, `dist/` and test output are ignored.
+- `dist/` and test output are ignored.
 
 **Smoke tests**
 
@@ -88,7 +88,8 @@ npm run test:report   # open the HTML report
 - Escape user text before putting it into `innerHTML`.
 - No secrets or API keys in browser code.
 - Match the existing style: 2-space indent, IIFE modules, `/* ── Section ── */` comment headers.
-- Don't edit `dist/` (generated) or `node_modules/`. `legacy/` is reference-only and is deleted in `chore/remove-legacy-code`. The old data worth restoring later is listed under E1 in FIX_PLAN.
+- Don't edit `dist/` (generated) or `node_modules/`.
+- The old `legacy/` folder was deleted in branch #6. Old data worth restoring (resistor/capacitor entries, pin descriptions, datasheet tables) is listed under E1 in FIX_PLAN, with the `git show` command to get it back.
 
 ## Communication
 

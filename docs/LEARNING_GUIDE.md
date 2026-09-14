@@ -50,10 +50,9 @@ index.html  ── the page: all 8 screens, buttons, panels (each with an id="..
          ├─ engines/three-viewer/index.js     3D engine      → window.ThreeViewer
          ├─ engines/simulator/index.js        circuit engine → window.CircuitSimulator
          └─ app/app.js                        the "brain"    → window.CircuitApp
-
-      legacy/script.js    ── OLD brain from an earlier version. Not loaded anywhere. ⚠️
-      legacy/database.js  ── OLD data, only used by legacy/script.js. ⚠️
 ```
+
+An older version of the app (`script.js` + `database.js`) used to sit in a `legacy/` folder. It was never loaded, and it was deleted in branch #6. See [decisions/0002-screen-markup.md](decisions/0002-screen-markup.md) for why the project had two versions.
 
 For the full folder map, see [ARCHITECTURE.md](ARCHITECTURE.md).
 

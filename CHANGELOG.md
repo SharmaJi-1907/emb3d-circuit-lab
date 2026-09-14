@@ -25,6 +25,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - 3D viewer: read-only `isWireframe()`, `isExploded()` and `getModelBounds()`.
 - [ADR 0002](docs/decisions/0002-screen-markup.md): which page markup each screen uses. Includes per-screen measurements and prototype screenshots in `docs/images/`.
 
+### Removed
+- `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
+
 ### Fixed
 - The component data (`src/data/data.js`) is now loaded, so the 3D Viewer, Board Explorer, Datasheet Viewer, Projects, Search and the AI answer engine no longer crash (A1–A8). No screen throws an error any more.
 - Keyboard shortcuts (D2):

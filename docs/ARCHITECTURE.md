@@ -41,8 +41,7 @@ emmb3d/
 │   │   └── helpers.js         Error collector, known-noise list, navigation and 3D-model helpers
 │   └── unit/                  Small function tests            (empty)
 ├── scripts/                   Developer helper scripts
-├── docs/                      Documentation
-└── legacy/                    Old unused code — to be removed
+└── docs/                      Documentation
 ```
 
 Folders marked _(empty)_ are part of the target layout. They get filled while the big files (`app.js`, `data.js`, `main.css`) are split during the fixes.
