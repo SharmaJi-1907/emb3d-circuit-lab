@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --max-warnings 17",
+    "lint": "eslint . --max-warnings 15",
     "test": "npm run lint && npm run test:smoke",
     "test:smoke": "playwright test tests/smoke",
     "test:report": "playwright show-report"
