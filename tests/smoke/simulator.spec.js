@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════
    Circuit Simulator: layout (F3), controls (C2), multimeter (B9),
-   circuit logic (D12, D19) and instruments (C7, D21).
+   circuit logic (D12, D19), instruments (C7, D21) and the drawing loop
+   (D3, D5, D20).
    The screen keeps the index.html markup (ADR 0002). Parts are read
    through the read-only CircuitSimulator.getState().
 ═══════════════════════════════════════════════════════════════════ */
 
 import fs from 'node:fs/promises';
-import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
+import { test, expect, openApp, goToView, settle, expectNoErrors, styleOf } from './helpers.js';
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 const BROWSER_GREY = 'rgb(239, 239, 239)';
@@ -334,5 +335,65 @@ test('multimeter resistance measures the wired circuit, not every resistor (D21)
   // Nothing wired: no current flows, so the meter shows OL (open)
   await loadCircuit(page, [['resistor', 240, 300]]);
   await expect(page.locator('#multimeter-val')).toHaveText('OL');
+  expectNoErrors(errors);
+});
+
+/* ── Setup and drawing loop (D3, D5, D20) ─────────────────────── */
+// Frames drawn per animation-frame tick, over 10 ticks. One drawing loop draws 1 frame per tick.
+const framesPerTick = (page) => page.evaluate(async () => {
+  const start = window.CircuitSimulator.getFrameCount();
+  for (let i = 0; i < 10; i++) await new Promise(requestAnimationFrame);
+  return (window.CircuitSimulator.getFrameCount() - start) / 10;
+});
+
+// Simulated seconds per real second, measured over 2 s inside the page.
+const clockRate = (page) => page.evaluate(async () => {
+  const sim = window.CircuitSimulator;
+  const t0 = sim.getState().time;
+  const p0 = performance.now();
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  return (sim.getState().time - t0) / ((performance.now() - p0) / 1000);
+});
+
+test('visiting the Simulator again does not start another drawing loop (D3)', async ({ page, errors }) => {
+  await openSimulator(page);
+  for (const view of ['dashboard', 'simulator', 'dashboard', 'simulator']) await goToView(page, view);
+  await settle(page); // lets any set-up timer run
+  const perTick = await framesPerTick(page);
+  expect(perTick, 'one drawing loop draws one frame per tick').toBeGreaterThan(0.5);
+  expect(perTick, 'one drawing loop draws one frame per tick').toBeLessThan(1.5);
+  expectNoErrors(errors);
+});
+
+test('nothing is drawn while the Simulator is hidden (D5)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await goToView(page, 'dashboard');
+  expect(await framesPerTick(page), 'frames drawn while hidden').toBe(0);
+  expectNoErrors(errors);
+});
+
+test('the simulation clock follows real time (D20)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await page.locator('#sim-run').click();
+  const normal = await clockRate(page);
+  expect(normal, 'simulated seconds per real second').toBeGreaterThan(0.8);
+  expect(normal, 'simulated seconds per real second').toBeLessThan(1.2);
+
+  await page.locator('#sim-speed').fill('3');
+  const fast = await clockRate(page);
+  expect(fast, 'at speed 3').toBeGreaterThan(2.4);
+  expect(fast, 'at speed 3').toBeLessThan(3.6);
+  expectNoErrors(errors);
+});
+
+test('the board keeps its real size when the window changes size while it is hidden', async ({ page, errors }) => {
+  await openSimulator(page);
+  await goToView(page, 'dashboard');
+  await page.setViewportSize({ width: 1100, height: 650 });
+  await goToView(page, 'simulator');
+  await expect.poll(() => page.locator('#sim-canvas').evaluate((c) => {
+    const r = c.getBoundingClientRect();
+    return r.width > 0 && Math.abs(c.width - r.width) < 1 && Math.abs(c.height - r.height) < 1;
+  }), { message: 'drawing size should match the board on screen' }).toBe(true);
   expectNoErrors(errors);
 });
