@@ -2,19 +2,10 @@
    Smoke tests — open every screen and use the main features.
    Keyboard shortcuts are tested in keyboard.spec.js.
    A test fails on any uncaught exception or console.error.
-
-   Known bugs are marked with knownBug('<code>'). Those tests are
-   EXPECTED to fail until the bug is fixed. When a fix makes one pass,
-   Playwright reports it as failed ("expected to fail, but passed"),
-   so remove the knownBug() line in the same branch as the fix.
-   Codes refer to docs/FIX_PLAN.md.
+   Known bugs are marked with knownBug('<code>') from helpers.js.
 ═══════════════════════════════════════════════════════════════════ */
 
 import { test, expect, VIEWS, openApp, goToView, settle, expectNoErrors, waitForStableModel } from './helpers.js';
-
-function knownBug(...codes) {
-  test.fail(true, `Known bug ${codes.join(', ')} — see docs/FIX_PLAN.md`);
-}
 
 /* ── Boot ─────────────────────────────────────────────────────── */
 test('app boots without errors', async ({ page, errors }) => {
@@ -130,8 +121,6 @@ test('AI answer engine replies without errors', async ({ page, errors }) => {
 });
 
 test('AI assistant replies to a question', async ({ page, errors }) => {
-  knownBug('B1', 'B3');
-
   const question = 'how does an esp32 work';
   await openApp(page);
   await goToView(page, 'ai');

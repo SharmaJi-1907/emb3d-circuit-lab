@@ -5,17 +5,9 @@
    unlike screenshots.
 ═══════════════════════════════════════════════════════════════════ */
 
-import { test, expect, openApp, goToView, expectNoErrors } from './helpers.js';
+import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
-
-// Read a few computed style properties of the first element matching `selector`.
-function styleOf(page, selector, props) {
-  return page.locator(selector).first().evaluate((el, names) => {
-    const s = getComputedStyle(el);
-    return Object.fromEntries(names.map((n) => [n, s[n]]));
-  }, props);
-}
 
 test('sidebar buttons have no browser-grey background at rest', async ({ page, errors }) => {
   await openApp(page);
