@@ -20,7 +20,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Component Database | ✅ Component Library (#10): category filter, sort, compare, part cards with "View 3D" |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
 | Datasheet Viewer | ✅ Shows datasheets |
-| AI Assistant | ⚠️ Chat works (#11): Send, Enter and chips show the question and reply, styled. Answers are still wrong (D1), and typed text isn't escaped (D6) |
+| AI Assistant | ⚠️ Chat works (#11) and picks the right stored answer (#12). Typed text isn't escaped (D6), code blocks break (D7), and the chips ask things no stored answer covers (D17) |
 | Projects | ✅ Shows 6 projects ("New project" button still dead, C4) |
 | Search (Ctrl+K) | ✅ Works |
 | Settings (dark mode) | ❌ Button does nothing |
@@ -86,13 +86,13 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 
 | # | Sev | Problem | Where |
 |---|---|---|---|
-| D1 | 🟠 | **AI always gives the wrong answer.** It matches only the first or second word of each stored question. Any message with "what" gets the LED-resistor answer; anything with "how" or "do" gets the I2C answer. Example: _"how does an esp32 work"_ → I2C wiring guide. | [app.js:1429-1434](../src/app/app.js#L1429-L1434) |
+| D1 | ✅ | **AI always gives the wrong answer.** It matches only the first or second word of each stored question. Any message with "what" gets the LED-resistor answer; anything with "how" or "do" gets the I2C answer. Example: _"how does an esp32 work"_ → I2C wiring guide. _Measured in #12: 19 of 34 test questions right. Even the stored question "Explain how an ESP32 works" got the I2C guide._ _**Fixed in #12:** a named part gets its card first (punctuation ignored, so "MPU-6050" = "mpu6050"); otherwise the stored answer with the most whole-word keyword hits wins, specific topics first on a tie; no hits gives the "be more specific" reply. 59 of 60 test questions right (the miss is a nickname, see Future ideas). Tested in `ai.spec.js`._ | [app.js:1440-1482](../src/app/app.js#L1440-L1482) |
 | D2 | ✅ | **Keyboard shortcuts are wrong.** Keys `1` and `2` go to "dashboard" and "components", which don't exist, so you get a blank screen. The shortcuts shown to the user (`W`, `E`, `R`, `Space`) are not coded at all. _Also found: ⌘K didn't work, Ctrl+3 (a browser shortcut) switched screens, `?` couldn't open the list, and Space re-clicked the focused sidebar button._ **Fixed in #4:** `1–8` follow the sidebar order; `W`/`E`/`R` work on the Viewer; `Space` works on the Simulator; `?` opens the list; Ctrl/⌘+K and `/` open search; keys are ignored while typing, with Ctrl/⌘/Alt, and on auto-repeat. Both shortcut lists now show every key. | [app.js:1526](../src/app/app.js#L1526) |
 | D3 | 🟠 | **Simulator gets set up again on every visit.** Each time you open the Simulator screen, it adds another set of mouse handlers and another endless drawing loop. After 5 visits one click adds 5 parts, and the CPU use keeps growing. | [app.js:866-878](../src/app/app.js#L866-L878), [simulator.js:626-652](../src/engines/simulator/index.js#L626-L652) |
 | D4 | 🟡 | **Two background animations draw on the same canvas** (`circuit-bg`), which uses double the CPU and can flicker. | [app.js:87](../src/app/app.js#L87) and [circuit-bg.js:188](../src/engines/background/circuit-bg.js#L188) |
 | D5 | 🟡 | 3D and simulator drawing loops keep running when their screen is hidden, which wastes battery. _ESLint confirms: `animationId` and `animId` are stored but never used to cancel the loops._ _**3D part fixed in #9:** the 3D scene is not drawn while its screen is hidden (0 frames vs 38/s before, tested). The simulator loop is still open (#15)._ | [three-viewer.js:957](../src/engines/three-viewer/index.js#L957), [simulator.js:908](../src/engines/simulator/index.js#L908) |
-| D6 | 🟡 | **Unsafe HTML in AI chat.** The user's typed text is put into the page as raw HTML (`escapeHtml` exists but isn't used here). Typing `<img src=x onerror=alert(1)>` would run code. Low risk today (no login or server), but a bad habit to fix now. _Since #11 the chat shows messages, so this really happens (confirmed in a scratch copy)._ | [app.js:1400](../src/app/app.js#L1400), [app.js:1669](../src/app/app.js#L1669) |
-| D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. _Visible since #11: they show as small empty boxes._ | [app.js:1673-1674](../src/app/app.js#L1673-L1674) |
+| D6 | 🟡 | **Unsafe HTML in AI chat.** The user's typed text is put into the page as raw HTML (`escapeHtml` exists but isn't used here). Typing `<img src=x onerror=alert(1)>` would run code. Low risk today (no login or server), but a bad habit to fix now. _Since #11 the chat shows messages, so this really happens (confirmed in a scratch copy)._ | [app.js:1400](../src/app/app.js#L1400), [app.js:1671](../src/app/app.js#L1671) |
+| D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. _Visible since #11: they show as small empty boxes._ | [app.js:1675-1676](../src/app/app.js#L1675-L1676) |
 | D8 | ⚪ | The 3D loader has cases for `nrf52840` and `bme280`, which aren't in the data. Parts that are in the data (`l298n`, `ams1117`, `nrf24l01`) all fall back to a plain 8-pin chip. _ESLint found more: 4 finished models (`buildArduinoUno`, `buildResistor`, `buildCapacitor`, `buildLED`) are never called, so they can never be shown._ | [three-viewer.js:739-770](../src/engines/three-viewer/index.js#L739-L770), [three-viewer.js:423](../src/engines/three-viewer/index.js#L423), [:553](../src/engines/three-viewer/index.js#L553), [:590](../src/engines/three-viewer/index.js#L590), [:628](../src/engines/three-viewer/index.js#L628) |
 | D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
 | D10 | ✅ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ _**Fixed in #10:** sorts by name, pin count or lowest voltage, and the dropdown keeps the choice (tested)._ | [app.js:1704](../src/app/app.js#L1704) |
@@ -102,6 +102,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D14 | 🟡 | The search popup footer shows **↑↓ Navigate** and **↵ Select**, but those keys do nothing (only Esc is handled). _Found in #4._ | [app.js:314](../src/app/app.js#L314) |
 | D15 | ✅ | **The 3D Viewer is empty when the app first opens.** At startup the app asks for the model before the 3D engine is ready (the engine starts 300 ms later), and nothing asks again. The chip only appears after leaving and returning to the Viewer. The "Rendering 3D Model..." text also never hid. _Found in #4 (`getModelBounds()` returns `null` at first load)._ **Fixed in #4b:** a `showSelectedModel()` helper draws the part and hides the loading text. It's called when the Viewer opens **and** as soon as the engine is ready. | [app.js:651](../src/app/app.js#L651), [app.js:79](../src/app/app.js#L79) |
 | D16 | 🟡 | **Each visit to the Viewer leaks graphics memory.** Every visit rebuilds the model, and the old one is removed with `scene.remove()` but never freed with `dispose()`. Measured: **2 → 297 geometries after 5 visits** (about 59 per visit). _Found in #4b._ | [three-viewer.js:733](../src/engines/three-viewer/index.js#L733) |
+| D17 | 🟡 | **The AI suggestion chips ask things no stored answer covers.** "Reset Hookup" (RESET pin) gets the "be more specific" reply, "555 Astable Eq" gets the NE555 card without the timing equation, and "ESP32 5V Tolerance" gets the ESP32 overview, which doesn't mention 5V. Fix by writing 3 answers or changing the chips. _Found in #12._ | [index.html:495-497](../index.html#L495-L497), [data.js:827](../src/data/data.js#L827) |
 
 ### E. Cleanup / project health
 
@@ -142,6 +143,9 @@ Features of the old 3D Viewer that the new layout doesn't have ([ADR 0002](decis
 - info overlay on the 3D view (component, package, pins, voltage)
 - DIP / SMD / QFP / BGA package buttons (never worked)
 - screenshot button
+
+AI assistant (found in #12):
+- short names for parts: the AI finds a part only by its full name or ID, so "stm32", "blue pill", "555" or "esp32" (for the ESP32-WROOM-32 card) aren't recognised. This needs a list of extra names for each part in `data.js`.
 
 ---
 
@@ -203,7 +207,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 
 ### Phase 4 — Fix the logic bugs (1–2 hours) → fixes D1–D9
 
-1. **AI matcher (D1):** replace the first/second-word check with keyword lists per answer, and pick the answer with the most keyword hits:
+1. ✅ **AI matcher (D1, #12):** replace the first/second-word check with keyword lists per answer, and pick the answer with the most keyword hits:
    ```js
    const topics = [
      { keys: ['resistor', 'ohm', 'led'], answer: 'What resistor do I need for an LED at 5V?' },

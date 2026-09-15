@@ -129,7 +129,8 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 9 | `fix/viewer-new-layout` | B4–B7, C1: switch the Viewer to the new layout (replaces the old #9–#11). Done **before #8**, so the canvas sizing is in place before the Viewer stops being the start screen. | ✅ |
 | 10 | `fix/database-library` | C3, B8 (part), D10: show the Component Library in the Database screen | ✅ |
 | 11 | `fix/ai-chat-wiring` | B1–B3, F6, F7 (AI chat layout, found here) | ✅ |
-| 12 | `fix/ai-answer-matching` | D1 | ⏳ |
+| 12 | `fix/ai-answer-matching` | D1 | ✅ |
+| 12b | `feat/ai-chip-answers` | D17: the suggestion chips get real answers (write 3 answers, or change the chips) | ⏳ |
 | 13 | `fix/chat-html-escaping` | D6, D7 | ⏳ |
 | 14 | `fix/simulator-layout-controls` | F3, C2, B9, D12 | ⏳ |
 | 15 | `fix/simulator-init-once` | D3, D5 | ⏳ |

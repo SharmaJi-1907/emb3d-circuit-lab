@@ -42,7 +42,7 @@ emmb3d/
 │   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
 │   │   ├── viewer.spec.js     3D Viewer layout: canvas sizing, sidebar, pin table/detail, tooltip, controls
 │   │   ├── database.spec.js   Database screen (Component Library): cards, filter, sort, compare, View 3D
-│   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles
+│   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
 │   └── unit/                  Small function tests            (empty)
 ├── scripts/                   Developer helper scripts
