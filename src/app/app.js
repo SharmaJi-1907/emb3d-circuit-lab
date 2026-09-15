@@ -909,6 +909,20 @@ window.CircuitApp = (function () {
       document.getElementById('sim-speed-val').textContent = `${e.target.value}x`;
     });
 
+    // Oscilloscope (C7): the ON button, and dials that step through their values
+    const scopeBtn = document.querySelector('#oscilloscope .instrument-toggle');
+    if (scopeBtn && !scopeBtn._wired) {
+      scopeBtn._wired = true;
+      scopeBtn.addEventListener('click', () => {
+        const on = !CircuitSimulator.getState().scope.on;
+        CircuitSimulator.setScope({ on });
+        scopeBtn.textContent = on ? 'ON' : 'OFF';
+        scopeBtn.classList.toggle('active', on);
+      });
+    }
+    wireDial('dial-ch1-volt', 'scope-volt-read', [0.5, 1, 2, 5, 10], v => `${v.toFixed(1)}V`, v => CircuitSimulator.setScope({ voltsPerDiv: v }));
+    wireDial('dial-timebase', 'scope-time-read', [10, 50, 100, 500, 1000], v => (v >= 1000 ? `${v / 1000} s` : `${v} ms`), v => CircuitSimulator.setScope({ msPerDiv: v }));
+
     document.querySelectorAll('#view-simulator .palette-item').forEach(item => {
       if (item._wired) return;
       item._wired = true;
@@ -917,6 +931,21 @@ window.CircuitApp = (function () {
         if (type === 'wire') showToast('To add a wire, drag from one pin to another on the board', 'info');
         else if (!CircuitSimulator.addComponentToCanvas(type)) showToast(`${item.textContent.trim()} isn't available in the simulator yet`, 'info');
       });
+    });
+  }
+
+  // A dial starts at its data-val and each click moves to the next value (after the last, back to the first).
+  function wireDial(dialId, readoutId, values, format, apply) {
+    const dial = document.getElementById(dialId);
+    const readout = document.getElementById(readoutId);
+    if (!dial || dial._wired) return;
+    dial._wired = true;
+    let i = Math.max(0, values.indexOf(Number(dial.dataset.val)));
+    dial.addEventListener('click', () => {
+      i = (i + 1) % values.length;
+      dial.dataset.val = values[i];
+      if (readout) readout.textContent = format(values[i]);
+      apply(values[i]);
     });
   }
 

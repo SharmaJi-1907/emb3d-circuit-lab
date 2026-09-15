@@ -38,11 +38,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `src/styles/views/simulator.css`: the first per-screen stylesheet (F3).
 - A Battery button in the Simulator palette, so a circuit has a power source.
 - `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
+- `tests/smoke/simulator.spec.js`: 5 tests for the oscilloscope and the multimeter's resistance (87 tests in total). Simulator: `setScope()` for the oscilloscope settings.
 
 ### Removed
+- The Simulator's unused signal generator and its `setSigGen()` function (nothing called it; it only fed the made-up oscilloscope sine).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- The Simulator's instruments show real values (D21, C7). The oscilloscope shows the battery's voltage (CH1) and the first LED's voltage (CH2) over time, instead of a made-up sine; its ON button and V/div and T/div dials work; its screen draws at its real size. The multimeter's Resistance mode shows the resistance the battery sees, or OL when no current flows, instead of adding up every resistor on the board. A part added by drag and drop now updates the circuit.
 - Simulator circuits give correct results (D12). A new DC solver (nets + nodal analysis): an LED lights only in a closed loop back to the battery and only the right way round, a capacitor blocks DC, and currents follow Ohm's law (9 V, 1 kΩ, LED = 6.93 mA; before: 40.7 mA, and the LED lit in every circuit). The multimeter's current is the battery's current, wires animate only when current flows, and the status bar shows the number of nodes. Deleting a part removes all its wires (D19).
 - The Circuit Simulator is usable (F3, C2, B9). The board fills the middle of the screen (726×558 instead of 160×112) between the palette and the instruments, and draws at its real size. Every toolbar and palette control works: Run, Pause, Stop (and Space), Speed, Clear, Export, adding parts by click or drag. Wire, NE555 IC and Upload Code explain themselves. The status bar shows the state and time, and the multimeter shows readings.
 - Typed HTML in the AI chat shows as text and never runs (D6). Code blocks in AI replies show as one block with the exact code (D7). Before, all 7 stored code blocks became empty boxes and `#include <Wire.h>` lost `<Wire.h>`. `escapeHtml` also escapes quotes now.
