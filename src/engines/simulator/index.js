@@ -18,7 +18,6 @@ window.CircuitSimulator = (function () {
   let simRunning = false;
   let simTime = 0;
   let simSpeed = 1;
-  let animId = null;
   let dragOffset = { x: 0, y: 0 };
   let nextId = 1;
 
@@ -618,6 +617,7 @@ window.CircuitSimulator = (function () {
 
   /* ── Init ───────────────────────────────────────────────────── */
   function init(simCanvasEl, oscCanvasEl) {
+    if (ctx) return; // set up once (D3)
     canvas = simCanvasEl;
     oscCanvas = oscCanvasEl;
     ctx = canvas.getContext('2d');
@@ -653,6 +653,7 @@ window.CircuitSimulator = (function () {
     }
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return; // hidden: keep the last size until the screen is shown again
     canvas.width = rect.width;
     canvas.height = rect.height;
   }
@@ -931,16 +932,28 @@ window.CircuitSimulator = (function () {
 
   /* ── Render ─────────────────────────────────────────────────── */
   let wireAnimOffset = 0;
+  let lastFrame = 0;
+  let frameCount = 0;
 
   function render() {
-    animId = requestAnimationFrame(render);
-    if (!ctx) return;
+    requestAnimationFrame(render);
+    // Don't draw while the Simulator screen is hidden (D5): offsetParent is null under display:none.
+    // The simulation pauses too, and restarts its clock when the screen comes back.
+    if (!ctx || canvas.offsetParent === null) { lastFrame = 0; return; }
+    // First frame since the screen was shown: size the canvases, as the window may have changed meanwhile
+    if (!lastFrame) resizeCanvas();
+    frameCount++;
+
+    // Time-based clock (D20): real seconds since the last frame, at most 1 s
+    const now = performance.now();
+    const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 1) : 0;
+    lastFrame = now;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (simRunning) {
-      simTime += 0.016 * simSpeed;
-      wireAnimOffset = (wireAnimOffset + 1) % 20;
+      simTime += dt * simSpeed;
+      wireAnimOffset = (wireAnimOffset + dt * 60) % 20;
     }
 
     // Draw wires
@@ -1270,6 +1283,7 @@ window.CircuitSimulator = (function () {
     exportCircuit,
     loadCircuit,
     isRunning: () => simRunning,
+    getFrameCount: () => frameCount,
     getState: () => ({
       ready: Boolean(ctx), parts: components.map(c => c.type), wires: wires.length, running: simRunning, time: simTime, speed: simSpeed,
       readings: components.map(c => ({ type: c.type, on: c.state.on, volts: +c.state.voltage.toFixed(3), mA: +(c.state.current * 1000).toFixed(2) })),

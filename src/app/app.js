@@ -881,14 +881,10 @@ window.CircuitApp = (function () {
     wireSimulatorControls();
     updateSimToolbar();
 
-    // Init simulator if not already
-    setTimeout(() => {
-      const simCanvas = document.getElementById('sim-canvas');
-      const oscCanvas = document.getElementById('osc-canvas');
-      if (simCanvas && window.CircuitSimulator) {
-        CircuitSimulator.init(simCanvas, oscCanvas);
-      }
-    }, 100);
+    // Set the simulator up on the first visit only (D3). It sizes itself each time its screen is shown.
+    if (!CircuitSimulator.getState().ready) {
+      CircuitSimulator.init(document.getElementById('sim-canvas'), document.getElementById('osc-canvas'));
+    }
   }
 
   // Toolbar and palette buttons (C2). Wired once, on the first visit.

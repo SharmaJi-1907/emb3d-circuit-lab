@@ -136,7 +136,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 14 | `fix/simulator-layout-controls` | F3, C2, B9 (D12 moved to 14b) | ✅ |
 | 14b | `fix/simulator-circuit-logic` | D12 (battery polarity, closed loop), D19 (delete keeps a wire), C7 (node count part) | ✅ |
 | 14c | `fix/simulator-oscilloscope` | D21 (oscilloscope and multimeter resistance show real circuit values), C7 (ON button, V/div and T/div dials) | ✅ |
-| 15 | `fix/simulator-init-once` | D3, D5, D20 (clock counts frames) | ⏳ |
+| 15 | `fix/simulator-init-once` | D3, D5, D20 (clock counts frames) | ✅ |
 | 16 | `style/board-explorer` | F4 | ⏳ |
 | 17 | `style/datasheet-sidebar` | F5 | ⏳ |
 | 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ⏳ |
