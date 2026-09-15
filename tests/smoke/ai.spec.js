@@ -210,3 +210,57 @@ test('asking "how does an esp32 work" shows the ESP32 overview (D1)', async ({ p
   await expect(bubbles(page, 'assistant').locator('.ai-message-content')).toContainText('ESP32 Architecture Overview');
   expectNoErrors(errors);
 });
+
+/* ── Safe text and code blocks (D6, D7) ───────────────────────── */
+// A fenced code block in the stored answers: ```lang\n<code>\n```
+const CODE_BLOCK = /```[^\n]*\n([\s\S]*?)\n?```/g;
+
+test('typed HTML shows as text and does not run (D6)', async ({ page, errors }) => {
+  await openAI(page);
+  const typed = ['<img src="data:," onerror="window.__d6 = 1">', '<b>not bold</b>'];
+  for (const text of typed) await ask(page, text);
+  await expect(userTexts(page)).toHaveText(typed);
+  await expect(chat(page).locator('.ai-message img, .ai-message b')).toHaveCount(0);
+  expect(await page.evaluate(() => window.__d6), 'typed onerror code must not run').toBeUndefined();
+  expectNoErrors(errors);
+});
+
+test('every code block in the stored answers shows as one block with the exact code (D7)', async ({ page, errors }) => {
+  await openAI(page);
+  const answers = await page.evaluate(() => Object.entries(window.CircuitLabData.aiResponses));
+  const expected = [];
+  for (const [question, answer] of answers) {
+    const blocks = [...answer.matchAll(CODE_BLOCK)].map((m) => m[1]);
+    if (!blocks.length) continue;
+    await ask(page, question);
+    expected.push(...blocks);
+  }
+  expect(expected.length, 'the stored answers should contain code blocks').toBeGreaterThan(0);
+  expect(await chat(page).locator('pre.ai-code').allTextContents()).toEqual(expected);
+  const brokenCode = await chat(page).locator('.ai-message code').evaluateAll((els) => els.filter((el) => /^[\s`]*$/.test(el.textContent)).length);
+  expect(brokenCode, 'no empty or backtick-only <code> boxes').toBe(0);
+  await expect(chat(page)).toContainText('#include <Wire.h>');
+  expectNoErrors(errors);
+});
+
+test('code inside a code block has no inline-code box (D7)', async ({ page, errors }) => {
+  await openAI(page);
+  await ask(page, 'Generate Arduino blink code');
+  const code = chat(page).locator('pre.ai-code code').first();
+  await expect(code, 'the reply should contain a code block').toBeVisible();
+  expect(await code.evaluate((el) => el.getAttribute('style'))).toBeNull();
+  const s = await styleOf(page, '#ai-chat-messages pre.ai-code code', ['backgroundColor', 'borderTopWidth', 'paddingLeft']);
+  expect(s).toEqual({ backgroundColor: TRANSPARENT, borderTopWidth: '0px', paddingLeft: '0px' });
+  expectNoErrors(errors);
+});
+
+// Guard: escaping must not break the formatting that already worked.
+test('inline code, bold and & still show in messages', async ({ page, errors }) => {
+  await openAI(page);
+  await ask(page, 'use `digitalWrite()` for **fast** pins & more');
+  const bubble = userTexts(page).first();
+  await expect(bubble.locator('code')).toHaveText('digitalWrite()');
+  await expect(bubble.locator('strong')).toHaveText('fast');
+  await expect(bubble).toHaveText('use digitalWrite() for fast pins & more');
+  expectNoErrors(errors);
+});
