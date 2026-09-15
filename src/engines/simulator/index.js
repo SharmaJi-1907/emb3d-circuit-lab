@@ -24,7 +24,6 @@ window.CircuitSimulator = (function () {
 
   // Instruments
   let oscEnabled = true;
-  let mmEnabled = true;
   let sigGenEnabled = false;
   let sigGenFreq = 1000;
   let sigGenAmp = 5;
@@ -771,9 +770,9 @@ window.CircuitSimulator = (function () {
     const { mx, my } = getMouse(e);
     for (let i = components.length - 1; i >= 0; i--) {
       if (hitTestComp(components[i], mx, my)) {
-        components.splice(i, 1);
-        // Remove connected wires
-        wires = wires.filter(w => w.from.comp !== components[i] && w.to.comp !== components[i]);
+        const [removed] = components.splice(i, 1);
+        // Remove its wires (D19)
+        wires = wires.filter(w => w.from.comp !== removed && w.to.comp !== removed);
         runSimulation();
         return;
       }
@@ -809,97 +808,124 @@ window.CircuitSimulator = (function () {
   }
 
   /* ── Simulation Engine ──────────────────────────────────────── */
+  // DC solver (D12). Wires and closed switches join pins into nets; the
+  // voltages come from nodal analysis. Batteries have a small internal
+  // resistance, LEDs and diodes conduct only forwards (their forward voltage
+  // plus a small resistance), and capacitors don't conduct in DC. Parts
+  // without a model here (transistors, boards…) don't conduct. A tiny leak
+  // from every net to ground keeps unconnected parts solvable (they read 0 V).
+  const R_BATTERY = 0.5;   // Ω
+  const R_DIODE_ON = 10;   // Ω
+  const G_LEAK = 1e-9;     // S
+  const I_LED_ON = 0.001;  // A: an LED lights above 1 mA
+  let netCount = 0;
+
   function runSimulation() {
     updateWirePositions();
 
-    // Simple voltage propagation
-    // Find voltage sources
-    const voltageSources = components.filter(c => c.type === 'battery');
+    // Join pins into nets
+    const pin = (comp, i) => `${comp.id}:${i}`;
+    const parent = new Map();
+    const find = (p) => (parent.get(p) === p ? p : find(parent.get(p)));
+    const join = (a, b) => parent.set(find(a), find(b));
+    components.forEach(c => c.def.nodes.forEach((_, i) => parent.set(pin(c, i), pin(c, i))));
+    wires.forEach(w => join(pin(w.from.comp, w.from.nodeIdx), pin(w.to.comp, w.to.nodeIdx)));
+    components.forEach(c => { if (c.type === 'switch' && c.state.closed) join(pin(c, 0), pin(c, 1)); });
 
-    // Reset states
-    components.forEach(c => {
-      c.state.voltage = 0;
-      c.state.current = 0;
-      if (c.type === 'led') c.state.on = false;
-    });
+    // Number the nets. Ground is a ground part, else the first battery's − pin.
+    const roots = [...new Set([...parent.keys()].map(find))];
+    netCount = roots.length;
+    const groundPart = components.find(c => c.type === 'ground');
+    const firstBattery = components.find(c => c.type === 'battery');
+    const ground = groundPart ? find(pin(groundPart, 0)) : firstBattery ? find(pin(firstBattery, 1)) : null;
+    const index = new Map(roots.filter(r => r !== ground).map((r, i) => [r, i]));
+    const net = (comp, i) => { const r = find(pin(comp, i)); return r === ground ? -1 : index.get(r); };
 
-    // Propagate from each battery
-    voltageSources.forEach(bat => {
-      const posNode = getNodeWorld(bat, 0);
-      const negNode = getNodeWorld(bat, 1);
+    const diodes = components.filter(c => c.type === 'led' || c.type === 'diode');
+    diodes.forEach(d => { d.state.on = false; });
 
-      // Find components connected to positive terminal
-      propagateVoltage(bat, 0, bat.value, new Set());
-    });
-  }
-
-  function propagateVoltage(sourceComp, nodeIdx, voltage, visited) {
-    const key = `${sourceComp.id}-${nodeIdx}`;
-    if (visited.has(key)) return;
-    visited.add(key);
-
-    const nodePos = getNodeWorld(sourceComp, nodeIdx);
-
-    // Find all wires connected to this node
-    wires.forEach(wire => {
-      let otherComp = null, otherNodeIdx = -1;
-
-      if (wire.from.comp === sourceComp && wire.from.nodeIdx === nodeIdx) {
-        otherComp = wire.to.comp;
-        otherNodeIdx = wire.to.nodeIdx;
-      } else if (wire.to.comp === sourceComp && wire.to.nodeIdx === nodeIdx) {
-        otherComp = wire.from.comp;
-        otherNodeIdx = wire.from.nodeIdx;
-      }
-
-      if (!otherComp) return;
-
-      // Apply voltage to connected component
-      applyVoltage(otherComp, otherNodeIdx, voltage, visited);
-    });
-  }
-
-  function applyVoltage(comp, nodeIdx, voltage, visited) {
-    const key = `${comp.id}-${nodeIdx}`;
-    if (visited.has(key)) return;
-    visited.add(key);
-
-    comp.state.voltage = Math.max(comp.state.voltage, voltage);
-
-    // Component-specific behavior
-    switch (comp.type) {
-      case 'led':
-        if (voltage > comp.value) {
-          comp.state.on = true;
-          comp.state.current = (voltage - comp.value) / 150; // Assume 150Ω series
-        }
-        break;
-      case 'switch':
-        if (comp.state.closed) {
-          // Pass voltage through
-          const otherNode = nodeIdx === 0 ? 1 : 0;
-          propagateVoltage(comp, otherNode, voltage, visited);
-        }
-        break;
-      case 'resistor':
-        // Voltage divider (simplified)
-        const otherNode = nodeIdx === 0 ? 1 : 0;
-        const dropVoltage = voltage * 0.1; // Simplified
-        propagateVoltage(comp, otherNode, voltage - dropVoltage, visited);
-        break;
-      case 'diode':
-        if (nodeIdx === 0 && voltage > comp.value) {
-          propagateVoltage(comp, 1, voltage - comp.value, visited);
-        }
-        break;
-      default:
-        // Pass through for other components
-        comp.def.nodes.forEach((_, i) => {
-          if (i !== nodeIdx) {
-            propagateVoltage(comp, i, voltage * 0.95, visited);
-          }
-        });
+    // Solve, then switch each diode on or off until nothing changes
+    let volts = [];
+    for (let pass = 0; pass < 20; pass++) {
+      volts = solveNets(index.size, net);
+      let changed = false;
+      diodes.forEach(d => {
+        const vd = voltAt(volts, net(d, 0)) - voltAt(volts, net(d, 1));
+        const on = vd > d.value; // conducts when forward-biased past its forward voltage
+        if (on !== d.state.on) { d.state.on = on; changed = true; }
+      });
+      if (!changed) break;
     }
+
+    // Store each part's highest pin voltage and the current through it
+    components.forEach(c => {
+      const v = c.def.nodes.map((_, i) => voltAt(volts, net(c, i)));
+      const drop = (v[0] || 0) - (v[1] || 0);
+      c.state.voltage = Math.max(0, ...v);
+      c.state.current =
+        c.type === 'resistor' ? Math.abs(drop) / c.value :
+        c.type === 'battery' ? Math.max(0, (c.value - drop) / R_BATTERY) :
+        (c.type === 'led' || c.type === 'diode') && c.state.on ? (drop - c.value) / R_DIODE_ON :
+        0;
+    });
+    components.forEach(c => { if (c.type === 'led') c.state.on = c.state.current > I_LED_ON; });
+  }
+
+  function voltAt(volts, n) {
+    return n < 0 ? 0 : volts[n];
+  }
+
+  // Nodal analysis: build G·V = I for the nets (ground excluded) and solve it.
+  function solveNets(n, net) {
+    const G = Array.from({ length: n }, () => new Array(n).fill(0));
+    const I = new Array(n).fill(0);
+    const conductance = (a, b, g) => {
+      if (a >= 0) G[a][a] += g;
+      if (b >= 0) G[b][b] += g;
+      if (a >= 0 && b >= 0) { G[a][b] -= g; G[b][a] -= g; }
+    };
+    const inject = (a, i) => { if (a >= 0) I[a] += i; };
+
+    for (let k = 0; k < n; k++) G[k][k] += G_LEAK;
+    components.forEach(c => {
+      if (c.type === 'resistor') {
+        conductance(net(c, 0), net(c, 1), 1 / c.value);
+      } else if (c.type === 'battery') {
+        // A voltage source with internal resistance, as a current source in parallel
+        conductance(net(c, 0), net(c, 1), 1 / R_BATTERY);
+        inject(net(c, 0), c.value / R_BATTERY);
+        inject(net(c, 1), -c.value / R_BATTERY);
+      } else if ((c.type === 'led' || c.type === 'diode') && c.state.on) {
+        // i = (Va − Vk − Vf) / R
+        conductance(net(c, 0), net(c, 1), 1 / R_DIODE_ON);
+        inject(net(c, 0), c.value / R_DIODE_ON);
+        inject(net(c, 1), -c.value / R_DIODE_ON);
+      }
+    });
+    return gaussianSolve(G, I);
+  }
+
+  // Solve A·x = b (Gaussian elimination with partial pivoting).
+  function gaussianSolve(A, b) {
+    const n = b.length;
+    for (let col = 0; col < n; col++) {
+      let best = col;
+      for (let r = col + 1; r < n; r++) if (Math.abs(A[r][col]) > Math.abs(A[best][col])) best = r;
+      [A[col], A[best]] = [A[best], A[col]];
+      [b[col], b[best]] = [b[best], b[col]];
+      for (let r = col + 1; r < n; r++) {
+        const f = A[r][col] / A[col][col];
+        for (let k = col; k < n; k++) A[r][k] -= f * A[col][k];
+        b[r] -= f * b[col];
+      }
+    }
+    const x = new Array(n).fill(0);
+    for (let r = n - 1; r >= 0; r--) {
+      let sum = b[r];
+      for (let k = r + 1; k < n; k++) sum -= A[r][k] * x[k];
+      x[r] = sum / A[r][r];
+    }
+    return x;
   }
 
   /* ── Render ─────────────────────────────────────────────────── */
@@ -949,7 +975,7 @@ window.CircuitSimulator = (function () {
 
   function drawWires() {
     wires.forEach(wire => {
-      const isActive = wire.from.comp.state.voltage > 0 || wire.to.comp.state.voltage > 0;
+      const isActive = wire.from.comp.state.current > 0 && wire.to.comp.state.current > 0;
 
       ctx.save();
       ctx.lineWidth = 2;
@@ -1139,8 +1165,9 @@ window.CircuitSimulator = (function () {
       mmEl.textContent = maxV.toFixed(2);
       if (mmUnitEl) mmUnitEl.textContent = 'V';
     } else if (mode === 'current') {
+      // Current the batteries supply
       let totalCurrent = 0;
-      components.forEach(c => { totalCurrent += c.state.current || 0; });
+      components.forEach(c => { if (c.type === 'battery') totalCurrent += c.state.current; });
       mmEl.textContent = (totalCurrent * 1000).toFixed(1);
       if (mmUnitEl) mmUnitEl.textContent = 'mA';
     } else if (mode === 'resistance') {
@@ -1159,6 +1186,8 @@ window.CircuitSimulator = (function () {
     document.getElementById('sim-indicator')?.classList.toggle('running', simRunning);
     const time = document.getElementById('sim-time');
     if (time) time.textContent = `t = ${simTime.toFixed(3)}s`;
+    const nodes = document.getElementById('sim-nodes');
+    if (nodes) nodes.textContent = `Nodes: ${netCount}`;
   }
 
   /* ── Public Controls ────────────────────────────────────────── */
@@ -1183,6 +1212,7 @@ window.CircuitSimulator = (function () {
     simRunning = false;
     simTime = 0;
     selectedComponent = null;
+    runSimulation();
     showToast('Circuit cleared', 'info');
   }
 
@@ -1207,10 +1237,32 @@ window.CircuitSimulator = (function () {
     if (wave !== undefined) sigGenWave = wave;
   }
 
+  // Build a circuit from the JSON that exportCircuit() writes.
+  function loadCircuit(data) {
+    components = [];
+    wires = [];
+    const byId = new Map();
+    (data.components || []).forEach((d, i) => {
+      const comp = createComponent(d.type, 0, 0);
+      if (!comp) return;
+      comp.x = d.x;
+      comp.y = d.y;
+      if (d.value !== undefined) comp.value = d.value;
+      components.push(comp);
+      byId.set(d.id ?? i, comp);
+    });
+    (data.wires || []).forEach(w => {
+      const from = byId.get(w.from.compId);
+      const to = byId.get(w.to.compId);
+      if (from && to) wires.push({ id: nextId++, from: { comp: from, nodeIdx: w.from.nodeIdx }, to: { comp: to, nodeIdx: w.to.nodeIdx }, color: '#00d4ff' });
+    });
+    runSimulation();
+  }
+
   function exportCircuit() {
     const data = {
       components: components.map(c => ({
-        type: c.type, x: c.x, y: c.y, value: c.value
+        id: c.id, type: c.type, x: c.x, y: c.y, value: c.value
       })),
       wires: wires.map(w => ({
         from: { compId: w.from.comp.id, nodeIdx: w.from.nodeIdx },
@@ -1242,7 +1294,11 @@ window.CircuitSimulator = (function () {
     setSimSpeed,
     setSigGen,
     exportCircuit,
+    loadCircuit,
     isRunning: () => simRunning,
-    getState: () => ({ ready: Boolean(ctx), parts: components.map(c => c.type), wires: wires.length, running: simRunning, time: simTime, speed: simSpeed }),
+    getState: () => ({
+      ready: Boolean(ctx), parts: components.map(c => c.type), wires: wires.length, running: simRunning, time: simTime, speed: simSpeed,
+      readings: components.map(c => ({ type: c.type, on: c.state.on, volts: +c.state.voltage.toFixed(3), mA: +(c.state.current * 1000).toFixed(2) })),
+    }),
   };
 })();
