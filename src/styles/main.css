@@ -1911,8 +1911,7 @@ body {
 ═══════════════════════════════════════════════════════════════ */
 #view-ai {
   display: grid !important;
-  grid-template-rows: 1fr auto auto;
-  padding: 0 !important;
+  grid-template-rows: minmax(0, 1fr);
   height: 100%;
 }
 
@@ -1946,7 +1945,8 @@ body {
 
 .ai-message-body { flex: 1; min-width: 0; }
 
-.ai-message-content {
+.ai-message-content,
+.chat-bubble {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1981,8 +1981,10 @@ body {
   overflow-x: auto;
   margin: 8px 0;
 }
-.ai-message-content ul { padding-left: 16px; margin: 6px 0; }
-.ai-message-content li { margin-bottom: 4px; }
+.ai-message-content ul,
+.chat-bubble ul { padding-left: 16px; margin: 6px 0; }
+.ai-message-content li,
+.chat-bubble li { margin-bottom: 4px; }
 
 .ai-message-time {
   font-size: 9px;
@@ -2003,7 +2005,8 @@ body {
   background: rgba(10,10,20,0.8);
 }
 
-.ai-suggestion {
+.ai-suggestion,
+.ai-suggestion-chip {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -2015,7 +2018,8 @@ body {
   transition: all var(--t-fast);
   white-space: nowrap;
 }
-.ai-suggestion:hover {
+.ai-suggestion:hover,
+.ai-suggestion-chip:hover {
   border-color: var(--border-hover);
   color: var(--cyan);
   background: var(--cyan-dim);
