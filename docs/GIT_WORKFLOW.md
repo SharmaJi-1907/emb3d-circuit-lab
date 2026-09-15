@@ -133,8 +133,9 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 12b | `feat/ai-chip-answers` | D17: the suggestion chips get real answers (write 3 answers, or change the chips) | ⏳ |
 | 13 | `fix/chat-html-escaping` | D6, D7 | ✅ |
 | 13b | `fix/chat-lists-tables` | D18: show "- " lists and tables in AI replies | ⏳ |
-| 14 | `fix/simulator-layout-controls` | F3, C2, B9, D12 | ⏳ |
-| 15 | `fix/simulator-init-once` | D3, D5 | ⏳ |
+| 14 | `fix/simulator-layout-controls` | F3, C2, B9 (D12 moved to 14b) | ✅ |
+| 14b | `fix/simulator-circuit-logic` | D12 (battery polarity, closed loop), D19 (delete keeps a wire), C7 (oscilloscope controls, node count) | ⏳ |
+| 15 | `fix/simulator-init-once` | D3, D5, D20 (clock counts frames) | ⏳ |
 | 16 | `style/board-explorer` | F4 | ⏳ |
 | 17 | `style/datasheet-sidebar` | F5 | ⏳ |
 | 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ⏳ |
@@ -145,7 +146,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 22 | `feat/hash-routing` | D9 | ⏳ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models); restore resistor/capacitor data from `legacy/` history | ⏳ |
 | 24 | `chore/upgrade-threejs` | E7 | ⏳ |
-| 25 | `chore/cleanup-assets` | E2–E5, E10 | ⏳ |
+| 25 | `chore/cleanup-assets` | E2–E5, E10, E12 (unused Simulator CSS) | ⏳ |
 | 26 | `chore/update-dependencies` | E6 | ⏳ |
 | 27+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
 
