@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Board Explorer: layout and styles (F4).
+   Board Explorer: layout and styles (F4), and behaviour (D22, D23, D25).
    The screen keeps the index.html markup (ADR 0002); its styles are in
    src/styles/views/boards.css.
 ═══════════════════════════════════════════════════════════════════ */
 
-import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
+import { test, expect, openApp, goToView, expectNoErrors, styleOf, waitForStableModel } from './helpers.js';
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 const BROWSER_GREY = 'rgb(239, 239, 239)';
@@ -62,5 +62,63 @@ test('tabs, filters, zoom buttons, specs and the pin list are styled (F4)', asyn
 
   expect(await styleOf(page, '#board-specs-grid', ['display'])).toEqual({ display: 'grid' });
   expect(await styleOf(page, '.board-pin-item', ['display', 'cursor'])).toEqual({ display: 'flex', cursor: 'pointer' });
+  expectNoErrors(errors);
+});
+
+/* ── Behaviour (D22, D23, D25) ────────────────────────────────── */
+// Click a pin on the board drawing. Pins sit at (x, y) fractions of a
+// 460 × 280 board drawn in the middle of the canvas (zoom 1, no panning).
+async function clickBoardPin(page, index) {
+  const pin = await page.evaluate((i) => {
+    const canvas = document.getElementById('board-canvas');
+    const box = canvas.getBoundingClientRect();
+    const board = window.CircuitLabData.boards[window.CircuitApp.getState().selectedBoard];
+    const p = board.pins[i];
+    return { x: box.left + canvas.width / 2 - 230 + p.x * 460, y: box.top + canvas.height / 2 - 140 + p.y * 280, num: p.num, name: p.name };
+  }, index);
+  await page.mouse.move(pin.x, pin.y); // sets the hovered pin
+  await page.mouse.click(pin.x, pin.y);
+  return pin;
+}
+
+test('visiting the Board Explorer again does not repeat pin clicks (D22)', async ({ page, errors }) => {
+  await openBoards(page);
+  for (const view of ['dashboard', 'boards', 'dashboard', 'boards']) await goToView(page, view);
+  const toasts = page.locator('.toast');
+  const before = await toasts.count();
+  await clickBoardPin(page, 2);
+  expect(await toasts.count(), 'one click shows one toast').toBe(before + 1);
+  expectNoErrors(errors);
+});
+
+test('the board redraws at its new size when the window changes size (D22)', async ({ page, errors }) => {
+  await openBoards(page);
+  await page.setViewportSize({ width: 1100, height: 650 });
+  await expect.poll(async () => {
+    const { box, buffer } = await boardCanvas(page);
+    return box[0] < 800 && Math.abs(buffer[0] - box[0]) < 1 && Math.abs(buffer[1] - box[1]) < 1;
+  }, { message: 'drawing size should follow the smaller board' }).toBe(true);
+  expectNoErrors(errors);
+});
+
+test('a clicked pin is highlighted in the pin list (D23)', async ({ page, errors }) => {
+  await openBoards(page);
+  const pin = await clickBoardPin(page, 4);
+  const selected = page.locator('.board-pin-item.selected');
+  await expect(selected).toHaveCount(1);
+  await expect(selected).toContainText(pin.name);
+  expectNoErrors(errors);
+});
+
+test('board pins and 3D Viewer pins are separate, and a new board starts with no pin (D25)', async ({ page, errors }) => {
+  await openBoards(page);
+  await clickBoardPin(page, 4);
+
+  await page.locator('.board-tab[data-board="esp32"]').click();
+  await expect(page.locator('.board-pin-item.selected'), 'no pin is selected on the new board').toHaveCount(0);
+
+  await goToView(page, 'viewer');
+  await waitForStableModel(page);
+  await expect(page.locator('#pin-table-body .pin-row.selected'), 'the 3D Viewer has no pin selected').toHaveCount(0);
   expectNoErrors(errors);
 });

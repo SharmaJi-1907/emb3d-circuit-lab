@@ -12,6 +12,7 @@ window.CircuitApp = (function () {
     selectedComponent: null,
     selectedBoard: 'arduino-uno',
     selectedPin: null,
+    selectedBoardPin: null, // Board Explorer only; selectedPin belongs to the 3D Viewer (D25)
     searchQuery: '',
     filterCategory: 'all',
     sortBy: 'name',
@@ -969,10 +970,16 @@ window.CircuitApp = (function () {
     const panel = document.getElementById('view-boards');
     if (!panel) return;
 
-    // Setup canvas element
+    // Setup canvas element. Its mouse handlers are added on the first visit only (D22).
     boardCanvas = document.getElementById('board-canvas');
-    if (boardCanvas) {
+    if (boardCanvas && !boardCanvas._wired) {
+      boardCanvas._wired = true;
       boardCtx = boardCanvas.getContext('2d');
+
+      // Redraw at the new size when the window changes size (D22)
+      window.addEventListener('resize', () => {
+        if (state.currentView === 'boards') sizeBoardCanvas();
+      });
 
       // Bind canvas mouse & click interactions
       boardCanvas.addEventListener('mousedown', (e) => {
@@ -1029,7 +1036,7 @@ window.CircuitApp = (function () {
 
     // Bind board tabs
     document.querySelectorAll('.board-tab').forEach(tab => {
-      tab.onclick = (e) => {
+      tab.onclick = () => {
         document.querySelectorAll('.board-tab').forEach(b => b.classList.remove('active'));
         tab.classList.add('active');
         const dbKey = BOARD_MAPPING[tab.dataset.board] || 'arduino-uno';
@@ -1052,6 +1059,7 @@ window.CircuitApp = (function () {
   }
 
   function selectBoard(id) {
+    if (id !== state.selectedBoard) state.selectedBoardPin = null; // a pin number means nothing on another board
     state.selectedBoard = id;
     renderBoardExplorer();
   }
@@ -1086,13 +1094,16 @@ window.CircuitApp = (function () {
     // Re-render pin list & legends
     renderBoardPinList(board);
 
-    // Size the canvas drawing to its own box on screen (F4)
-    if (boardCanvas) {
-      const rect = boardCanvas.getBoundingClientRect();
-      boardCanvas.width = rect.width;
-      boardCanvas.height = rect.height || 480;
-      drawBoard();
-    }
+    sizeBoardCanvas();
+  }
+
+  // Size the canvas drawing to its own box on screen (F4), then draw
+  function sizeBoardCanvas() {
+    if (!boardCanvas) return;
+    const rect = boardCanvas.getBoundingClientRect();
+    boardCanvas.width = rect.width;
+    boardCanvas.height = rect.height || 480;
+    drawBoard();
   }
 
   function renderBoardPinList(board) {
@@ -1108,7 +1119,7 @@ window.CircuitApp = (function () {
     list.innerHTML = filteredPins.map(pin => {
       const cfg = PIN_TYPE_CONFIG[pin.type] || PIN_TYPE_CONFIG.digital;
       return `
-        <div class="board-pin-item ${state.selectedPin === pin.num ? 'selected' : ''}"
+        <div class="board-pin-item ${state.selectedBoardPin === pin.num ? 'selected' : ''}" data-pin="${pin.num}"
           onclick="CircuitApp.selectBoardPin(${pin.num}, '${pin.name}', '${pin.type}')">
           <span class="pin-dot" style="background:${cfg.color}"></span>
           <span class="pin-num">${pin.num}</span>
@@ -1120,13 +1131,14 @@ window.CircuitApp = (function () {
   }
 
   function selectBoardPin(num, name, type) {
-    state.selectedPin = num;
+    state.selectedBoardPin = num;
     const cfg = PIN_TYPE_CONFIG[type] || PIN_TYPE_CONFIG.digital;
 
-    const detail = document.getElementById('board-pin-list');
-    // Highlight item in list
-    document.querySelectorAll('.board-pin-item').forEach(item => item.classList.remove('selected'));
-    
+    // Highlight the pin in the list (D23)
+    document.querySelectorAll('.board-pin-item').forEach(item => {
+      item.classList.toggle('selected', Number(item.dataset.pin) === num);
+    });
+
     // Dynamically show toast overlay for pin
     showToast(`Inspecting Pin ${num}: ${name} (${cfg.label})`, 'info');
     drawBoard();
@@ -1202,7 +1214,7 @@ window.CircuitApp = (function () {
       ctx.fill();
 
       // Pin core hole
-      const isSelected = state.selectedPin === pin.num;
+      const isSelected = state.selectedBoardPin === pin.num;
       const isHovered = hoveredBoardPin && hoveredBoardPin.num === pin.num;
 
       ctx.fillStyle = isSelected ? cfg.color : '#0a0a0f';
