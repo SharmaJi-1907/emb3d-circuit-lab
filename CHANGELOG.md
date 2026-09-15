@@ -31,11 +31,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/viewer.spec.js`: 9 tests for the new 3D Viewer layout (38 tests in total). 3D viewer: read-only `getFrameCount()`.
 - **Dashboard home screen** (ADR 0002): stats, quick access, recently viewed parts and sample projects. It's the first sidebar item and the screen the app opens on; the number keys are now `1–9`. Plus 2 new dashboard tests (41 tests in total).
 - `tests/smoke/database.spec.js`: 6 tests for the Component Library in the Database screen (47 tests in total).
+- `tests/smoke/ai.spec.js`: 9 tests for the AI chat: sending by arrow icon, Enter, chips and the Datasheet's "Ask AI", the welcome message, layout and styles (56 tests in total). `knownBug()` and `styleOf()` moved to `tests/smoke/helpers.js`, so every spec file can use them.
 
 ### Removed
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- The AI Assistant chat works (B1–B3). The Send button (including its arrow icon), Enter, the suggestion chips and the Datasheet's "Ask AI" button show the question and the reply, and the welcome message stays. The leftover page-wide Send/Enter listeners are removed. Messages, the welcome message and the chips are styled (F6). The chat scrolls inside its box so the input stays on screen, and the screen has the same side padding as the others (F7).
 - The Database screen shows the Component Library (ADR 0002): category filter, compare mode, part cards with "View 3D" (C3, B8). Sorting by name, pin count or voltage now works, and the dropdown keeps the choice (D10).
 - 3D Viewer uses the new layout (ADR 0002). It shows the part info and specs, working controls (part switcher, Solid/Wire/Explode, auto-rotate, zoom), the full pin table, pin details with a signal view and a pin tooltip, and a canvas that fills its area (B4–B7, C1).
 - The 3D scene is no longer drawn while its screen is hidden (D5, 3D part).
@@ -57,3 +59,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - F2–F6: per-screen styling gaps (shared panels, simulator layout, board explorer, datasheet sidebar, AI message classes).
 - D14: search popup ↑↓/↵ keys do nothing. D15: the 3D Viewer is empty when the app first opens (fixed in #4b).
 - D16: each visit to the 3D Viewer leaks graphics memory (old models are never freed).
+- F7: once messages show, the AI chat grows past the screen and the screen has no side padding (fixed in #11). F8: the AI screen's markup has inline styles with hard-coded colours. D6 can now be triggered, because chat messages are shown since #11.
