@@ -20,7 +20,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Component Database | ✅ Component Library (#10): category filter, sort, compare, part cards with "View 3D" |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
 | Datasheet Viewer | ✅ Shows datasheets |
-| AI Assistant | ❌ Send button does nothing (B1, B3); answers are wrong (D1) |
+| AI Assistant | ⚠️ Chat works (#11): Send, Enter and chips show the question and reply, styled. Answers are still wrong (D1), and typed text isn't escaped (D6) |
 | Projects | ✅ Shows 6 projects ("New project" button still dead, C4) |
 | Search (Ctrl+K) | ✅ Works |
 | Settings (dark mode) | ❌ Button does nothing |
@@ -59,9 +59,9 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 
 | # | Sev | Code looks for | Page actually has | Where in code |
 |---|---|---|---|---|
-| B1 | 🔴 | `ai-chat-area` | `ai-chat-messages` | [app.js:1379](../src/app/app.js#L1379) |
-| B2 | 🔴 | `ai-input` | `ai-user-query` | [app.js:1351](../src/app/app.js#L1351) |
-| B3 | 🔴 | `ai-send` | `ai-send-btn`. The only working hook is a page-wide click listener that checks `e.target.id === 'ai-send-btn'`, so clicking the **arrow icon** inside the button (where most people click) sends nothing. _Found by the smoke tests._ | [app.js:1350](../src/app/app.js#L1350), [app.js:1685-1690](../src/app/app.js#L1685-L1690) |
+| B1 | ✅ | `ai-chat-area` | `ai-chat-messages` _**Fixed in #11:** messages show in the chat (tested: Send, Enter, chips, Datasheet "Ask AI"), below the welcome message, which now stays._ | [app.js:1391](../src/app/app.js#L1391) |
+| B2 | ✅ | `ai-input` | `ai-user-query` _**Fixed in #11:** Enter sends exactly one message and clears the input (tested)._ | [app.js:1363](../src/app/app.js#L1363) |
+| B3 | ✅ | `ai-send` | `ai-send-btn`. The only working hook is a page-wide click listener that checks `e.target.id === 'ai-send-btn'`, so clicking the **arrow icon** inside the button (where most people click) sends nothing. _Found by the smoke tests._ _**Fixed in #11:** the button is wired by its ID, so the icon works too (tested). The page-wide click and `keypress` listeners are removed; they only avoided double sends by accident (the first handler empties the input)._ | [app.js:1362](../src/app/app.js#L1362) |
 | B4 | ✅ | `viewer-sidebar` | nothing — closest is `component-list` / `pin-info-panel` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:649](../src/app/app.js#L649) |
 | B5 | ✅ | `pin-table-body` | nothing — closest is `pin-details` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:722](../src/app/app.js#L722) |
 | B6 | ✅ | `pin-detail-panel` | `pin-info-panel` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:756](../src/app/app.js#L756) |
@@ -91,8 +91,8 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D3 | 🟠 | **Simulator gets set up again on every visit.** Each time you open the Simulator screen, it adds another set of mouse handlers and another endless drawing loop. After 5 visits one click adds 5 parts, and the CPU use keeps growing. | [app.js:866-878](../src/app/app.js#L866-L878), [simulator.js:626-652](../src/engines/simulator/index.js#L626-L652) |
 | D4 | 🟡 | **Two background animations draw on the same canvas** (`circuit-bg`), which uses double the CPU and can flicker. | [app.js:87](../src/app/app.js#L87) and [circuit-bg.js:188](../src/engines/background/circuit-bg.js#L188) |
 | D5 | 🟡 | 3D and simulator drawing loops keep running when their screen is hidden, which wastes battery. _ESLint confirms: `animationId` and `animId` are stored but never used to cancel the loops._ _**3D part fixed in #9:** the 3D scene is not drawn while its screen is hidden (0 frames vs 38/s before, tested). The simulator loop is still open (#15)._ | [three-viewer.js:957](../src/engines/three-viewer/index.js#L957), [simulator.js:908](../src/engines/simulator/index.js#L908) |
-| D6 | 🟡 | **Unsafe HTML in AI chat.** The user's typed text is put into the page as raw HTML (`escapeHtml` exists but isn't used here). Typing `<img src=x onerror=alert(1)>` would run code. Low risk today (no login or server), but a bad habit to fix now. | [app.js:1385](../src/app/app.js#L1385), [app.js:1631](../src/app/app.js#L1631) |
-| D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. | [app.js:1634-1635](../src/app/app.js#L1634-L1635) |
+| D6 | 🟡 | **Unsafe HTML in AI chat.** The user's typed text is put into the page as raw HTML (`escapeHtml` exists but isn't used here). Typing `<img src=x onerror=alert(1)>` would run code. Low risk today (no login or server), but a bad habit to fix now. _Since #11 the chat shows messages, so this really happens (confirmed in a scratch copy)._ | [app.js:1400](../src/app/app.js#L1400), [app.js:1669](../src/app/app.js#L1669) |
+| D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. _Visible since #11: they show as small empty boxes._ | [app.js:1673-1674](../src/app/app.js#L1673-L1674) |
 | D8 | ⚪ | The 3D loader has cases for `nrf52840` and `bme280`, which aren't in the data. Parts that are in the data (`l298n`, `ams1117`, `nrf24l01`) all fall back to a plain 8-pin chip. _ESLint found more: 4 finished models (`buildArduinoUno`, `buildResistor`, `buildCapacitor`, `buildLED`) are never called, so they can never be shown._ | [three-viewer.js:739-770](../src/engines/three-viewer/index.js#L739-L770), [three-viewer.js:423](../src/engines/three-viewer/index.js#L423), [:553](../src/engines/three-viewer/index.js#L553), [:590](../src/engines/three-viewer/index.js#L590), [:628](../src/engines/three-viewer/index.js#L628) |
 | D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
 | D10 | ✅ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ _**Fixed in #10:** sorts by name, pin count or lowest voltage, and the dropdown keeps the choice (tested)._ | [app.js:1704](../src/app/app.js#L1704) |
@@ -130,7 +130,9 @@ _Found in branch #3 by comparing the class and ID names in `index.html`, the CSS
 | F3 | 🔴 | **Simulator layout is broken:** it's stacked and unstyled, and the breadboard canvas isn't visible. The CSS styles `#sim-toolbar`, `#sim-palette`, `#sim-canvas-area` and `#sim-instruments` as **IDs**, while the page uses those names as **classes**. Only 7 of the CSS's 26 simulator classes appear in the page. | [screenshot](images/f1-simulator-current.png) |
 | F4 | 🟡 | **Board Explorer unstyled.** The page and the JS draw the board on a canvas, but the CSS describes an element-based board (`board-visual`, `board-pin-dot`…). The page's classes (`board-tab`, `pin-filter-btn`, `board-info-panel`…) have no CSS. | 3 of 23 page classes styled |
 | F5 | 🟡 | **Datasheet sidebar unstyled** (`ds-list`, `ds-search`, `toc-btn`…). The content area is already styled by the JS. | 4 of 22 page classes styled |
-| F6 | 🟡 | **AI message classes don't match the CSS:** the JS generates `ai-msg-avatar` / `ai-msg-content` / `ai-msg-time`, and the CSS styles `ai-message-avatar` / `-content` / `-time`. The suggestion buttons are unstyled. | 1 of 5 JS classes styled |
+| F6 | ✅ | **AI message classes don't match the CSS:** the JS generates `ai-msg-avatar` / `ai-msg-content` / `ai-msg-time`, and the CSS styles `ai-message-avatar` / `-content` / `-time`. The suggestion buttons are unstyled. _**Fixed in #11:** the JS uses the CSS names and its structure (`.ai-message-body` holds the bubble and the time). The chips and the page's welcome bubble (`.chat-bubble`) share the existing rules (tested with computed styles)._ | 1 of 5 JS classes styled |
+| F7 | ✅ | **AI screen layout was written for a different page.** `#view-ai` had `grid-template-rows: 1fr auto auto` (three rows the page doesn't have) and `padding: 0 !important`. Once messages showed, the chat grew instead of scrolling: after 3 questions the input was at y=1154 on a 720 px screen. The title and chips also touched the sidebar (0 px padding, other screens 20 px). _Found and fixed in #11:_ `grid-template-rows: minmax(0, 1fr)` and no padding override (tested). | [main.css:1912](../src/styles/main.css#L1912) |
+| F8 | ⚪ | **AI screen markup has inline styles with hard-coded colours** (`#222`, `#07070a`, `#0c0c14`, `#fff`), which override the CSS and ignore the design tokens. The input also shows the browser's white focus outline. _Found in #11._ | [index.html:483-517](../index.html#L483-L517) |
 
 ### Future ideas (not bugs)
 
@@ -179,7 +181,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 > **Replaced by ADR 0002:** steps 2–3 (Viewer: use the new layout instead of rewiring the old panel), step 5 (Database: use the Component Library instead of writing `renderDatabase()`), and step 9 (Dashboard: added as the home screen). Steps 1, 4, 6, 7 and 8 still apply. The styling work is F2–F6.
 
 1. **Rename IDs in the JS** using table B:
-   - `ai-chat-area → ai-chat-messages`, `ai-input → ai-user-query`, `ai-send → ai-send-btn`
+   - ✅ `ai-chat-area → ai-chat-messages`, `ai-input → ai-user-query`, `ai-send → ai-send-btn` (#11)
    - `mm-value → multimeter-val`, `mm-unit → multimeter-unit`, `mm-mode-select → mm-mode`
    - `pin-detail-panel → pin-info-panel`
 2. **Rewrite `renderViewerSidebar` / `renderPinTable`** so they fill the elements that exist:
