@@ -127,7 +127,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 7 | `style/shared-panels` | F2: shared styles for panels, titles and buttons on every screen | ✅ |
 | 8 | `feat/dashboard-home` | B8 (part): add the Dashboard as the home screen; keys `1–9` | ✅ |
 | 9 | `fix/viewer-new-layout` | B4–B7, C1: switch the Viewer to the new layout (replaces the old #9–#11). Done **before #8**, so the canvas sizing is in place before the Viewer stops being the start screen. | ✅ |
-| 10 | `fix/database-library` | C3, B8 (part), D10: show the Component Library in the Database screen | ⏳ |
+| 10 | `fix/database-library` | C3, B8 (part), D10: show the Component Library in the Database screen | ✅ |
 | 11 | `fix/ai-chat-wiring` | B1–B3, F6 | ⏳ |
 | 12 | `fix/ai-answer-matching` | D1 | ⏳ |
 | 13 | `fix/chat-html-escaping` | D6, D7 | ⏳ |

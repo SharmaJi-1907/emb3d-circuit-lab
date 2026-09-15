@@ -17,7 +17,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Left menu switches screens | ✅ Works |
 | 3D viewer | ✅ New layout (#9): part info, controls, full pin table, pin details, tooltip; canvas fills its area. Memory still grows on each visit (D16). |
 | Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
-| Component Database | ❌ Empty (to be replaced by the Component Library, [ADR 0002](decisions/0002-screen-markup.md)) |
+| Component Database | ✅ Component Library (#10): category filter, sort, compare, part cards with "View 3D" |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
 | Datasheet Viewer | ✅ Shows datasheets |
 | AI Assistant | ❌ Send button does nothing (B1, B3); answers are wrong (D1) |
@@ -66,7 +66,7 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 | B5 | ✅ | `pin-table-body` | nothing — closest is `pin-details` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:722](../src/app/app.js#L722) |
 | B6 | ✅ | `pin-detail-panel` | `pin-info-panel` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:756](../src/app/app.js#L756) |
 | B7 | ✅ | `pin-tooltip` | nothing _**Fixed in #9:** the tooltip element exists and shows on pin hover (tested)._ | [app.js:1598](../src/app/app.js#L1598) |
-| B8 | 🟡 | `view-dashboard`, `view-components` | these screens don't exist in the page _**Dashboard part fixed in #8:** it is added as the home screen. The Component Library part follows in #10 (`fix/database-library`)._ | [app.js:386](../src/app/app.js#L386), [app.js:502](../src/app/app.js#L502) |
+| B8 | ✅ | `view-dashboard`, `view-components` | these screens don't exist in the page _**Dashboard part fixed in #8:** it is added as the home screen. The Component Library part follows in #10 (`fix/database-library`)._ _**Fully fixed in #10:** the library now draws into the Database screen, and the dead `components` view is removed._ | [app.js:386](../src/app/app.js#L386), [app.js:502](../src/app/app.js#L502) |
 | B9 | 🟠 | `mm-value` / `mm-unit` / `mm-mode-select` | `multimeter-val` / `multimeter-unit` / `mm-mode` | [simulator.js:1123-1133](../src/engines/simulator/index.js#L1123-L1133) |
 
 ### C. Buttons on the page with no code behind them
@@ -77,7 +77,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 |---|---|---|---|
 | C1 | ✅ | 3D Viewer | Part list (`component-list`), filter box (`component-filter`), category buttons, Rotate, Wireframe, Explode, Pins, Reset camera, Screenshot, package switcher, HUD values, pin panel close. _ADR 0002: replaced by the new layout's working controls (part switcher, Solid/Wire/Explode, auto-rotate, zoom/reset). The package buttons, HUD and screenshot button are dropped (see Future ideas)._ _**Fixed in #9:** part switcher, Solid/Wire/Explode, auto-rotate and zoom/reset all work (tested)._ |
 | C2 | 🔴 | Simulator | Run, Pause, Stop, Clear, Export, Speed slider, Upload code, all "Add Resistor / LED / Capacitor / IC / Wire" buttons. The simulator's `startSim()` is **never called** by anything, so a circuit can never run. |
-| C3 | 🔴 | Database | Component grid (`db-components-grid`), Compare button, comparison table. _ADR 0002: replaced by the Component Library (grid, filters, compare, sort)._ |
+| C3 | ✅ | Database | Component grid (`db-components-grid`), Compare button, comparison table. _ADR 0002: replaced by the Component Library (grid, filters, compare, sort)._ _**Fixed in #10:** the Database screen shows the Component Library (tested: all cards, filter, compare, View 3D)._ |
 | C4 | 🟠 | Projects | "Create project" button (`create-project-btn`), project grid (`projects-grid`) |
 | C5 | 🟠 | Settings | "Toggle Dark Mode" (`theme-btn-toggle`), top-bar theme toggle |
 | C6 | 🟡 | Top bar | Notifications drawer, "Clear all", shortcuts modal (nothing can open it) |
@@ -95,7 +95,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D7 | 🟡 | Markdown formatter runs the `` `inline` `` rule before the ```` ```block``` ```` rule, so code blocks in AI answers come out broken. | [app.js:1634-1635](../src/app/app.js#L1634-L1635) |
 | D8 | ⚪ | The 3D loader has cases for `nrf52840` and `bme280`, which aren't in the data. Parts that are in the data (`l298n`, `ams1117`, `nrf24l01`) all fall back to a plain 8-pin chip. _ESLint found more: 4 finished models (`buildArduinoUno`, `buildResistor`, `buildCapacitor`, `buildLED`) are never called, so they can never be shown._ | [three-viewer.js:739-770](../src/engines/three-viewer/index.js#L739-L770), [three-viewer.js:423](../src/engines/three-viewer/index.js#L423), [:553](../src/engines/three-viewer/index.js#L553), [:590](../src/engines/three-viewer/index.js#L590), [:628](../src/engines/three-viewer/index.js#L628) |
 | D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
-| D10 | ⚪ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ | [app.js:1704](../src/app/app.js#L1704) |
+| D10 | ✅ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ _**Fixed in #10:** sorts by name, pin count or lowest voltage, and the dropdown keeps the choice (tested)._ | [app.js:1704](../src/app/app.js#L1704) |
 | D11 | 🟡 | **Chip names are never drawn on the 3D chips.** `buildDIP` and `buildQFP` take a `label` (e.g. "ATmega328P") but never use it. _Found by ESLint._ | [three-viewer.js:295](../src/engines/three-viewer/index.js#L295), [three-viewer.js:368](../src/engines/three-viewer/index.js#L368) |
 | D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:827-828](../src/engines/simulator/index.js#L827-L828) |
 | D13 | ✅ | **Explode destroyed the 3D model.** The target position was calculated from the saved position **before** it was saved (`undefined + 0.3 = NaN`), so the parts vanished and never came back. Toggling quickly also made two animations fight (parts bounced). _Found in #4._ **Fixed in #4:** save first (checking for `undefined`, since 0 is valid), and stop the previous animation before starting a new one. _Follow-up in #9: the explode and grow-in animations are now time-based, so they last ~320 ms / ~200 ms even when frames are slow._ | [three-viewer.js:920](../src/engines/three-viewer/index.js#L920) |
@@ -117,7 +117,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E8 | ✅ | No git, no README, no linter, no tests. _Fixed: git, README, smoke tests (`npm run test:smoke`) and ESLint (`npm run lint`) added._ |
 | E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
 | E10 | ⚪ | **GSAP and ScrollTrigger are downloaded on every page load but never used** by any code. That's wasted network and load time. _Found while setting up ESLint._ |
-| E11 | ⚪ | **27 lint warnings** (25 after #4) (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
+| E11 | ⚪ | **27 lint warnings** (25 after #4, 24 after #10) (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
 
 ### F. Page layout and CSS don't match
 
