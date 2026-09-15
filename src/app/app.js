@@ -1086,9 +1086,9 @@ window.CircuitApp = (function () {
     // Re-render pin list & legends
     renderBoardPinList(board);
 
-    // Dynamic resize canvas to match actual container aspect
+    // Size the canvas drawing to its own box on screen (F4)
     if (boardCanvas) {
-      const rect = boardCanvas.parentElement.getBoundingClientRect();
+      const rect = boardCanvas.getBoundingClientRect();
       boardCanvas.width = rect.width;
       boardCanvas.height = rect.height || 480;
       drawBoard();

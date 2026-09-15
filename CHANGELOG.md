@@ -36,6 +36,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/ai.spec.js`: 4 tests for safe chat text and code blocks (65 tests in total).
 - `tests/smoke/simulator.spec.js`: 10 tests for the Simulator layout, controls and multimeter (75 tests in total). Simulator: read-only `CircuitSimulator.getState()`.
 - `src/styles/views/simulator.css`: the first per-screen stylesheet (F3).
+- `src/styles/views/boards.css` (F4) and `tests/smoke/boards.spec.js`: 3 tests for the Board Explorer layout (94 tests in total).
 - A Battery button in the Simulator palette, so a circuit has a power source.
 - `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
 - `tests/smoke/simulator.spec.js`: 5 tests for the oscilloscope and the multimeter's resistance (87 tests in total). Simulator: `setScope()` for the oscilloscope settings.
@@ -46,6 +47,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- The Board Explorer is styled (F4): the board sits beside the info panel and is drawn whole (862×529 instead of 174 px tall and cut off), it no longer grows when a filter is clicked, and the board tabs, pin filters, zoom buttons, specs and pin list are styled with the design tokens.
 - The Simulator is set up once instead of on every visit (D3), draws nothing while its screen is hidden (D5), and its clock follows real time instead of counting frames (D20). Before: 3 visits started 3 drawing loops and a clock running 3× too fast, and the hidden screen was drawn 60 times a second. The board sizes itself when its screen is shown, so a window resize while it was hidden is handled.
 - The Simulator's instruments show real values (D21, C7). The oscilloscope shows the battery's voltage (CH1) and the first LED's voltage (CH2) over time, instead of a made-up sine; its ON button and V/div and T/div dials work; its screen draws at its real size. The multimeter's Resistance mode shows the resistance the battery sees, or OL when no current flows, instead of adding up every resistor on the board. A part added by drag and drop now updates the circuit.
 - Simulator circuits give correct results (D12). A new DC solver (nets + nodal analysis): an LED lights only in a closed loop back to the battery and only the right way round, a capacitor blocks DC, and currents follow Ohm's law (9 V, 1 kΩ, LED = 6.93 mA; before: 40.7 mA, and the LED lit in every circuit). The multimeter's current is the battery's current, wires animate only when current flows, and the status bar shows the number of nodes. Deleting a part removes all its wires (D19).
@@ -79,3 +81,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - D18: AI replies show "- " lists and tables as raw text.
 - D12 confirmed: an LED lights without a loop back to the battery, or when reversed (moved to #14b). D19: deleting a part keeps one of its wires. C7: the oscilloscope controls and the node count do nothing. D20: the simulation clock counts frames, not real time. E12: unused Simulator CSS in `main.css`.
 - D21: the oscilloscope shows made-up signals (CH1 is not connected to the circuit and runs at 1 Hz while labelled 1 kHz), and the multimeter's Resistance mode adds up every resistor on the board.
+- D22: the Board Explorer adds its canvas click handlers again on every visit (3 visits → 3 toasts per pin click). D23: a clicked board pin isn't highlighted in the list. D24: 3 of the 7 board tabs show a different board.
