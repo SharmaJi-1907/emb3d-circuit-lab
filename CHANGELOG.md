@@ -8,7 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
 - Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
-- Lint warning cap lowered from 27 to 25, then to 24.
+- Lint warning cap lowered from 27 to 25, then to 24, then to 18.
 - 3D explode and grow-in animations are time-based (~320 ms / ~200 ms), so slow frames no longer stretch them.
 - The 3D canvas sizes itself from its container and is resized whenever the Viewer is shown.
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
@@ -37,11 +37,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/simulator.spec.js`: 10 tests for the Simulator layout, controls and multimeter (75 tests in total). Simulator: read-only `CircuitSimulator.getState()`.
 - `src/styles/views/simulator.css`: the first per-screen stylesheet (F3).
 - A Battery button in the Simulator palette, so a circuit has a power source.
+- `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
 
 ### Removed
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- Simulator circuits give correct results (D12). A new DC solver (nets + nodal analysis): an LED lights only in a closed loop back to the battery and only the right way round, a capacitor blocks DC, and currents follow Ohm's law (9 V, 1 kΩ, LED = 6.93 mA; before: 40.7 mA, and the LED lit in every circuit). The multimeter's current is the battery's current, wires animate only when current flows, and the status bar shows the number of nodes. Deleting a part removes all its wires (D19).
 - The Circuit Simulator is usable (F3, C2, B9). The board fills the middle of the screen (726×558 instead of 160×112) between the palette and the instruments, and draws at its real size. Every toolbar and palette control works: Run, Pause, Stop (and Space), Speed, Clear, Export, adding parts by click or drag. Wire, NE555 IC and Upload Code explain themselves. The status bar shows the state and time, and the multimeter shows readings.
 - Typed HTML in the AI chat shows as text and never runs (D6). Code blocks in AI replies show as one block with the exact code (D7). Before, all 7 stored code blocks became empty boxes and `#include <Wire.h>` lost `<Wire.h>`. `escapeHtml` also escapes quotes now.
 - The AI picks the right stored answer (D1). It used to match only the first or second word of each stored question, so "how does an esp32 work" got the I2C guide. Now a named part gets its card first ("MPU-6050", "mpu6050" and "mpu 6050" all work), then the answer with the most keyword hits wins, and unrelated questions get the "be more specific" reply. 59 of 60 test questions right, up from 19 of 34.
@@ -71,3 +73,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - D17: the AI suggestion chips ask things no stored answer covers (RESET pin, NE555 timing equation, ESP32 5V tolerance). Short part names ("stm32", "555") aren't recognised; listed under Future ideas.
 - D18: AI replies show "- " lists and tables as raw text.
 - D12 confirmed: an LED lights without a loop back to the battery, or when reversed (moved to #14b). D19: deleting a part keeps one of its wires. C7: the oscilloscope controls and the node count do nothing. D20: the simulation clock counts frames, not real time. E12: unused Simulator CSS in `main.css`.
+- D21: the oscilloscope shows made-up signals (CH1 is not connected to the circuit and runs at 1 Hz while labelled 1 kHz), and the multimeter's Resistance mode adds up every resistor on the board.
