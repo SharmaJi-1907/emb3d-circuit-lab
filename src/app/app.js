@@ -878,6 +878,8 @@ window.CircuitApp = (function () {
   function initSimulatorPanel() {
     const panel = document.getElementById('view-simulator');
     if (!panel) return;
+    wireSimulatorControls();
+    updateSimToolbar();
 
     // Init simulator if not already
     setTimeout(() => {
@@ -887,6 +889,44 @@ window.CircuitApp = (function () {
         CircuitSimulator.init(simCanvas, oscCanvas);
       }
     }, 100);
+  }
+
+  // Toolbar and palette buttons (C2). Wired once, on the first visit.
+  function wireSimulatorControls() {
+    const on = (id, event, fn) => {
+      const el = document.getElementById(id);
+      if (el && !el._wired) { el._wired = true; el.addEventListener(event, fn); }
+    };
+    const after = (fn) => () => { fn(); updateSimToolbar(); };
+    on('sim-run', 'click', after(() => CircuitSimulator.startSim()));
+    on('sim-pause', 'click', after(() => CircuitSimulator.stopSim()));
+    on('sim-stop', 'click', after(() => CircuitSimulator.stopSim(true)));
+    on('sim-clear', 'click', after(() => CircuitSimulator.resetSim()));
+    on('sim-export', 'click', () => CircuitSimulator.exportCircuit());
+    on('sim-upload-code', 'click', () => showToast('Uploading code isn\'t available yet', 'info'));
+    on('sim-speed', 'input', (e) => {
+      CircuitSimulator.setSimSpeed(e.target.value);
+      document.getElementById('sim-speed-val').textContent = `${e.target.value}x`;
+    });
+
+    document.querySelectorAll('#view-simulator .palette-item').forEach(item => {
+      if (item._wired) return;
+      item._wired = true;
+      item.addEventListener('click', () => {
+        const type = item.dataset.component;
+        if (type === 'wire') showToast('To add a wire, drag from one pin to another on the board', 'info');
+        else if (!CircuitSimulator.addComponentToCanvas(type)) showToast(`${item.textContent.trim()} isn't available in the simulator yet`, 'info');
+      });
+    });
+  }
+
+  // Run is off while running; Pause needs a running simulation; Stop needs one that has started.
+  function updateSimToolbar() {
+    const { running, time } = CircuitSimulator.getState();
+    const set = (id, disabled) => { const el = document.getElementById(id); if (el) el.disabled = disabled; };
+    set('sim-run', running);
+    set('sim-pause', !running);
+    set('sim-stop', !running && time === 0);
   }
 
   /* ── Board Explorer View Panel ──────────────────────────────── */
@@ -1593,6 +1633,7 @@ Could you be more specific about what you're trying to build? For example:
         e.preventDefault();
         if (CircuitSimulator.isRunning()) CircuitSimulator.stopSim();
         else CircuitSimulator.startSim();
+        updateSimToolbar();
       }
     });
   }

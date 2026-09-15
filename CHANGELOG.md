@@ -34,11 +34,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/ai.spec.js`: 9 tests for the AI chat: sending by arrow icon, Enter, chips and the Datasheet's "Ask AI", the welcome message, layout and styles (56 tests in total). `knownBug()` and `styleOf()` moved to `tests/smoke/helpers.js`, so every spec file can use them.
 - `tests/smoke/ai.spec.js`: 5 tests for which answer the AI picks (61 tests in total). App: read-only `CircuitApp.getAIResponse()`, so tests can check answers without waiting for the reply timer.
 - `tests/smoke/ai.spec.js`: 4 tests for safe chat text and code blocks (65 tests in total).
+- `tests/smoke/simulator.spec.js`: 10 tests for the Simulator layout, controls and multimeter (75 tests in total). Simulator: read-only `CircuitSimulator.getState()`.
+- `src/styles/views/simulator.css`: the first per-screen stylesheet (F3).
+- A Battery button in the Simulator palette, so a circuit has a power source.
 
 ### Removed
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- The Circuit Simulator is usable (F3, C2, B9). The board fills the middle of the screen (726×558 instead of 160×112) between the palette and the instruments, and draws at its real size. Every toolbar and palette control works: Run, Pause, Stop (and Space), Speed, Clear, Export, adding parts by click or drag. Wire, NE555 IC and Upload Code explain themselves. The status bar shows the state and time, and the multimeter shows readings.
 - Typed HTML in the AI chat shows as text and never runs (D6). Code blocks in AI replies show as one block with the exact code (D7). Before, all 7 stored code blocks became empty boxes and `#include <Wire.h>` lost `<Wire.h>`. `escapeHtml` also escapes quotes now.
 - The AI picks the right stored answer (D1). It used to match only the first or second word of each stored question, so "how does an esp32 work" got the I2C guide. Now a named part gets its card first ("MPU-6050", "mpu6050" and "mpu 6050" all work), then the answer with the most keyword hits wins, and unrelated questions get the "be more specific" reply. 59 of 60 test questions right, up from 19 of 34.
 - The AI Assistant chat works (B1–B3). The Send button (including its arrow icon), Enter, the suggestion chips and the Datasheet's "Ask AI" button show the question and the reply, and the welcome message stays. The leftover page-wide Send/Enter listeners are removed. Messages, the welcome message and the chips are styled (F6). The chat scrolls inside its box so the input stays on screen, and the screen has the same side padding as the others (F7).
@@ -66,3 +70,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - F7: once messages show, the AI chat grows past the screen and the screen has no side padding (fixed in #11). F8: the AI screen's markup has inline styles with hard-coded colours. D6 can now be triggered, because chat messages are shown since #11.
 - D17: the AI suggestion chips ask things no stored answer covers (RESET pin, NE555 timing equation, ESP32 5V tolerance). Short part names ("stm32", "555") aren't recognised; listed under Future ideas.
 - D18: AI replies show "- " lists and tables as raw text.
+- D12 confirmed: an LED lights without a loop back to the battery, or when reversed (moved to #14b). D19: deleting a part keeps one of its wires. C7: the oscilloscope controls and the node count do nothing. D20: the simulation clock counts frames, not real time. E12: unused Simulator CSS in `main.css`.

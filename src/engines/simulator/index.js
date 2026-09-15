@@ -640,8 +640,9 @@ window.CircuitSimulator = (function () {
 
     // Drag from palette
     document.querySelectorAll('.palette-item').forEach(item => {
+      item.draggable = true;
       item.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('component-type', item.dataset.type);
+        e.dataTransfer.setData('component-type', item.dataset.component);
       });
     });
 
@@ -653,7 +654,7 @@ window.CircuitSimulator = (function () {
 
   function resizeCanvas() {
     if (!canvas) return;
-    const rect = canvas.parentElement.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
   }
@@ -941,8 +942,9 @@ window.CircuitSimulator = (function () {
     // Draw oscilloscope
     if (oscEnabled && oscCtx) drawOscilloscope();
 
-    // Update multimeter
+    // Update multimeter and status bar
     updateMultimeter();
+    updateStatus();
   }
 
   function drawWires() {
@@ -1120,8 +1122,8 @@ window.CircuitSimulator = (function () {
 
   /* ── Multimeter ─────────────────────────────────────────────── */
   function updateMultimeter() {
-    const mmEl = document.getElementById('mm-value');
-    const mmUnitEl = document.getElementById('mm-unit');
+    const mmEl = document.getElementById('multimeter-val');
+    const mmUnitEl = document.getElementById('multimeter-unit');
     if (!mmEl) return;
 
     // Find highest voltage in circuit
@@ -1130,7 +1132,7 @@ window.CircuitSimulator = (function () {
       if (c.state.voltage > maxV) maxV = c.state.voltage;
     });
 
-    const mmMode = document.getElementById('mm-mode-select');
+    const mmMode = document.getElementById('mm-mode');
     const mode = mmMode ? mmMode.value : 'voltage';
 
     if (mode === 'voltage') {
@@ -1149,6 +1151,16 @@ window.CircuitSimulator = (function () {
     }
   }
 
+  /* ── Status Bar ─────────────────────────────────────────────── */
+  function updateStatus() {
+    const text = document.getElementById('sim-status-text');
+    if (!text) return;
+    text.textContent = simRunning ? 'Running' : simTime > 0 ? 'Paused' : 'Ready';
+    document.getElementById('sim-indicator')?.classList.toggle('running', simRunning);
+    const time = document.getElementById('sim-time');
+    if (time) time.textContent = `t = ${simTime.toFixed(3)}s`;
+  }
+
   /* ── Public Controls ────────────────────────────────────────── */
   function startSim() {
     simRunning = true;
@@ -1157,10 +1169,12 @@ window.CircuitSimulator = (function () {
     showToast('Simulation started', 'success');
   }
 
-  function stopSim() {
+  // Pause keeps the time; stop (rewind = true) sets it back to 0.
+  function stopSim(rewind = false) {
     simRunning = false;
+    if (rewind) simTime = 0;
     wires.forEach(w => w.animated = false);
-    showToast('Simulation stopped', 'info');
+    showToast(rewind ? 'Simulation stopped' : 'Simulation paused', 'info');
   }
 
   function resetSim() {
@@ -1180,6 +1194,7 @@ window.CircuitSimulator = (function () {
       components.push(comp);
       runSimulation();
     }
+    return Boolean(comp);
   }
 
   function setSimSpeed(speed) {
@@ -1228,5 +1243,6 @@ window.CircuitSimulator = (function () {
     setSigGen,
     exportCircuit,
     isRunning: () => simRunning,
+    getState: () => ({ ready: Boolean(ctx), parts: components.map(c => c.type), wires: wires.length, running: simRunning, time: simTime, speed: simSpeed }),
   };
 })();

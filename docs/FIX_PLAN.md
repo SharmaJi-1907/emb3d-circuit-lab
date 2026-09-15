@@ -16,7 +16,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Dashboard (home screen) | ✅ Stats, quick access, recently viewed, sample projects (#8) |
 | Left menu switches screens | ✅ Works |
 | 3D viewer | ✅ New layout (#9): part info, controls, full pin table, pin details, tooltip; canvas fills its area. Memory still grows on each visit (D16). |
-| Circuit simulator | ⚠️ Can drag parts in, but can never press Run |
+| Circuit simulator | ⚠️ Layout, toolbar, palette (with a battery), status bar and multimeter work (#14). The circuit logic is wrong: an LED lights without a loop back to the battery, or when reversed (D12, #14b) |
 | Component Database | ✅ Component Library (#10): category filter, sort, compare, part cards with "View 3D" |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
 | Datasheet Viewer | ✅ Shows datasheets |
@@ -67,7 +67,7 @@ Severity: 🔴 Critical (crash / feature dead) · 🟠 High (feature wrong) · �
 | B6 | ✅ | `pin-detail-panel` | `pin-info-panel` _**Fixed in #9:** the Viewer now uses the new layout (ADR 0002)._ | [app.js:756](../src/app/app.js#L756) |
 | B7 | ✅ | `pin-tooltip` | nothing _**Fixed in #9:** the tooltip element exists and shows on pin hover (tested)._ | [app.js:1598](../src/app/app.js#L1598) |
 | B8 | ✅ | `view-dashboard`, `view-components` | these screens don't exist in the page _**Dashboard part fixed in #8:** it is added as the home screen. The Component Library part follows in #10 (`fix/database-library`)._ _**Fully fixed in #10:** the library now draws into the Database screen, and the dead `components` view is removed._ | [app.js:386](../src/app/app.js#L386), [app.js:502](../src/app/app.js#L502) |
-| B9 | 🟠 | `mm-value` / `mm-unit` / `mm-mode-select` | `multimeter-val` / `multimeter-unit` / `mm-mode` | [simulator.js:1123-1133](../src/engines/simulator/index.js#L1123-L1133) |
+| B9 | ✅ | `mm-value` / `mm-unit` / `mm-mode-select` | `multimeter-val` / `multimeter-unit` / `mm-mode` _**Fixed in #14:** the engine uses the page's IDs, so the multimeter updates (tested: a resistor reads 1.00 kΩ)._ | [simulator.js:1124](../src/engines/simulator/index.js#L1124) |
 
 ### C. Buttons on the page with no code behind them
 
@@ -76,11 +76,12 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | # | Sev | Screen | Dead buttons / panels |
 |---|---|---|---|
 | C1 | ✅ | 3D Viewer | Part list (`component-list`), filter box (`component-filter`), category buttons, Rotate, Wireframe, Explode, Pins, Reset camera, Screenshot, package switcher, HUD values, pin panel close. _ADR 0002: replaced by the new layout's working controls (part switcher, Solid/Wire/Explode, auto-rotate, zoom/reset). The package buttons, HUD and screenshot button are dropped (see Future ideas)._ _**Fixed in #9:** part switcher, Solid/Wire/Explode, auto-rotate and zoom/reset all work (tested)._ |
-| C2 | 🔴 | Simulator | Run, Pause, Stop, Clear, Export, Speed slider, Upload code, all "Add Resistor / LED / Capacitor / IC / Wire" buttons. The simulator's `startSim()` is **never called** by anything, so a circuit can never run. |
+| C2 | ✅ | Simulator | Run, Pause, Stop, Clear, Export, Speed slider, Upload code, all "Add Resistor / LED / Capacitor / IC / Wire" buttons. The simulator's `startSim()` is **never called** by anything, so a circuit can never run. _Found in #14: the palette had no battery (no power source at all), "Wire" and "NE555 IC" aren't simulator parts, drag-from-palette read the wrong attribute, Stop was always disabled, and the status bar never changed._ _**Fixed in #14:** every control is wired once (tested). A Battery button is added to the palette. Wire and NE555 IC explain themselves; Upload Code says it isn't available yet. Pause keeps the time, Stop resets it, and the buttons are enabled only when they can be used. The status bar shows Running / Paused / Ready and the time._ |
 | C3 | ✅ | Database | Component grid (`db-components-grid`), Compare button, comparison table. _ADR 0002: replaced by the Component Library (grid, filters, compare, sort)._ _**Fixed in #10:** the Database screen shows the Component Library (tested: all cards, filter, compare, View 3D)._ |
 | C4 | 🟠 | Projects | "Create project" button (`create-project-btn`), project grid (`projects-grid`) |
 | C5 | 🟠 | Settings | "Toggle Dark Mode" (`theme-btn-toggle`), top-bar theme toggle |
 | C6 | 🟡 | Top bar | Notifications drawer, "Clear all", shortcuts modal (nothing can open it) |
+| C7 | 🟡 | Simulator | The oscilloscope ON button and the V/div and T/div dials do nothing, and "Nodes: 0" in the status bar never changes. _Found in #14._ |
 
 ### D. Logic bugs (code runs but does the wrong thing)
 
@@ -97,13 +98,15 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
 | D10 | ✅ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ _**Fixed in #10:** sorts by name, pin count or lowest voltage, and the dropdown keeps the choice (tested)._ | [app.js:1704](../src/app/app.js#L1704) |
 | D11 | 🟡 | **Chip names are never drawn on the 3D chips.** `buildDIP` and `buildQFP` take a `label` (e.g. "ATmega328P") but never use it. _Found by ESLint._ | [three-viewer.js:295](../src/engines/three-viewer/index.js#L295), [three-viewer.js:368](../src/engines/three-viewer/index.js#L368) |
-| D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:827-828](../src/engines/simulator/index.js#L827-L828) |
+| D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ _**Confirmed in #14** (engine test): an LED lights with only the battery's + wired to it (no loop back to −), and also when it is reversed in a closed loop. Moved to its own branch (#14b), because it needs a new voltage solver._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:828-829](../src/engines/simulator/index.js#L828-L829) |
 | D13 | ✅ | **Explode destroyed the 3D model.** The target position was calculated from the saved position **before** it was saved (`undefined + 0.3 = NaN`), so the parts vanished and never came back. Toggling quickly also made two animations fight (parts bounced). _Found in #4._ **Fixed in #4:** save first (checking for `undefined`, since 0 is valid), and stop the previous animation before starting a new one. _Follow-up in #9: the explode and grow-in animations are now time-based, so they last ~320 ms / ~200 ms even when frames are slow._ | [three-viewer.js:920](../src/engines/three-viewer/index.js#L920) |
 | D14 | 🟡 | The search popup footer shows **↑↓ Navigate** and **↵ Select**, but those keys do nothing (only Esc is handled). _Found in #4._ | [app.js:314](../src/app/app.js#L314) |
 | D15 | ✅ | **The 3D Viewer is empty when the app first opens.** At startup the app asks for the model before the 3D engine is ready (the engine starts 300 ms later), and nothing asks again. The chip only appears after leaving and returning to the Viewer. The "Rendering 3D Model..." text also never hid. _Found in #4 (`getModelBounds()` returns `null` at first load)._ **Fixed in #4b:** a `showSelectedModel()` helper draws the part and hides the loading text. It's called when the Viewer opens **and** as soon as the engine is ready. | [app.js:651](../src/app/app.js#L651), [app.js:79](../src/app/app.js#L79) |
 | D16 | 🟡 | **Each visit to the Viewer leaks graphics memory.** Every visit rebuilds the model, and the old one is removed with `scene.remove()` but never freed with `dispose()`. Measured: **2 → 297 geometries after 5 visits** (about 59 per visit). _Found in #4b._ | [three-viewer.js:733](../src/engines/three-viewer/index.js#L733) |
 | D17 | 🟡 | **The AI suggestion chips ask things no stored answer covers.** "Reset Hookup" (RESET pin) gets the "be more specific" reply, "555 Astable Eq" gets the NE555 card without the timing equation, and "ESP32 5V Tolerance" gets the ESP32 overview, which doesn't mention 5V. Fix by writing 3 answers or changing the chips. _Found in #12._ | [index.html:495-497](../index.html#L495-L497), [data.js:827](../src/data/data.js#L827) |
 | D18 | ⚪ | **AI replies show lists and tables as raw text.** The formatter only turns lines starting with "•" into a list, but the stored answers use "- " (43 lines, 0 list items). Tables (20 rows) show as raw `\|` pipes. Still readable. _Found in #13._ | [app.js:1674](../src/app/app.js#L1674) |
+| D19 | 🟡 | **Deleting a part (right-click) keeps one of its wires.** `onContextMenu` removes the part, then filters the wires using `components[i]`, which is now the *next* part. Measured: battery–LED–resistor with 2 wires, delete the LED → 1 wire left, still pointing at the deleted LED (should be 0). _Found in #14._ | [simulator.js:769](../src/engines/simulator/index.js#L769) |
+| D20 | ⚪ | **The simulation clock counts frames, not real time.** Each frame adds 0.016 s × speed, so the clock runs slow when the browser draws slowly (for example in headless tests). Other engine animations are time-based. _Found in #14._ | [simulator.js:915](../src/engines/simulator/index.js#L915) |
 
 ### E. Cleanup / project health
 
@@ -120,6 +123,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
 | E10 | ⚪ | **GSAP and ScrollTrigger are downloaded on every page load but never used** by any code. That's wasted network and load time. _Found while setting up ESLint._ |
 | E11 | ⚪ | **27 lint warnings** (25 after #4, 24 after #10) (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
+| E12 | ⚪ | **Unused Simulator CSS in `main.css`.** Rules for IDs that don't exist in the page (`#sim-toolbar`, `#sim-palette`, `#sim-canvas-area`, `#sim-instruments`, `#sim-osc-panel`, `#osc-main-canvas`) and classes nothing uses (`.sim-status-dot`, `.palette-section-title`, `.sim-canvas-hint`…). Harmless; the working styles are in `src/styles/views/simulator.css` since #14. _Found in #14._ |
 
 ### F. Page layout and CSS don't match
 
@@ -129,7 +133,7 @@ _Found in branch #3 by comparing the class and ID names in `index.html`, the CSS
 |---|---|---|---|
 | F1 | ✅ | **`app.js` and the CSS were written together for a page layout that isn't in this project.** Most of `index.html`'s own markup has no styling. This explains the B bugs (missing IDs), the unstyled 3D Viewer and Board Explorer (browser-default buttons, a tiny 3D box), and the "Rendering 3D Model..." text that never goes away. **Decided in [ADR 0002](decisions/0002-screen-markup.md):** the Viewer and Database switch to the new layout, the Dashboard is added as the home screen, and the other screens keep the current page (F2–F6). | HTML generated by `app.js`: **126 of 143** classes have CSS rules (88%). HTML written in `index.html`: **38 of 217** (18%). CSS ID rules: **21 of 34** target IDs that don't exist in `index.html` (`#viewer-sidebar`, `#viewer-canvas-area`, `#sim-toolbar`, `#ai-input`…). |
 | F2 | ✅ | **Shared building blocks are unstyled on every current-page screen:** `glass-panel` (22 uses), `panel`, `panel-header`, `panel-title`, `view-title`, `view-subtitle` and the shared buttons have no CSS. The sidebar and top-bar buttons also showed the browser's default grey (`rgb(239, 239, 239)`), because `.nav-item` and `.icon-btn` never set a background on `<button>` elements. **Fixed in #7:** new `src/styles/components/panels.css` (design tokens only, matching the Dashboard cards). Screen-specific styling stays with F3–F6. | [ADR 0002](decisions/0002-screen-markup.md) measurements, `tests/smoke/styles.spec.js` |
-| F3 | 🔴 | **Simulator layout is broken:** it's stacked and unstyled, and the breadboard canvas isn't visible. The CSS styles `#sim-toolbar`, `#sim-palette`, `#sim-canvas-area` and `#sim-instruments` as **IDs**, while the page uses those names as **classes**. Only 7 of the CSS's 26 simulator classes appear in the page. | [screenshot](images/f1-simulator-current.png) |
+| F3 | ✅ | **Simulator layout is broken:** it's stacked and unstyled, and the breadboard canvas isn't visible. The CSS styles `#sim-toolbar`, `#sim-palette`, `#sim-canvas-area` and `#sim-instruments` as **IDs**, while the page uses those names as **classes**. Only 7 of the CSS's 26 simulator classes appear in the page. _Measured in #14: `#view-simulator` was a 3×3 grid with one child, so everything sat in its 160 px first column (board 160×112, screen scrolled). The board also took its drawing size from its parent, so drawings were squashed._ _**Fixed in #14:** new `src/styles/views/simulator.css` styles the page's own classes (toolbar, palette, board, instruments, status bar), the two blocking grid rules are removed, and the board draws at its own size (726×558 at 1280×720; tested, also after a resize)._ | [screenshot](images/f1-simulator-current.png), [simulator.css](../src/styles/views/simulator.css) |
 | F4 | 🟡 | **Board Explorer unstyled.** The page and the JS draw the board on a canvas, but the CSS describes an element-based board (`board-visual`, `board-pin-dot`…). The page's classes (`board-tab`, `pin-filter-btn`, `board-info-panel`…) have no CSS. | 3 of 23 page classes styled |
 | F5 | 🟡 | **Datasheet sidebar unstyled** (`ds-list`, `ds-search`, `toc-btn`…). The content area is already styled by the JS. | 4 of 22 page classes styled |
 | F6 | ✅ | **AI message classes don't match the CSS:** the JS generates `ai-msg-avatar` / `ai-msg-content` / `ai-msg-time`, and the CSS styles `ai-message-avatar` / `-content` / `-time`. The suggestion buttons are unstyled. _**Fixed in #11:** the JS uses the CSS names and its structure (`.ai-message-body` holds the bubble and the time). The chips and the page's welcome bubble (`.chat-bubble`) share the existing rules (tested with computed styles)._ | 1 of 5 JS classes styled |
@@ -187,7 +191,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 
 1. **Rename IDs in the JS** using table B:
    - ✅ `ai-chat-area → ai-chat-messages`, `ai-input → ai-user-query`, `ai-send → ai-send-btn` (#11)
-   - `mm-value → multimeter-val`, `mm-unit → multimeter-unit`, `mm-mode-select → mm-mode`
+   - ✅ `mm-value → multimeter-val`, `mm-unit → multimeter-unit`, `mm-mode-select → mm-mode` (#14)
    - `pin-detail-panel → pin-info-panel`
 2. **Rewrite `renderViewerSidebar` / `renderPinTable`** so they fill the elements that exist:
    - Part list → `#component-list` (one row per `CircuitLabData.components`, click → `selectComponent(id)`)
@@ -196,7 +200,7 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
    - HUD → `#hud-component`, `#hud-package`, `#hud-pins`
 3. **Hook up the 3D toolbar** (in `initViewerPanel`, once):
    `btn-rotate → ThreeViewer.setAutoRotate`, `btn-wireframe → setViewMode('wireframe')`, `btn-explode → setViewMode('explode')`, `btn-reset-cam → ThreeViewer.resetView`, `btn-pins` → show/hide `#pin-labels-layer`, `btn-screenshot` → `renderer.domElement.toDataURL()` + download.
-4. **Hook up the simulator toolbar** (once, see Phase 4.3):
+4. ✅ **Hook up the simulator toolbar** (once, see Phase 4.3; done in #14):
    `sim-run → CircuitSimulator.startSim`, `sim-pause/sim-stop → stopSim`, `sim-clear → resetSim`, `sim-export → exportCircuit`, `sim-speed → setSimSpeed(value)`, `ws-add-resistor/led/capacitor/ic/wire → addComponentToCanvas(type)`.
 5. **Database screen:** write `renderDatabase()` that fills `#db-components-grid` using the existing `renderComponentCard()`. Connect `#compare-mode-btn` / `#close-matrix-btn` to the existing `toggleCompare` / `clearCompare`, and fill `#comparison-table-body`.
 6. **Projects:** point `renderProjects` at `#projects-grid` and `#create-project-btn → newProject()`.

@@ -1232,11 +1232,6 @@ body {
 #signal-canvas { display: block; }
 
 /* ── Circuit Simulator ────────────────────────────────────────── */
-#view-simulator {
-  display: grid !important;
-  grid-template-columns: 160px 1fr 220px;
-  grid-template-rows: 48px 1fr 180px;
-}
 
 /* Sim Toolbar */
 #sim-toolbar {
@@ -2134,10 +2129,6 @@ body {
   #viewer-pin-panel { grid-column: 1; grid-row: 3; max-height: 200px; }
   #pin-detail-panel { display: none; }
 
-  #view-simulator {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: 48px 1fr 120px !important;
-  }
   #sim-palette { display: none; }
   #sim-instruments { display: none; }
   #sim-canvas-area { grid-column: 1; grid-row: 2; }
