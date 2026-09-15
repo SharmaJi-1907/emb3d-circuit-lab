@@ -32,7 +32,8 @@ emmb3d/
 │   │   ├── components/
 │   │   │   └── panels.css     Shared cards, panels, titles, sidebar/top-bar buttons (F2)
 │   │   └── views/             per-screen styles
-│   │       └── simulator.css  Circuit Simulator layout, toolbar, palette, board, instruments (F3)
+│   │       ├── simulator.css  Circuit Simulator layout, toolbar, palette, board, instruments (F3)
+│   │       └── boards.css     Board Explorer layout, tabs, filters, specs, pin list (F4)
 │   └── assets/                fonts, models, images imported by code
 ├── eslint.config.js           Lint rules, allowed globals, ignored folders
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
@@ -43,6 +44,7 @@ emmb3d/
 │   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
 │   │   ├── viewer.spec.js     3D Viewer layout: canvas sizing, sidebar, pin table/detail, tooltip, controls
 │   │   ├── database.spec.js   Database screen (Component Library): cards, filter, sort, compare, View 3D
+│   │   ├── boards.spec.js     Board Explorer layout, board size and styles (F4)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
@@ -59,7 +61,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 1. `styles/main.css`
 2. `styles/components/panels.css`: shared page styles. Must come after `main.css` so it can build on its design tokens.
-3. `styles/views/simulator.css`: Simulator screen styles. After the shared styles, so it can build on them.
+3. `styles/views/simulator.css` and `styles/views/boards.css`: per-screen styles. After the shared styles, so they can build on them.
 4. `engines/background/circuit-bg.js`
 5. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
 6. `engines/three-viewer/index.js` → `window.ThreeViewer`
