@@ -1,9 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Circuit Simulator: layout (F3), controls (C2) and multimeter (B9).
+   Circuit Simulator: layout (F3), controls (C2), multimeter (B9) and
+   circuit logic (D12, D19).
    The screen keeps the index.html markup (ADR 0002). Parts are read
    through the read-only CircuitSimulator.getState().
 ═══════════════════════════════════════════════════════════════════ */
 
+import fs from 'node:fs/promises';
 import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
@@ -156,5 +158,101 @@ test('the multimeter shows readings (B9)', async ({ page, errors }) => {
   await page.locator('#mm-mode').selectOption('resistance');
   await expect(page.locator('#multimeter-val')).toHaveText('1.00');
   await expect(page.locator('#multimeter-unit')).toHaveText('kΩ');
+  expectNoErrors(errors);
+});
+
+/* ── Circuit logic (D12, D19) ─────────────────────────────────── */
+// Build a circuit with the engine's loadCircuit() (the Export format).
+// parts: [type, x, y]; wires: [part, pin, part, pin].
+// Pins: battery 0 = +, 1 = −; LED 0 = anode, 1 = cathode.
+function loadCircuit(page, parts, wires = []) {
+  return page.evaluate(({ parts, wires }) => window.CircuitSimulator.loadCircuit({
+    components: parts.map(([type, x, y]) => ({ type, x, y })),
+    wires: wires.map(([a, na, b, nb]) => ({ from: { compId: a, nodeIdx: na }, to: { compId: b, nodeIdx: nb } })),
+  }), { parts, wires });
+}
+const readings = async (page) => (await simState(page)).readings;
+const ledOn = async (page) => (await readings(page)).find((r) => r.type === 'led').on;
+
+// battery + → part 1 → part 2 → battery −
+const LOOP = [[0, 0, 1, 0], [1, 1, 2, 0], [2, 1, 0, 1]];
+const BATTERY_1K_LED = [['battery', 100, 100], ['resistor', 240, 100], ['led', 400, 100]];
+
+test('an LED lights only in a closed loop back to the battery (D12)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, BATTERY_1K_LED, LOOP);
+  expect(await ledOn(page), 'closed loop').toBe(true);
+  await loadCircuit(page, [['battery', 100, 100], ['led', 300, 100]], [[0, 0, 1, 0]]);
+  expect(await ledOn(page), 'only + wired, no way back to −').toBe(false);
+  expectNoErrors(errors);
+});
+
+test('an LED conducts one way only, and a capacitor blocks DC (D12)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, BATTERY_1K_LED, [[0, 0, 1, 0], [1, 1, 2, 1], [2, 0, 0, 1]]);
+  expect(await ledOn(page), 'LED reversed').toBe(false);
+  await loadCircuit(page, [['battery', 100, 100], ['capacitor', 240, 100], ['led', 400, 100]], LOOP);
+  expect(await ledOn(page), 'capacitor in series').toBe(false);
+  expectNoErrors(errors);
+});
+
+test('currents follow Ohm\'s law and the multimeter shows them (D12)', async ({ page, errors }) => {
+  await openSimulator(page);
+  // 9 V − 2 V LED over 1 kΩ (+ 10 Ω LED, 0.5 Ω battery) = 6.93 mA through every part
+  await loadCircuit(page, BATTERY_1K_LED, LOOP);
+  for (const r of await readings(page)) expect(r.mA, `${r.type} current`).toBeCloseTo(6.93, 1);
+  await page.locator('#mm-mode').selectOption('current');
+  await expect(page.locator('#multimeter-val')).toHaveText('6.9');
+  await expect(page.locator('#multimeter-unit')).toHaveText('mA');
+
+  // Two 1 kΩ in series halve it
+  await loadCircuit(page, [['battery', 100, 100], ['resistor', 240, 60], ['resistor', 240, 160], ['led', 400, 100]],
+    [[0, 0, 1, 0], [1, 1, 2, 0], [2, 1, 3, 0], [3, 1, 0, 1]]);
+  for (const r of await readings(page)) expect(r.mA, `${r.type} current`).toBeCloseTo(3.48, 1);
+  expectNoErrors(errors);
+});
+
+// Guard: the switch worked before and must keep working with the new solver.
+test('double-clicking a switch closes the loop', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, [['battery', 100, 100], ['switch', 240, 100], ['led', 400, 100]], LOOP);
+  expect(await ledOn(page), 'switch open').toBe(false);
+  const board = await page.locator('#sim-canvas').boundingBox();
+  await page.mouse.dblclick(board.x + 265, board.y + 112); // middle of the switch
+  expect(await ledOn(page), 'switch closed').toBe(true);
+  expectNoErrors(errors);
+});
+
+test('right-click deletes a part and all its wires (D19)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, BATTERY_1K_LED, LOOP);
+  const board = await page.locator('#sim-canvas').boundingBox();
+  await page.mouse.click(board.x + 420, board.y + 110, { button: 'right' }); // middle of the LED
+  const s = await simState(page);
+  expect(s.parts).toEqual(['battery', 'resistor']);
+  expect(s.wires, 'only the battery–resistor wire is left').toBe(1);
+  expectNoErrors(errors);
+});
+
+test('the status bar shows the number of nodes (C7)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, BATTERY_1K_LED, LOOP);
+  await expect(page.locator('#sim-nodes')).toHaveText('Nodes: 3');
+  await page.locator('#sim-clear').click();
+  await expect(page.locator('#sim-nodes')).toHaveText('Nodes: 0');
+  expectNoErrors(errors);
+});
+
+// Guard for the new loadCircuit(): Export, then load, gives back the same circuit.
+test('an exported circuit loads back the same', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, BATTERY_1K_LED, LOOP);
+  const download = page.waitForEvent('download');
+  await page.locator('#sim-export').click();
+  const json = JSON.parse(await fs.readFile(await (await download).path(), 'utf8'));
+  await page.locator('#sim-clear').click();
+  await page.evaluate((data) => window.CircuitSimulator.loadCircuit(data), json);
+  expect(await simState(page)).toMatchObject({ parts: ['battery', 'resistor', 'led'], wires: 3 });
+  expect(await ledOn(page)).toBe(true);
   expectNoErrors(errors);
 });
