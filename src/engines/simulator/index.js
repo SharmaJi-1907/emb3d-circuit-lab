@@ -23,11 +23,6 @@ window.CircuitSimulator = (function () {
   let nextId = 1;
 
   // Instruments
-  let oscEnabled = true;
-  let sigGenEnabled = false;
-  let sigGenFreq = 1000;
-  let sigGenAmp = 5;
-  let sigGenWave = 'sine';
 
   // Grid
   const GRID = 20;
@@ -613,7 +608,7 @@ window.CircuitSimulator = (function () {
       value: def.value,
       unit: def.unit,
       selected: false,
-      state: { on: false, closed: false, voltage: 0, current: 0 },
+      state: { on: false, closed: false, voltage: 0, current: 0, drop: 0 },
       ledColor: '#00ff00',
       get bounds() {
         return { x: this.x, y: this.y, w: this.def.width, h: this.def.height };
@@ -652,6 +647,10 @@ window.CircuitSimulator = (function () {
   }
 
   function resizeCanvas() {
+    if (oscCanvas) {
+      const box = oscCanvas.getBoundingClientRect();
+      if (box.width) { oscCanvas.width = box.width; oscCanvas.height = box.height; }
+    }
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width;
@@ -789,6 +788,7 @@ window.CircuitSimulator = (function () {
     const comp = createComponent(type, x, y);
     if (comp) {
       components.push(comp);
+      runSimulation();
       showToast(`Added ${COMPONENT_DEFS[type].label}`, 'info');
     }
   }
@@ -862,6 +862,7 @@ window.CircuitSimulator = (function () {
       const v = c.def.nodes.map((_, i) => voltAt(volts, net(c, i)));
       const drop = (v[0] || 0) - (v[1] || 0);
       c.state.voltage = Math.max(0, ...v);
+      c.state.drop = drop;
       c.state.current =
         c.type === 'resistor' ? Math.abs(drop) / c.value :
         c.type === 'battery' ? Math.max(0, (c.value - drop) / R_BATTERY) :
@@ -966,7 +967,7 @@ window.CircuitSimulator = (function () {
     });
 
     // Draw oscilloscope
-    if (oscEnabled && oscCtx) drawOscilloscope();
+    if (oscCtx) drawOscilloscope();
 
     // Update multimeter and status bar
     updateMultimeter();
@@ -1040,18 +1041,45 @@ window.CircuitSimulator = (function () {
   }
 
   /* ── Oscilloscope ───────────────────────────────────────────── */
-  let oscHistory = new Array(200).fill(0);
-  let oscHistory2 = new Array(200).fill(0);
+  // CH1 = the battery's voltage, CH2 = the voltage across the first LED (D21).
+  // Samples keep their simulation time. The screen shows the last 10 divisions
+  // of time, with 0 V on the centre line and 2 divisions above and below it.
+  const scope = { on: true, voltsPerDiv: 2, msPerDiv: 10 };
+  const SCOPE_MAX_WINDOW = 10; // s: 10 divisions at the slowest T/div (1 s)
+  let scopeSamples = [];
+
+  function scopeChannels() {
+    const battery = components.find(c => c.type === 'battery');
+    const led = components.find(c => c.type === 'led');
+    return { ch1: battery ? battery.state.drop : 0, ch2: led ? led.state.drop : 0 };
+  }
+
+  function setScope(settings) {
+    Object.assign(scope, settings);
+  }
 
   function drawOscilloscope() {
-    if (!oscCtx || !oscCanvas) return;
     const w = oscCanvas.width;
     const h = oscCanvas.height;
+    const { ch1, ch2 } = scopeChannels();
+
+    if (simRunning) {
+      scopeSamples.push({ t: simTime, ch1, ch2 });
+      scopeSamples = scopeSamples.filter(p => p.t >= simTime - SCOPE_MAX_WINDOW);
+    }
 
     oscCtx.fillStyle = '#000';
     oscCtx.fillRect(0, 0, w, h);
+    oscCtx.font = '9px JetBrains Mono, monospace';
 
-    // Grid
+    if (!scope.on) {
+      oscCtx.fillStyle = 'rgba(0,212,255,0.4)';
+      oscCtx.textAlign = 'center';
+      oscCtx.fillText('OFF', w / 2, h / 2 + 3);
+      return;
+    }
+
+    // Grid: 10 × 4 divisions, 0 V on the centre line
     oscCtx.strokeStyle = 'rgba(0,212,255,0.1)';
     oscCtx.lineWidth = 0.5;
     for (let i = 0; i <= 10; i++) {
@@ -1066,8 +1094,6 @@ window.CircuitSimulator = (function () {
       oscCtx.lineTo(w, i * h / 4);
       oscCtx.stroke();
     }
-
-    // Center line
     oscCtx.strokeStyle = 'rgba(0,212,255,0.2)';
     oscCtx.lineWidth = 1;
     oscCtx.beginPath();
@@ -1075,75 +1101,26 @@ window.CircuitSimulator = (function () {
     oscCtx.lineTo(w, h / 2);
     oscCtx.stroke();
 
-    // Generate signal
-    const freq = sigGenEnabled ? sigGenFreq : 1000;
-    const amp = sigGenEnabled ? sigGenAmp : 5;
-
-    // Update history
-    let sample = 0;
-    if (simRunning) {
-      switch (sigGenWave) {
-        case 'sine':
-          sample = amp * Math.sin(2 * Math.PI * freq * simTime / 1000);
-          break;
-        case 'square':
-          sample = amp * Math.sign(Math.sin(2 * Math.PI * freq * simTime / 1000));
-          break;
-        case 'triangle':
-          sample = amp * (2 / Math.PI) * Math.asin(Math.sin(2 * Math.PI * freq * simTime / 1000));
-          break;
-        case 'sawtooth':
-          sample = amp * ((simTime * freq / 500) % 2 - 1);
-          break;
-      }
-    }
-
-    oscHistory.push(sample);
-    oscHistory.shift();
-
-    // LED voltage channel 2
-    const ledComp = components.find(c => c.type === 'led');
-    const ch2 = ledComp ? (ledComp.state.on ? 3.3 : 0) : 0;
-    oscHistory2.push(ch2);
-    oscHistory2.shift();
-
-    // Draw channel 1 (cyan)
-    oscCtx.strokeStyle = '#00d4ff';
-    oscCtx.lineWidth = 1.5;
-    oscCtx.shadowColor = '#00d4ff';
-    oscCtx.shadowBlur = 2;
-    oscCtx.beginPath();
-    oscHistory.forEach((v, i) => {
-      const px = (i / oscHistory.length) * w;
-      const py = h / 2 - (v / (amp * 1.2)) * (h / 2 - 4);
-      i === 0 ? oscCtx.moveTo(px, py) : oscCtx.lineTo(px, py);
+    // Traces: the newest sample is at the right edge
+    const windowS = scope.msPerDiv * 10 / 1000;
+    const x = t => w - ((simTime - t) / windowS) * w;
+    const y = v => h / 2 - (v / scope.voltsPerDiv) * (h / 4);
+    [['ch1', '#00d4ff'], ['ch2', '#00ff88']].forEach(([key, color]) => {
+      oscCtx.strokeStyle = color;
+      oscCtx.lineWidth = 1.5;
+      oscCtx.beginPath();
+      scopeSamples.filter(p => p.t >= simTime - windowS).forEach((p, i) => {
+        i === 0 ? oscCtx.moveTo(x(p.t), y(p[key])) : oscCtx.lineTo(x(p.t), y(p[key]));
+      });
+      oscCtx.stroke();
     });
-    oscCtx.stroke();
 
-    // Draw channel 2 (green)
-    oscCtx.strokeStyle = '#00ff88';
-    oscCtx.lineWidth = 1;
-    oscCtx.shadowColor = '#00ff88';
-    oscCtx.shadowBlur = 1;
-    oscCtx.beginPath();
-    oscHistory2.forEach((v, i) => {
-      const px = (i / oscHistory2.length) * w;
-      const py = h / 2 - (v / 10) * (h / 2 - 4);
-      i === 0 ? oscCtx.moveTo(px, py) : oscCtx.lineTo(px, py);
-    });
-    oscCtx.stroke();
-    oscCtx.shadowBlur = 0;
-
-    // Labels
-    oscCtx.font = '9px JetBrains Mono, monospace';
-    oscCtx.fillStyle = '#00d4ff';
+    // Live readings
     oscCtx.textAlign = 'left';
-    oscCtx.fillText('CH1: ' + sample.toFixed(2) + 'V', 4, 12);
+    oscCtx.fillStyle = '#00d4ff';
+    oscCtx.fillText(`CH1 battery: ${ch1.toFixed(2)}V`, 4, 12);
     oscCtx.fillStyle = '#00ff88';
-    oscCtx.fillText('CH2: ' + ch2.toFixed(2) + 'V', 4, 24);
-    oscCtx.fillStyle = 'rgba(0,212,255,0.5)';
-    oscCtx.textAlign = 'right';
-    oscCtx.fillText(freq >= 1000 ? (freq/1000).toFixed(1)+'kHz' : freq+'Hz', w - 4, 12);
+    oscCtx.fillText(`CH2 LED: ${ch2.toFixed(2)}V`, 4, 24);
   }
 
   /* ── Multimeter ─────────────────────────────────────────────── */
@@ -1171,10 +1148,12 @@ window.CircuitSimulator = (function () {
       mmEl.textContent = (totalCurrent * 1000).toFixed(1);
       if (mmUnitEl) mmUnitEl.textContent = 'mA';
     } else if (mode === 'resistance') {
-      const resistors = components.filter(c => c.type === 'resistor');
-      const totalR = resistors.reduce((sum, r) => sum + r.value, 0);
-      mmEl.textContent = totalR >= 1000 ? (totalR/1000).toFixed(2) : totalR.toFixed(0);
-      if (mmUnitEl) mmUnitEl.textContent = totalR >= 1000 ? 'kΩ' : 'Ω';
+      // The resistance the battery sees: its voltage ÷ its current. "OL" (open) when no current flows.
+      const battery = components.find(c => c.type === 'battery');
+      const r = battery && battery.state.current > 1e-9 ? battery.state.drop / battery.state.current : Infinity;
+      const kilo = isFinite(r) && r >= 999.5; // 999.99 Ω shows as 1.00 kΩ
+      mmEl.textContent = !isFinite(r) ? 'OL' : kilo ? (r / 1000).toFixed(2) : r.toFixed(0);
+      if (mmUnitEl) mmUnitEl.textContent = kilo ? 'kΩ' : 'Ω';
     }
   }
 
@@ -1201,7 +1180,7 @@ window.CircuitSimulator = (function () {
   // Pause keeps the time; stop (rewind = true) sets it back to 0.
   function stopSim(rewind = false) {
     simRunning = false;
-    if (rewind) simTime = 0;
+    if (rewind) { simTime = 0; scopeSamples = []; }
     wires.forEach(w => w.animated = false);
     showToast(rewind ? 'Simulation stopped' : 'Simulation paused', 'info');
   }
@@ -1211,6 +1190,7 @@ window.CircuitSimulator = (function () {
     wires = [];
     simRunning = false;
     simTime = 0;
+    scopeSamples = [];
     selectedComponent = null;
     runSimulation();
     showToast('Circuit cleared', 'info');
@@ -1229,12 +1209,6 @@ window.CircuitSimulator = (function () {
 
   function setSimSpeed(speed) {
     simSpeed = parseFloat(speed);
-  }
-
-  function setSigGen(freq, amp, wave) {
-    if (freq !== undefined) sigGenFreq = freq;
-    if (amp !== undefined) sigGenAmp = amp;
-    if (wave !== undefined) sigGenWave = wave;
   }
 
   // Build a circuit from the JSON that exportCircuit() writes.
@@ -1292,13 +1266,14 @@ window.CircuitSimulator = (function () {
     resetSim,
     addComponentToCanvas,
     setSimSpeed,
-    setSigGen,
+    setScope,
     exportCircuit,
     loadCircuit,
     isRunning: () => simRunning,
     getState: () => ({
       ready: Boolean(ctx), parts: components.map(c => c.type), wires: wires.length, running: simRunning, time: simTime, speed: simSpeed,
       readings: components.map(c => ({ type: c.type, on: c.state.on, volts: +c.state.voltage.toFixed(3), mA: +(c.state.current * 1000).toFixed(2) })),
+      scope: { ...scope, ...scopeChannels(), samples: scopeSamples.length },
     }),
   };
 })();
