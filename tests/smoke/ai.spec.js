@@ -1,8 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
-   AI Assistant chat: B1–B3, F6, F7.
+   AI Assistant chat: B1–B3, F6, F7, and which answer is picked (D1).
    The screen keeps the index.html markup (ADR 0002): #ai-user-query,
-   #ai-send-btn, #ai-chat-messages. Answer quality is D1 and is not
-   checked here.
+   #ai-send-btn, #ai-chat-messages.
 ═══════════════════════════════════════════════════════════════════ */
 
 import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
@@ -126,5 +125,88 @@ test('chips, welcome and message bubbles are styled (F6)', async ({ page, errors
   }
   expect(await styleOf(page, '.ai-message-avatar', ['width', 'borderTopLeftRadius'])).toEqual({ width: '32px', borderTopLeftRadius: '50%' });
   expect(await styleOf(page, '.ai-message-time', ['fontSize'])).toEqual({ fontSize: '9px' });
+  expectNoErrors(errors);
+});
+
+/* ── Answers (D1) ─────────────────────────────────────────────── */
+const LED = 'topic:What resistor do I need for an LED at 5V?';
+const I2C = 'topic:How do I wire an I2C sensor to Arduino?';
+const BLINK = 'topic:Generate Arduino blink code';
+const ESP32 = 'topic:Explain how an ESP32 works';
+const SPI = 'topic:SPI vs I2C';
+const PWM = 'topic:PWM frequency';
+
+// Which answer the engine picks for each question, keyed by question:
+// 'topic:<stored question>', 'part:<component id>' or 'fallback'.
+function answersFor(page, questions) {
+  return page.evaluate((qs) => {
+    const d = window.CircuitLabData;
+    const label = (answer) => {
+      const topic = Object.keys(d.aiResponses).find((k) => d.aiResponses[k] === answer);
+      if (topic) return `topic:${topic}`;
+      const part = d.components.find((c) => answer.startsWith(`**${c.name}** by`));
+      if (part) return `part:${part.id}`;
+      return answer.startsWith('I can help with that!') ? 'fallback' : 'unknown';
+    };
+    return Object.fromEntries(qs.map((q) => [q, label(window.CircuitApp.getAIResponse(q))]));
+  }, questions);
+}
+
+// Check a list of [question, expected answer] pairs; the diff names every wrong one.
+async function expectAnswers(page, cases) {
+  expect(await answersFor(page, cases.map(([q]) => q))).toEqual(Object.fromEntries(cases));
+}
+
+test('every stored question gets its own answer (D1)', async ({ page, errors }) => {
+  await openApp(page);
+  const stored = await page.evaluate(() => Object.keys(window.CircuitLabData.aiResponses));
+  await expectAnswers(page, stored.map((q) => [q, `topic:${q}`]));
+  expectNoErrors(errors);
+});
+
+test('questions are matched by their topic words, not their first word (D1)', async ({ page, errors }) => {
+  await openApp(page);
+  await expectAnswers(page, [
+    ['how many ohms for an led on 3.3v', LED],
+    ['resistor value for a blue led', LED],
+    ['what are SDA and SCL', I2C],
+    ['i2c pull-up resistors', I2C],
+    ['make an LED blink', BLINK],
+    ['blinking led without delay', BLINK],
+    ['how does an esp32 work', ESP32],
+    ['does the esp32 have wifi and bluetooth', ESP32],
+    ['what is the difference between spi and i2c', SPI],
+    ['which is faster, spi or i2c?', SPI],
+    ['what is pwm', PWM],
+    ['dim an led with pwm', PWM],
+  ]);
+  expectNoErrors(errors);
+});
+
+test('a named part gets that part\'s card, however it is written (D1)', async ({ page, errors }) => {
+  await openApp(page);
+  await expectAnswers(page, [
+    ['tell me about the NE555', 'part:ne555'],
+    ['What is the timing equation for NE555 Astable Mode?', 'part:ne555'], // suggestion chip
+    ['Explain datasheet specifications and alt functions for ATmega328P microcontroller.', 'part:atmega328p'], // Datasheet "Ask AI"
+    ['how do I use the MPU-6050', 'part:mpu6050'],
+    ['how do I use the mpu6050', 'part:mpu6050'],
+    ['how do I use the mpu 6050', 'part:mpu6050'],
+    ['what is the pinout of the hc sr04', 'part:hc-sr04'],
+    ['nrf24l01+ wiring', 'part:nrf24l01'],
+  ]);
+  expectNoErrors(errors);
+});
+
+test('unrelated questions get the "be more specific" reply (D1)', async ({ page, errors }) => {
+  await openApp(page);
+  await expectAnswers(page, ['hello', 'what time is it', 'can you show me something', 'do you like pizza'].map((q) => [q, 'fallback']));
+  expectNoErrors(errors);
+});
+
+test('asking "how does an esp32 work" shows the ESP32 overview (D1)', async ({ page, errors }) => {
+  await openAI(page);
+  await ask(page, 'how does an esp32 work');
+  await expect(bubbles(page, 'assistant').locator('.ai-message-content')).toContainText('ESP32 Architecture Overview');
   expectNoErrors(errors);
 });
