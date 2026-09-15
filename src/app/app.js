@@ -1359,8 +1359,8 @@ window.CircuitApp = (function () {
     if (!panel) return;
 
     // Wire up send button (only once)
-    const sendBtn = document.getElementById('ai-send');
-    const input = document.getElementById('ai-input');
+    const sendBtn = document.getElementById('ai-send-btn');
+    const input = document.getElementById('ai-user-query');
     if (sendBtn && !sendBtn._wired) {
       sendBtn._wired = true;
       sendBtn.addEventListener('click', () => sendAIMessage(input?.value || ''));
@@ -1388,21 +1388,20 @@ window.CircuitApp = (function () {
   }
 
   function renderAIMessages() {
-    const chatArea = document.getElementById('ai-chat-area');
+    const chatArea = document.getElementById('ai-chat-messages');
     if (!chatArea) return;
 
-    // Keep the initial static welcome message if no dynamic messages yet
-    if (state.aiMessages.length === 0) return;
-
-    chatArea.innerHTML = state.aiMessages.map(msg => `
+    // Redraw the messages below the page's static welcome bubble
+    chatArea.querySelectorAll('.ai-message').forEach(el => el.remove());
+    chatArea.insertAdjacentHTML('beforeend', state.aiMessages.map(msg => `
       <div class="ai-message ${msg.role}">
-        <div class="ai-msg-avatar">${msg.role === 'assistant' ? 'AI' : 'You'}</div>
-        <div class="ai-msg-content">
-          <div>${formatMarkdown(msg.content)}</div>
-          <div class="ai-msg-time">${msg.time}</div>
+        <div class="ai-message-avatar">${msg.role === 'assistant' ? 'AI' : 'You'}</div>
+        <div class="ai-message-body">
+          <div class="ai-message-content">${formatMarkdown(msg.content)}</div>
+          <div class="ai-message-time">${msg.time}</div>
         </div>
       </div>
-    `).join('');
+    `).join(''));
 
     chatArea.scrollTop = chatArea.scrollHeight;
   }
@@ -1417,7 +1416,7 @@ window.CircuitApp = (function () {
     });
 
     // Clear input
-    const input = document.getElementById('ai-user-query') || document.getElementById('ai-input');
+    const input = document.getElementById('ai-user-query');
     if (input) input.value = '';
 
     renderAIMessages();
@@ -1719,21 +1718,6 @@ Could you be more specific about what you're trying to build? For example:
     renderPinDetail(pinNum);
     if (window.ThreeViewer) ThreeViewer.highlightPinByNumber(pinNum);
   }
-
-  // Hook up event listener for sending AI messages when clicking the send button
-  document.addEventListener('click', (e) => {
-    if (e.target.id === 'ai-send-btn') {
-      const input = document.getElementById('ai-user-query') || document.getElementById('ai-input');
-      if (input) sendAIMessage(input.value);
-    }
-  });
-
-  document.addEventListener('keypress', (e) => {
-    const input = document.getElementById('ai-user-query') || document.getElementById('ai-input');
-    if (e.target === input && e.key === 'Enter') {
-      sendAIMessage(e.target.value);
-    }
-  });
 
   function setFilter(cat) {
     state.filterCategory = cat;

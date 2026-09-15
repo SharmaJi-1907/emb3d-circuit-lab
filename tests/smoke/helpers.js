@@ -36,7 +36,25 @@ export const test = base.extend({
 
 export { expect };
 
+/* ── Known bugs ───────────────────────────────────────────────────
+   A test marked with knownBug('<code>') is EXPECTED to fail until the
+   bug is fixed. When a fix makes it pass, Playwright reports it as failed
+   ("expected to fail, but passed"), so remove the knownBug() line in the
+   same branch as the fix. Codes refer to docs/FIX_PLAN.md.
+──────────────────────────────────────────────────────────────── */
+export function knownBug(...codes) {
+  test.fail(true, `Known bug ${codes.join(', ')} — see docs/FIX_PLAN.md`);
+}
+
 /* ── Helpers ──────────────────────────────────────────────────── */
+
+// Read a few computed style properties of the first element matching `selector`.
+export function styleOf(page, selector, props) {
+  return page.locator(selector).first().evaluate((el, names) => {
+    const s = getComputedStyle(el);
+    return Object.fromEntries(names.map((n) => [n, s[n]]));
+  }, props);
+}
 
 // Open the app and wait until it has fully started (app + 3D viewer).
 export async function openApp(page) {
