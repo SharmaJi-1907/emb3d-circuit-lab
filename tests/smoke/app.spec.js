@@ -107,7 +107,7 @@ test('search finds a component', async ({ page, errors }) => {
 
 /* ── AI assistant ─────────────────────────────────────────────── */
 // Calls the answer engine directly, so it is tested separately from the Send button (B1/B3).
-// Answer quality is D1 and is not checked here.
+// Which answer is picked (D1) is checked in ai.spec.js.
 test('AI answer engine replies without errors', async ({ page, errors }) => {
   await openApp(page);
   await page.evaluate(() => window.CircuitApp.sendAIMessage('how does an esp32 work'));
