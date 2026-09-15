@@ -1981,6 +1981,14 @@ body {
   overflow-x: auto;
   margin: 8px 0;
 }
+/* Code inside a code block: no inline-code box on each line (D7) */
+.ai-code code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
 .ai-message-content ul,
 .chat-bubble ul { padding-left: 16px; margin: 6px 0; }
 .ai-message-content li,

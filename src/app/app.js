@@ -1668,24 +1668,30 @@ Could you be more specific about what you're trying to build? For example:
   }
 
   /* ── Utility ────────────────────────────────────────────────── */
+  // Chat text → HTML. The text is escaped first, so typed HTML shows as text (D6).
+  // Code blocks are set aside before the other rules and put back last, so the
+  // inline-code, bold and line-break rules can't break them (D7).
   function formatMarkdown(text) {
-    return text
+    const blocks = [];
+    return escapeHtml(text)
+      .replace(/```[^\n]*\n([\s\S]*?)\n?```/g, (m, code) => `<pre-${blocks.push(code) - 1}>`)
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/`(.+?)`/g, '<code>$1</code>')
-      .replace(/```(\w+)?\n([\s\S]+?)```/g, '<pre class="ai-code"><code>$2</code></pre>')
       .replace(/^• (.+)$/gm, '<li>$1</li>')
       .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
       .replace(/\n\n/g, '</p><p>')
-      .replace(/^(.+)$/gm, (m) => m.startsWith('<') ? m : m)
-      .replace(/\n/g, '<br>');
+      .replace(/\n/g, '<br>')
+      .replace(/<pre-(\d+)>/g, (m, i) => `<pre class="ai-code"><code>${blocks[i]}</code></pre>`);
   }
 
   function escapeHtml(text) {
     return text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function loadProjects() {
