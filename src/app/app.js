@@ -14,6 +14,7 @@ window.CircuitApp = (function () {
     selectedPin: null,
     searchQuery: '',
     filterCategory: 'all',
+    sortBy: 'name',
     compareList: [],
     aiMessages: [],
     datasheetSection: 'overview',
@@ -225,7 +226,7 @@ window.CircuitApp = (function () {
     // Panel-specific init
     switch (view) {
       case 'dashboard':    renderDashboard(); break;
-      case 'components':   renderComponentLibrary(); break;
+      case 'database':     renderComponentLibrary(); break;
       case 'viewer':       initViewerPanel(); break;
       case 'simulator':    initSimulatorPanel(); break;
       case 'boards':       initBoardExplorer(); break;
@@ -238,7 +239,7 @@ window.CircuitApp = (function () {
     const bc = document.getElementById('breadcrumb-current');
     if (bc) {
       const labels = {
-        dashboard: 'Dashboard', components: 'Component Library',
+        dashboard: 'Dashboard',
         viewer: '3D Viewer', simulator: 'Circuit Simulator',
         boards: 'Board Explorer', datasheet: 'Datasheet Viewer',
         ai: 'AI Assistant', projects: 'Projects',
@@ -503,7 +504,7 @@ window.CircuitApp = (function () {
 
   /* ── Component Library ──────────────────────────────────────── */
   function renderComponentLibrary() {
-    const panel = document.getElementById('view-components');
+    const panel = document.getElementById('view-database');
     if (!panel) return;
 
     const categories = ['all', 'mcu', 'sensor', 'power', 'passive'];
@@ -519,6 +520,7 @@ window.CircuitApp = (function () {
         c.tags.some(t => t.includes(state.searchQuery))
       );
     }
+    filtered = sortList(filtered, state.sortBy);
 
     panel.innerHTML = `
       <div class="library-layout">
@@ -542,9 +544,8 @@ window.CircuitApp = (function () {
           <div class="filter-group">
             <label class="filter-label">Sort By</label>
             <select class="filter-select" onchange="CircuitApp.sortComponents(this.value)">
-              <option value="name">Name</option>
-              <option value="pins">Pin Count</option>
-              <option value="voltage">Voltage</option>
+              ${[['name', 'Name'], ['pins', 'Pin Count'], ['voltage', 'Voltage']].map(([value, label]) =>
+                `<option value="${value}" ${state.sortBy === value ? 'selected' : ''}>${label}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -1740,7 +1741,17 @@ Could you be more specific about what you're trying to build? For example:
   }
 
   function sortComponents(by) {
+    state.sortBy = by;
     renderComponentLibrary();
+  }
+
+  // Sort components by name (A–Z), pin count or lowest voltage (low → high); ties by name.
+  function sortList(list, by) {
+    const key = {
+      pins: c => c.pins,
+      voltage: c => parseFloat(c.voltage),
+    }[by];
+    return [...list].sort((a, b) => (key ? key(a) - key(b) : 0) || a.name.localeCompare(b.name));
   }
 
   function toggleCompare(id) {
