@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Circuit Simulator: layout (F3), controls (C2), multimeter (B9) and
-   circuit logic (D12, D19).
+   Circuit Simulator: layout (F3), controls (C2), multimeter (B9),
+   circuit logic (D12, D19) and instruments (C7, D21).
    The screen keeps the index.html markup (ADR 0002). Parts are read
    through the read-only CircuitSimulator.getState().
 ═══════════════════════════════════════════════════════════════════ */
@@ -154,7 +154,8 @@ test('Clear, Export and Upload Code do something visible (C2)', async ({ page, e
 /* ── Multimeter (B9) ──────────────────────────────────────────── */
 test('the multimeter shows readings (B9)', async ({ page, errors }) => {
   await openSimulator(page);
-  await page.locator('#ws-add-resistor').click();
+  // A 1 kΩ resistor across the battery (the meter reads the wired circuit, D21)
+  await loadCircuit(page, [['battery', 100, 100], ['resistor', 240, 100]], [[0, 0, 1, 0], [1, 1, 0, 1]]);
   await page.locator('#mm-mode').selectOption('resistance');
   await expect(page.locator('#multimeter-val')).toHaveText('1.00');
   await expect(page.locator('#multimeter-unit')).toHaveText('kΩ');
@@ -254,5 +255,84 @@ test('an exported circuit loads back the same', async ({ page, errors }) => {
   await page.evaluate((data) => window.CircuitSimulator.loadCircuit(data), json);
   expect(await simState(page)).toMatchObject({ parts: ['battery', 'resistor', 'led'], wires: 3 });
   expect(await ledOn(page)).toBe(true);
+  expectNoErrors(errors);
+});
+
+/* ── Instruments (C7, D21) ────────────────────────────────────── */
+const scopeState = async (page) => (await simState(page)).scope;
+// battery + → switch → 1 kΩ → LED → battery −
+const SWITCHED_LED = [['battery', 100, 100], ['switch', 240, 100], ['resistor', 380, 100], ['led', 520, 100]];
+const SWITCHED_LOOP = [[0, 0, 1, 0], [1, 1, 2, 0], [2, 1, 3, 0], [3, 1, 0, 1]];
+
+test('the oscilloscope ON button turns the screen off and on (C7)', async ({ page, errors }) => {
+  await openSimulator(page);
+  const button = page.locator('#oscilloscope .instrument-toggle');
+  await button.click();
+  await expect(button).toHaveText('OFF');
+  await expect(button).not.toHaveClass(/active/);
+  expect((await scopeState(page)).on).toBe(false);
+  await button.click();
+  await expect(button).toHaveText('ON');
+  await expect(button).toHaveClass(/active/);
+  expect((await scopeState(page)).on).toBe(true);
+  expectNoErrors(errors);
+});
+
+test('the V/div and T/div dials step through their values (C7)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await expect(page.locator('#scope-volt-read')).toHaveText('2.0V');
+  await page.locator('#dial-ch1-volt').click();
+  await expect(page.locator('#scope-volt-read')).toHaveText('5.0V');
+  expect((await scopeState(page)).voltsPerDiv).toBe(5);
+
+  await page.locator('#dial-timebase').click();
+  await page.locator('#dial-timebase').click();
+  await expect(page.locator('#scope-time-read')).toHaveText('100 ms');
+  expect((await scopeState(page)).msPerDiv).toBe(100);
+
+  // After the last value a dial goes back to the first: 5 → 10 → 0.5 → 1
+  for (let i = 0; i < 3; i++) await page.locator('#dial-ch1-volt').click();
+  await expect(page.locator('#scope-volt-read')).toHaveText('1.0V');
+  expectNoErrors(errors);
+});
+
+test('the oscilloscope shows the circuit\'s real voltages (D21)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, SWITCHED_LED, SWITCHED_LOOP);
+  await page.locator('#sim-run').click();
+  await expect.poll(async () => (await scopeState(page)).samples, { message: 'the scope should record while running' }).toBeGreaterThan(0);
+  let s = await scopeState(page);
+  expect(s.ch1, 'CH1 = battery voltage').toBeCloseTo(9, 1);
+  expect(s.ch2, 'CH2 = LED voltage, switch open').toBeCloseTo(0, 1);
+
+  const board = await page.locator('#sim-canvas').boundingBox();
+  await page.mouse.dblclick(board.x + 265, board.y + 112); // close the switch
+  s = await scopeState(page);
+  expect(s.ch1, 'CH1 = battery voltage').toBeCloseTo(9, 1);
+  expect(s.ch2, 'CH2 = LED voltage, switch closed').toBeCloseTo(2.07, 1);
+  expectNoErrors(errors);
+});
+
+test('the oscilloscope screen draws at its real size', async ({ page, errors }) => {
+  await openSimulator(page);
+  const size = await page.locator('#osc-canvas').evaluate((c) => {
+    const r = c.getBoundingClientRect();
+    return { box: [r.width, r.height], buffer: [c.width, c.height] };
+  });
+  expect(Math.abs(size.buffer[0] - size.box[0]), `drawing ${size.buffer} vs screen ${size.box}`).toBeLessThan(1);
+  expect(Math.abs(size.buffer[1] - size.box[1]), `drawing ${size.buffer} vs screen ${size.box}`).toBeLessThan(1);
+  expectNoErrors(errors);
+});
+
+test('multimeter resistance measures the wired circuit, not every resistor (D21)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await page.locator('#mm-mode').selectOption('resistance');
+  // 1 kΩ across the battery, plus a loose 1 kΩ that isn't wired
+  await loadCircuit(page, [['battery', 100, 100], ['resistor', 240, 100], ['resistor', 240, 300]], [[0, 0, 1, 0], [1, 1, 0, 1]]);
+  await expect(page.locator('#multimeter-val')).toHaveText('1.00');
+  await expect(page.locator('#multimeter-unit')).toHaveText('kΩ');
+  // Nothing wired: no current flows, so the meter shows OL (open)
+  await loadCircuit(page, [['resistor', 240, 300]]);
+  await expect(page.locator('#multimeter-val')).toHaveText('OL');
   expectNoErrors(errors);
 });
