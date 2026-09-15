@@ -17,7 +17,7 @@ emmb3d/
 │   │   │   ├── index.js       3D scene, camera, orbit, pin picking, procedural models
 │   │   │   └── models/        One file per 3D model builder   (empty — filled while fixing)
 │   │   ├── simulator/
-│   │   │   └── index.js       Breadboard canvas, parts, wires, voltage solver, oscilloscope
+│   │   │   └── index.js       Breadboard canvas, parts, wires, DC solver (nodal analysis), oscilloscope
 │   │   └── background/
 │   │       └── circuit-bg.js  Animated circuit background
 │   ├── ui/                    Reusable UI: toast, modal, search  (empty)
@@ -43,7 +43,7 @@ emmb3d/
 │   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
 │   │   ├── viewer.spec.js     3D Viewer layout: canvas sizing, sidebar, pin table/detail, tooltip, controls
 │   │   ├── database.spec.js   Database screen (Component Library): cards, filter, sort, compare, View 3D
-│   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter
+│   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
 │   └── unit/                  Small function tests            (empty)

@@ -16,7 +16,7 @@ _Scanned: 2026-09-12 · Files reviewed: all of `index.html`, `src/`, `js/`, `css
 | Dashboard (home screen) | ✅ Stats, quick access, recently viewed, sample projects (#8) |
 | Left menu switches screens | ✅ Works |
 | 3D viewer | ✅ New layout (#9): part info, controls, full pin table, pin details, tooltip; canvas fills its area. Memory still grows on each visit (D16). |
-| Circuit simulator | ⚠️ Layout, toolbar, palette (with a battery), status bar and multimeter work (#14). The circuit logic is wrong: an LED lights without a loop back to the battery, or when reversed (D12, #14b) |
+| Circuit simulator | ✅ Layout, toolbar, palette (with a battery), status bar and multimeter work (#14). Circuits give correct results (#14b): an LED lights only in a closed loop and the right way round, and currents follow Ohm's law. The oscilloscope controls still do nothing (C7, D21 → #14c) |
 | Component Database | ✅ Component Library (#10): category filter, sort, compare, part cards with "View 3D" |
 | Board Explorer | ⚠️ Shows the board and its pins; layout partly unstyled (F1) |
 | Datasheet Viewer | ✅ Shows datasheets |
@@ -81,7 +81,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | C4 | 🟠 | Projects | "Create project" button (`create-project-btn`), project grid (`projects-grid`) |
 | C5 | 🟠 | Settings | "Toggle Dark Mode" (`theme-btn-toggle`), top-bar theme toggle |
 | C6 | 🟡 | Top bar | Notifications drawer, "Clear all", shortcuts modal (nothing can open it) |
-| C7 | 🟡 | Simulator | The oscilloscope ON button and the V/div and T/div dials do nothing, and "Nodes: 0" in the status bar never changes. _Found in #14._ |
+| C7 | 🟡 | Simulator | The oscilloscope ON button and the V/div and T/div dials do nothing, and "Nodes: 0" in the status bar never changes. _Found in #14._ _**Nodes part fixed in #14b:** the status bar shows the real number of nets (tested). The oscilloscope part moves to #14c with D21._ |
 
 ### D. Logic bugs (code runs but does the wrong thing)
 
@@ -98,15 +98,16 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | D9 | ⚪ | The HTML has `onclick="window.location.hash='#simulator'"`, but the app has no URL/hash routing, so it does nothing. | [index.html](../index.html) |
 | D10 | ✅ | `sortComponents(by)` ignores `by`, so the sort dropdown does nothing. _Found by ESLint._ _**Fixed in #10:** sorts by name, pin count or lowest voltage, and the dropdown keeps the choice (tested)._ | [app.js:1704](../src/app/app.js#L1704) |
 | D11 | 🟡 | **Chip names are never drawn on the 3D chips.** `buildDIP` and `buildQFP` take a `label` (e.g. "ATmega328P") but never use it. _Found by ESLint._ | [three-viewer.js:295](../src/engines/three-viewer/index.js#L295), [three-viewer.js:368](../src/engines/three-viewer/index.js#L368) |
-| D12 | 🟡 | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ _**Confirmed in #14** (engine test): an LED lights with only the battery's + wired to it (no loop back to −), and also when it is reversed in a closed loop. Moved to its own branch (#14b), because it needs a new voltage solver._ | [simulator.js:27](../src/engines/simulator/index.js#L27), [simulator.js:828-829](../src/engines/simulator/index.js#L828-L829) |
+| D12 | ✅ | Simulator leftovers: `mmEnabled` is never read, so the multimeter on/off flag does nothing. `posNode` / `negNode` are worked out in `runSimulation` but never used. Check whether battery polarity is ignored. _Found by ESLint._ _**Confirmed in #14** (engine test): an LED lights with only the battery's + wired to it (no loop back to −), and also when it is reversed in a closed loop. Moved to its own branch (#14b), because it needs a new voltage solver._ _Measured in #14b with 6 test circuits: the LED lit in all 6, and a 1 kΩ resistor gave 40.7 mA (should be 6.93 mA), because the old solver only followed wires out of the + terminal, faked resistors as a "10% drop" and assumed 150 Ω for every LED._ _**Fixed in #14b:** a DC solver (nets + nodal analysis). LEDs and diodes conduct only forwards, capacitors block DC, and all 6 circuits match hand calculations (tested). The multimeter's current is the battery's current, and wires animate only when current flows. `mmEnabled` (never read) is removed. 6 lint warnings fewer (cap 24 → 18)._ | [simulator.js:817-929](../src/engines/simulator/index.js#L817-L929) |
 | D13 | ✅ | **Explode destroyed the 3D model.** The target position was calculated from the saved position **before** it was saved (`undefined + 0.3 = NaN`), so the parts vanished and never came back. Toggling quickly also made two animations fight (parts bounced). _Found in #4._ **Fixed in #4:** save first (checking for `undefined`, since 0 is valid), and stop the previous animation before starting a new one. _Follow-up in #9: the explode and grow-in animations are now time-based, so they last ~320 ms / ~200 ms even when frames are slow._ | [three-viewer.js:920](../src/engines/three-viewer/index.js#L920) |
 | D14 | 🟡 | The search popup footer shows **↑↓ Navigate** and **↵ Select**, but those keys do nothing (only Esc is handled). _Found in #4._ | [app.js:314](../src/app/app.js#L314) |
 | D15 | ✅ | **The 3D Viewer is empty when the app first opens.** At startup the app asks for the model before the 3D engine is ready (the engine starts 300 ms later), and nothing asks again. The chip only appears after leaving and returning to the Viewer. The "Rendering 3D Model..." text also never hid. _Found in #4 (`getModelBounds()` returns `null` at first load)._ **Fixed in #4b:** a `showSelectedModel()` helper draws the part and hides the loading text. It's called when the Viewer opens **and** as soon as the engine is ready. | [app.js:651](../src/app/app.js#L651), [app.js:79](../src/app/app.js#L79) |
 | D16 | 🟡 | **Each visit to the Viewer leaks graphics memory.** Every visit rebuilds the model, and the old one is removed with `scene.remove()` but never freed with `dispose()`. Measured: **2 → 297 geometries after 5 visits** (about 59 per visit). _Found in #4b._ | [three-viewer.js:733](../src/engines/three-viewer/index.js#L733) |
 | D17 | 🟡 | **The AI suggestion chips ask things no stored answer covers.** "Reset Hookup" (RESET pin) gets the "be more specific" reply, "555 Astable Eq" gets the NE555 card without the timing equation, and "ESP32 5V Tolerance" gets the ESP32 overview, which doesn't mention 5V. Fix by writing 3 answers or changing the chips. _Found in #12._ | [index.html:495-497](../index.html#L495-L497), [data.js:827](../src/data/data.js#L827) |
 | D18 | ⚪ | **AI replies show lists and tables as raw text.** The formatter only turns lines starting with "•" into a list, but the stored answers use "- " (43 lines, 0 list items). Tables (20 rows) show as raw `\|` pipes. Still readable. _Found in #13._ | [app.js:1674](../src/app/app.js#L1674) |
-| D19 | 🟡 | **Deleting a part (right-click) keeps one of its wires.** `onContextMenu` removes the part, then filters the wires using `components[i]`, which is now the *next* part. Measured: battery–LED–resistor with 2 wires, delete the LED → 1 wire left, still pointing at the deleted LED (should be 0). _Found in #14._ | [simulator.js:769](../src/engines/simulator/index.js#L769) |
+| D19 | ✅ | **Deleting a part (right-click) keeps one of its wires.** `onContextMenu` removes the part, then filters the wires using `components[i]`, which is now the *next* part. Measured: battery–LED–resistor with 2 wires, delete the LED → 1 wire left, still pointing at the deleted LED (should be 0). _Found in #14._ _**Fixed in #14b:** the removed part is kept and its wires are filtered by it (tested with a real right-click)._ | [simulator.js:768](../src/engines/simulator/index.js#L768) |
 | D20 | ⚪ | **The simulation clock counts frames, not real time.** Each frame adds 0.016 s × speed, so the clock runs slow when the browser draws slowly (for example in headless tests). Other engine animations are time-based. _Found in #14._ | [simulator.js:915](../src/engines/simulator/index.js#L915) |
+| D21 | 🟡 | **The oscilloscope shows made-up signals.** CH1 is a 5 V sine from a signal generator that isn't connected to the circuit, and it runs at 1 Hz while the label says "1.0kHz" (the time in seconds is divided by 1000). CH2 is just "3.3 V if any LED is on". The multimeter's Resistance mode also just adds up every resistor on the board, wired or not. The V/div and T/div dials (C7) can only make sense once the scope shows real circuit values. _Found in #14b._ | [simulator.js:1087](../src/engines/simulator/index.js#L1087) |
 
 ### E. Cleanup / project health
 
@@ -122,7 +123,7 @@ These are visible and clickable, but **nothing happens** (confirmed by clicking 
 | E8 | ✅ | No git, no README, no linter, no tests. _Fixed: git, README, smoke tests (`npm run test:smoke`) and ESLint (`npm run lint`) added._ |
 | E9 | ⚪ | `dist/` is a build of the broken code. Rebuild it after fixing. |
 | E10 | ⚪ | **GSAP and ScrollTrigger are downloaded on every page load but never used** by any code. That's wasted network and load time. _Found while setting up ESLint._ |
-| E11 | ⚪ | **27 lint warnings** (25 after #4, 24 after #10) (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings 27`. Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
+| E11 | ⚪ | **27 lint warnings** (25 after #4, 24 after #10, 18 after #14b) (unused code, an empty `catch`, `const` in `switch` cases), capped with `--max-warnings` (currently 18). Most are symptoms of D5, D8, D10–D12. Each fix branch clears its own warnings and lowers the cap. |
 | E12 | ⚪ | **Unused Simulator CSS in `main.css`.** Rules for IDs that don't exist in the page (`#sim-toolbar`, `#sim-palette`, `#sim-canvas-area`, `#sim-instruments`, `#sim-osc-panel`, `#osc-main-canvas`) and classes nothing uses (`.sim-status-dot`, `.palette-section-title`, `.sim-canvas-hint`…). Harmless; the working styles are in `src/styles/views/simulator.css` since #14. _Found in #14._ |
 
 ### F. Page layout and CSS don't match
@@ -148,6 +149,10 @@ Features of the old 3D Viewer that the new layout doesn't have ([ADR 0002](decis
 - info overlay on the 3D view (component, package, pins, voltage)
 - DIP / SMD / QFP / BGA package buttons (never worked)
 - screenshot button
+
+Simulator (found in #14b):
+- warn when an LED gets too much current (for example over 30 mA). Today an LED straight across the 9 V battery shows 667 mA and simply lights.
+- an "Import" button that opens a file saved with Export (the engine's `loadCircuit()` can already read it).
 
 AI assistant (found in #12):
 - short names for parts: the AI finds a part only by its full name or ID, so "stm32", "blue pill", "555" or "esp32" (for the ESP32-WROOM-32 card) aren't recognised. This needs a list of extra names for each part in `data.js`.
