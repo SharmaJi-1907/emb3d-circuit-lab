@@ -1,0 +1,149 @@
+/* ── Datasheet Viewer (F5, ADR 0002) ────────────────────────────
+   Styles the Datasheet markup in index.html:
+   .datasheet-layout → .datasheet-sidebar (.ds-search · .ds-list)
+   and .datasheet-viewer-area (.ds-viewer-header · .ds-toc · #ds-content),
+   plus the list rows app.js draws. Design tokens only, from main.css.
+   The content itself (.ds-section, .ds-table, .ds-code…) is already
+   styled in main.css.
+──────────────────────────────────────────────────────────────── */
+
+/* Both columns must stay inside the layout, so the tall sections
+   scroll in #ds-content instead of being cut off by its overflow:hidden. */
+.datasheet-sidebar,
+.datasheet-viewer-area {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.datasheet-viewer-area {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar */
+.ds-search {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+#ds-search {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  transition: border-color var(--t-base);
+}
+#ds-search::placeholder { color: var(--text-muted); }
+#ds-search:focus { outline: none; border-color: var(--border-active); }
+
+.ds-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.ds-item {
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.ds-item:hover { background: var(--bg-hover); }
+.ds-item.active { background: var(--cyan-dim); }
+
+.ds-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ds-item.active .ds-item-name { color: var(--cyan); }
+
+.ds-item-mfr {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* Header: title on the left, actions on the right */
+.ds-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ds-title-area { min-width: 0; }
+.ds-mfr {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.ds-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Section bar */
+.ds-toc {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px;
+}
+
+.toc-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+#view-datasheet .toc-btn {
+  padding: 5px 12px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+#view-datasheet .toc-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+#view-datasheet .toc-btn.active {
+  background: var(--cyan-dim);
+  border-color: var(--border-active);
+  color: var(--cyan);
+}
+
+/* Content */
+#ds-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 16px;
+}
+
+.placeholder-msg {
+  padding: 24px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Narrow screens: the list above the datasheet */
+@media (max-width: 900px) {
+  .datasheet-layout { grid-template-rows: 200px minmax(0, 1fr); }
+}
