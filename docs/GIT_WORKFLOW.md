@@ -140,8 +140,9 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 16 | `style/board-explorer` | F4 | ✅ |
 | 16b | `fix/board-explorer-behaviour` | D22 (handlers added on every visit, redraw on resize), D23 (pin highlight), D25 (shared selected pin, found here) | ✅ |
 | 16c | `feat/board-data` | D24: real pin data for Arduino Mega, ESP8266 (NodeMCU), Raspberry Pi Pico and STM32 Nucleo-F401RE, plus an "STM32 Blue Pill" tab | ✅ |
-| 17 | `style/datasheet-sidebar` | F5 | ⏳ |
+| 17 | `style/datasheet-sidebar` | F5: style the Datasheet sidebar and section bar, and stop the screen being cut off; E13 (flaky toast-count test, found here and blocking the merge gate) | ✅ |
 | 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ⏳ |
+| 17c | `fix/datasheet-search-sections` | C8 (the datasheet search box is dead), D26 ("Pinout" has no data, `package` has no button) — both found in #17 | ⏳ |
 | 18 | `fix/projects-view` | C4 | ⏳ |
 | 19 | `fix/settings-theme` | C5 | ⏳ |
 | 20 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ⏳ |
@@ -149,7 +150,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 22 | `feat/hash-routing` | D9 | ⏳ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models); restore resistor/capacitor data from `legacy/` history | ⏳ |
 | 24 | `chore/upgrade-threejs` | E7 | ⏳ |
-| 25 | `chore/cleanup-assets` | E2–E5, E10, E12 (unused Simulator CSS) | ⏳ |
+| 25 | `chore/cleanup-assets` | E2–E5, E10, E12 (unused Simulator and Datasheet CSS), E14 (font CDN errors fail tests) | ⏳ |
 | 26 | `chore/update-dependencies` | E6 | ⏳ |
 | 27+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
 
