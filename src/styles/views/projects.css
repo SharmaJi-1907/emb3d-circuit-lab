@@ -1,0 +1,95 @@
+/* ── Projects screen (C4, ADR 0002) ─────────────────────────────
+   The cards themselves are styled in main.css. This file covers the
+   parts C4 added: the "name your project" form and the cards for
+   projects you made. Design tokens only.
+──────────────────────────────────────────────────────────────── */
+
+#view-projects .projects-layout {
+  height: 100%;
+  min-height: 0;
+}
+
+#projects-grid {
+  min-height: 0;
+  overflow-y: auto;
+  align-content: start;
+  padding-bottom: 4px;
+}
+
+/* The "name your project" form, shown as the first card */
+.project-card-new {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  border-color: var(--border-active);
+}
+
+.project-new-label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+#new-project-name {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--t-base);
+}
+#new-project-name::placeholder { color: var(--text-muted); }
+#new-project-name:focus { border-color: var(--border-active); }
+
+.project-card-new .project-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#new-project-cancel {
+  padding: 5px 12px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+#new-project-cancel:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+/* Cards for projects you made */
+.project-card.is-mine { border-color: var(--border-hover); }
+
+.project-card .project-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-delete {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+.project-delete:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
