@@ -84,10 +84,14 @@ async function clickBoardPin(page, index) {
 test('visiting the Board Explorer again does not repeat pin clicks (D22)', async ({ page, errors }) => {
   await openBoards(page);
   for (const view of ['dashboard', 'boards', 'dashboard', 'boards']) await goToView(page, view);
-  const toasts = page.locator('.toast');
-  const before = await toasts.count();
   await clickBoardPin(page, 2);
-  expect(await toasts.count(), 'one click shows one toast').toBe(before + 1);
+  // Count only the toast this click makes. Every toast deletes itself after
+  // 3.3 s, so counting all toasts before and after the click is racy: under
+  // load the welcome toast can go as this one arrives (E13). Repeated
+  // handlers (D22) show this same message once per visit, so the count is
+  // never 1 (measured: 3 visits → 3 toasts) and this still fails.
+  const mine = page.locator('.toast').filter({ hasText: 'Inspecting Pin' });
+  await expect(mine, 'one click shows one toast').toHaveCount(1);
   expectNoErrors(errors);
 });
 
