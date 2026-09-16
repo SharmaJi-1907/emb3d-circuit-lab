@@ -40,6 +40,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/boards.spec.js`: 4 tests for the Board Explorer's behaviour (98 tests in total).
 - Board Explorer: 4 new boards with pinouts from official sources (Arduino Mega 2560 Rev3, NodeMCU 1.0 / ESP8266, Raspberry Pi Pico, STM32 Nucleo-F401RE) and an "STM32 Blue Pill" tab (8 tabs). Plus 3 tests for the board data (101 tests in total).
 - `src/styles/views/datasheet.css` (F5) and `tests/smoke/datasheet.spec.js`: 5 tests for the Datasheet sidebar, section bar and layout (106 tests in total).
+- `src/styles/views/ai.css` (F8) and 4 tests in `tests/smoke/ai.spec.js` for the AI screen's styles and layout (110 tests in total).
 - A Battery button in the Simulator palette, so a circuit has a power source.
 - `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
 - `tests/smoke/simulator.spec.js`: 5 tests for the oscilloscope and the multimeter's resistance (87 tests in total). Simulator: `setScope()` for the oscilloscope settings.
@@ -50,6 +51,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- The AI screen uses the design tokens instead of inline styles (F8). 12 elements carried 14 inline `style` rules with hard-coded colours (`#07070a` chat box, `#222` borders, `#0c0c14` input, `#fff` text); they now live in `src/styles/views/ai.css`. The input's white browser focus ring is replaced by a cyan border, and the title uses the shared 22 px like every other screen. The markup, classes and IDs are unchanged, and the page is 790 bytes smaller.
 - The Datasheet Viewer's sidebar and section bar are styled (F5), and the screen is no longer cut off. Before: the search box was a plain white browser input with black Arial text, the 6 section buttons were browser grey and the selected one looked exactly like the rest, and list rows had no padding, no hover and no pointer. The bottom 204 px of the screen was also clipped, because both columns grew to 832 px (1318 px on Examples) inside a 628 px layout; the content area now scrolls instead.
 - A flaky smoke test (E13). The Board Explorer's "does not repeat pin clicks" test counted every toast before the click and expected one more, but toasts delete themselves after 3.3 s, so under load an old toast expired as the new one appeared. It now counts only the toast that click makes. Measured: 1 failure in 12 runs before, 12 of 12 green after, and it still catches D22.
 - Every Board Explorer tab shows its own board (D24). The Mega, ESP8266 and Pico tabs used to show the Uno, the ESP32 and the Pi 4, and "STM32 Nucleo" showed a Blue Pill.
