@@ -141,7 +141,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 16b | `fix/board-explorer-behaviour` | D22 (handlers added on every visit, redraw on resize), D23 (pin highlight), D25 (shared selected pin, found here) | ✅ |
 | 16c | `feat/board-data` | D24: real pin data for Arduino Mega, ESP8266 (NodeMCU), Raspberry Pi Pico and STM32 Nucleo-F401RE, plus an "STM32 Blue Pill" tab | ✅ |
 | 17 | `style/datasheet-sidebar` | F5: style the Datasheet sidebar and section bar, and stop the screen being cut off; E13 (flaky toast-count test, found here and blocking the merge gate) | ✅ |
-| 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ⏳ |
+| 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ✅ |
 | 17c | `fix/datasheet-search-sections` | C8 (the datasheet search box is dead), D26 ("Pinout" has no data, `package` has no button) — both found in #17 | ⏳ |
 | 18 | `fix/projects-view` | C4 | ⏳ |
 | 19 | `fix/settings-theme` | C5 | ⏳ |

@@ -264,3 +264,88 @@ test('inline code, bold and & still show in messages', async ({ page, errors }) 
   await expect(bubble).toHaveText('use digitalWrite() for fast pins & more');
   expectNoErrors(errors);
 });
+
+/* ── Screen styles (F8) ───────────────────────────────────────── */
+// The hard-coded colours the markup used before F8.
+const HARD_CODED = {
+  chatBg: 'rgb(7, 7, 10)',      // #07070a
+  inputBg: 'rgb(12, 12, 20)',   // #0c0c14
+  border: 'rgb(34, 34, 34)',    // #222
+  white: 'rgb(255, 255, 255)',  // #fff
+};
+// Design tokens from main.css.
+const TOKEN = {
+  border: 'rgba(0, 212, 255, 0.08)',
+  borderActive: 'rgba(0, 212, 255, 0.4)',
+  bgSurface: 'rgb(10, 10, 20)',
+  bgElevated: 'rgb(15, 15, 30)',
+  textPrimary: 'rgb(232, 232, 240)',
+};
+
+test('the AI screen has no inline styles (F8)', async ({ page, errors }) => {
+  await openAI(page);
+  // Only the markup inside the screen. The screen element itself carries an
+  // inline `display`, which the app's router sets on every screen.
+  const withStyle = await page.locator('#view-ai [style]').evaluateAll(
+    (els) => els.map((el) => `${el.tagName.toLowerCase()}.${el.className || '(no class)'}: ${el.getAttribute('style')}`),
+  );
+  expect(withStyle, 'styling belongs in src/styles/views/ai.css, not the markup').toEqual([]);
+  const screenInline = await page.locator('#view-ai').evaluate((el) => el.style.cssText);
+  expect(screenInline, 'the router may only set display on the screen').toMatch(/^display: \w+;?$/);
+  expectNoErrors(errors);
+});
+
+test('the chat area and input use the design tokens (F8)', async ({ page, errors }) => {
+  await openAI(page);
+
+  const chatBox = await styleOf(page, '#ai-chat-messages', ['backgroundColor', 'borderTopColor', 'borderTopWidth']);
+  expect(chatBox.backgroundColor, 'chat background should be a token, not #07070a').not.toBe(HARD_CODED.chatBg);
+  expect(chatBox.borderTopColor, 'chat border should be a token, not #222').not.toBe(HARD_CODED.border);
+  expect(chatBox).toMatchObject({ backgroundColor: TOKEN.bgSurface, borderTopColor: TOKEN.border, borderTopWidth: '1px' });
+
+  const input = await styleOf(page, '#ai-user-query', ['backgroundColor', 'color', 'borderTopColor']);
+  expect(input.backgroundColor, 'input background should be a token, not #0c0c14').not.toBe(HARD_CODED.inputBg);
+  expect(input.color, 'input text should be a token, not #fff').not.toBe(HARD_CODED.white);
+  expect(input).toMatchObject({ backgroundColor: TOKEN.bgElevated, color: TOKEN.textPrimary, borderTopColor: TOKEN.border });
+
+  // The avatar's gradient uses the cyan and purple tokens.
+  const avatar = await styleOf(page, '.ai-avatar-large', ['backgroundImage', 'width', 'borderTopLeftRadius']);
+  expect(avatar.backgroundImage, 'avatar gradient').toContain('rgb(0, 212, 255)');
+  expect(avatar.backgroundImage, 'avatar gradient').toContain('rgb(123, 47, 255)');
+  expect(avatar).toMatchObject({ width: '50px', borderTopLeftRadius: '50%' });
+  expectNoErrors(errors);
+});
+
+test('the chat input shows no browser focus ring (F8)', async ({ page, errors }) => {
+  await openAI(page);
+  await page.locator('#ai-user-query').focus();
+  expect((await styleOf(page, '#ai-user-query', ['outlineStyle'])).outlineStyle, 'no white browser outline').toBe('none');
+  // The border colour fades in over 0.2 s, so wait for it rather than read it once.
+  await expect
+    .poll(async () => (await styleOf(page, '#ai-user-query', ['borderTopColor'])).borderTopColor,
+      { message: 'focus is shown by the border instead' })
+    .toBe(TOKEN.borderActive);
+  expectNoErrors(errors);
+});
+
+test('the AI screen keeps its layout without inline styles (F8)', async ({ page, errors }) => {
+  await openAI(page);
+  const header = await page.locator('#view-ai .ai-header').boundingBox();
+  const chips = await page.locator('#view-ai .ai-suggestions').boundingBox();
+  const box = await chat(page).boundingBox();
+  const inputArea = await page.locator('#view-ai .ai-input-area').boundingBox();
+
+  expect(chips.y, 'chips sit under the header').toBeGreaterThanOrEqual(header.y + header.height);
+  expect(box.y, 'chat sits under the chips').toBeGreaterThanOrEqual(chips.y + chips.height);
+  expect(inputArea.y, 'the input sits under the chat').toBeGreaterThanOrEqual(box.y + box.height);
+  expect(box.height, 'the chat takes the space that is left').toBeGreaterThan(300);
+
+  // The avatar and the title sit side by side, not stacked.
+  const avatar = await page.locator('.ai-avatar-large').boundingBox();
+  const title = await page.locator('#view-ai .view-title').boundingBox();
+  expect(title.x, 'title is right of the avatar').toBeGreaterThan(avatar.x + avatar.width - 1);
+
+  const scrolls = await page.locator('#view-ai').evaluate((v) => v.scrollHeight > v.clientHeight);
+  expect(scrolls, 'the screen itself should not scroll').toBe(false);
+  expectNoErrors(errors);
+});

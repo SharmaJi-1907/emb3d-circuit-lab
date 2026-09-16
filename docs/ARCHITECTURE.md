@@ -34,7 +34,8 @@ emmb3d/
 │   │   └── views/             per-screen styles
 │   │       ├── simulator.css  Circuit Simulator layout, toolbar, palette, board, instruments (F3)
 │   │       ├── boards.css     Board Explorer layout, tabs, filters, specs, pin list (F4)
-│   │       └── datasheet.css  Datasheet sidebar, search box, list, section bar, layout fit (F5)
+│   │       ├── datasheet.css  Datasheet sidebar, search box, list, section bar, layout fit (F5)
+│   │       └── ai.css         AI screen layout, chat box, chips row, input row (F8)
 │   └── assets/                fonts, models, images imported by code
 ├── eslint.config.js           Lint rules, allowed globals, ignored folders
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
@@ -63,7 +64,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 1. `styles/main.css`
 2. `styles/components/panels.css`: shared page styles. Must come after `main.css` so it can build on its design tokens.
-3. `styles/views/simulator.css`, `styles/views/boards.css` and `styles/views/datasheet.css`: per-screen styles. After the shared styles, so they can build on them.
+3. `styles/views/simulator.css`, `styles/views/boards.css`, `styles/views/datasheet.css` and `styles/views/ai.css`: per-screen styles. After the shared styles, so they can build on them.
 4. `engines/background/circuit-bg.js`
 5. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
 6. `engines/three-viewer/index.js` → `window.ThreeViewer`

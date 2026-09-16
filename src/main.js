@@ -4,6 +4,7 @@ import './styles/components/panels.css';
 import './styles/views/simulator.css';
 import './styles/views/boards.css';
 import './styles/views/datasheet.css';
+import './styles/views/ai.css';
 import './engines/background/circuit-bg.js';
 import './data/data.js';
 import './engines/three-viewer/index.js';
