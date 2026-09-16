@@ -143,7 +143,8 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 17 | `style/datasheet-sidebar` | F5: style the Datasheet sidebar and section bar, and stop the screen being cut off; E13 (flaky toast-count test, found here and blocking the merge gate) | ✅ |
 | 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ✅ |
 | 17c | `fix/datasheet-search-sections` | C8 (the datasheet search box is dead), D26 ("Pinout" has no data, `package` has no button) — both found in #17 | ✅ |
-| 18 | `fix/projects-view` | C4 | ⏳ |
+| 18 | `fix/projects-view` | C4; test timeout raised to 60 s, E15 logged | ✅ |
+| 18b | `chore/faster-smoke-tests` | E15: stop non-3D tests waiting for the 3D engine, then lower the timeout again | ⏳ |
 | 19 | `fix/settings-theme` | C5 | ⏳ |
 | 20 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ⏳ |
 | 21 | `fix/single-background` | D4 | ⏳ |

@@ -5,6 +5,7 @@ import './styles/views/simulator.css';
 import './styles/views/boards.css';
 import './styles/views/datasheet.css';
 import './styles/views/ai.css';
+import './styles/views/projects.css';
 import './engines/background/circuit-bg.js';
 import './data/data.js';
 import './engines/three-viewer/index.js';
