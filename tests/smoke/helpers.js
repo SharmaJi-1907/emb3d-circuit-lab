@@ -5,8 +5,9 @@ import { test as base, expect } from '@playwright/test';
    fail the smoke tests. Remove an entry when its issue is fixed.
 ──────────────────────────────────────────────────────────────── */
 const IGNORED_CONSOLE_ERRORS = [
-  { issue: 'E2', match: (text, url) => /favicon\.ico/.test(url) },
-  { issue: 'E2', match: (text, url) => /manifest\.json/.test(url) || /^Manifest:/.test(text) },
+  // The fonts come from Google's CDN. A hiccup there is not a bug in this app,
+  // but the fixture below would otherwise fail whichever test was running (E14).
+  { issue: 'E14', match: (text, url) => /fonts\.(googleapis|gstatic)\.com/.test(url) },
 ];
 
 // Sidebar order. The Dashboard is the home screen (ADR 0002).
