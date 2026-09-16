@@ -408,3 +408,85 @@ test('the chip answers carry the facts they promise (D17)', async ({ page, error
   }
   expectNoErrors(errors);
 });
+
+/* ── Lists and tables in replies (D18) ────────────────────────── */
+// The last reply's content element.
+const lastReply = (page) => bubbles(page, 'assistant').last().locator('.ai-message-content');
+
+test('a reply shows "- " lines as a real list, not raw text (D18)', async ({ page, errors }) => {
+  await openAI(page);
+  await ask(page, 'what resistor do I need for an LED');
+  const reply = lastReply(page);
+
+  await expect(reply.locator('li').first(), 'the list should have items').toBeVisible();
+  expect(await reply.locator('li').count(), 'every "- " line becomes an item').toBeGreaterThan(2);
+  expect(await reply.textContent(), 'no raw "- " bullets left').not.toMatch(/(^|\n)- /);
+  expectNoErrors(errors);
+});
+
+test('separate lists stay separate (D18)', async ({ page, errors }) => {
+  await openAI(page);
+  // The ESP32 overview has several separate runs of "- " lines with headings
+  // between them, so a single <ul> would swallow those headings.
+  await ask(page, 'how does an esp32 work');
+  const reply = lastReply(page);
+
+  // Count the runs and the lines in the stored answer, so this can't go stale.
+  const expected = await page.evaluate(() => {
+    const text = window.CircuitApp.getAIResponse('how does an esp32 work').replace(/```[\s\S]*?```/g, '');
+    let runs = 0, items = 0, inList = false;
+    for (const line of text.split('\n')) {
+      const isItem = /^[-•]\s+\S/.test(line.trim());
+      if (isItem) { items++; if (!inList) runs++; }
+      inList = isItem;
+    }
+    return { runs, items };
+  });
+  expect(expected.runs, 'this answer should have several separate lists').toBeGreaterThan(1);
+
+  await expect(reply.locator('ul'), 'one <ul> per run of lines').toHaveCount(expected.runs);
+  await expect(reply.locator('li'), 'one <li> per "- " line').toHaveCount(expected.items);
+
+  // The headings sit between the lists, so no list may contain one.
+  // (List items do contain bold of their own, e.g. "- **PRO_CPU** (Core 0)".)
+  for (const heading of ['Memory:', 'Wireless:', 'Power Modes:']) {
+    await expect(reply.locator('ul').filter({ hasText: heading }),
+      `a list must not swallow the "${heading}" heading`).toHaveCount(0);
+  }
+  expectNoErrors(errors);
+});
+
+test('a reply shows a markdown table as a real table (D18)', async ({ page, errors }) => {
+  await openAI(page);
+  await ask(page, 'how do I wire an i2c sensor');
+  const reply = lastReply(page);
+
+  await expect(reply.locator('table'), 'the wiring table should be a table').toHaveCount(1);
+  await expect(reply.locator('table thead th')).toHaveText(['Sensor', 'Arduino Uno']);
+  expect(await reply.locator('table tbody tr').count(), 'one row per connection').toBe(4);
+  await expect(reply.locator('table tbody tr').first().locator('td')).toHaveText(['VCC', '3.3V or 5V']);
+
+  const text = await reply.textContent();
+  expect(text, 'no raw | pipes left outside code').not.toContain('|----');
+  expect(text, 'the separator row is gone').not.toMatch(/\|\s*Sensor\s*\|/);
+  expectNoErrors(errors);
+});
+
+test('lists and tables do not break code blocks or escaping (D18)', async ({ page, errors }) => {
+  await openAI(page);
+
+  // A code block may contain "-" and "|" and must stay exactly as written.
+  await ask(page, 'Can ESP32 pins tolerate 5V signals?');
+  const withCode = lastReply(page);
+  await expect(withCode.locator('pre.ai-code')).toHaveCount(1);
+  expect(await withCode.locator('pre.ai-code').textContent(), 'the divider drawing survives').toContain('---[ 10k ]---');
+  expect(await withCode.locator('pre.ai-code table').count(), 'no table inside a code block').toBe(0);
+  expect(await withCode.locator('pre.ai-code li').count(), 'no list inside a code block').toBe(0);
+
+  // D6 still holds: typed HTML is shown, not run.
+  await ask(page, '<img src=x onerror=alert(1)> - one - two');
+  const typed = bubbles(page, 'user').last().locator('.ai-message-content');
+  await expect(typed.locator('img')).toHaveCount(0);
+  await expect(typed).toContainText('<img src=x onerror=alert(1)>');
+  expectNoErrors(errors);
+});
