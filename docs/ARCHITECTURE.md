@@ -35,7 +35,8 @@ emmb3d/
 │   │       ├── simulator.css  Circuit Simulator layout, toolbar, palette, board, instruments (F3)
 │   │       ├── boards.css     Board Explorer layout, tabs, filters, specs, pin list (F4)
 │   │       ├── datasheet.css  Datasheet sidebar, search box, list, section bar, layout fit (F5)
-│   │       └── ai.css         AI screen layout, chat box, chips row, input row (F8)
+│   │       ├── ai.css         AI screen layout, chat box, chips row, input row (F8)
+│   │       └── projects.css   Projects screen: the new-project form and your own cards (C4)
 │   └── assets/                fonts, models, images imported by code
 ├── eslint.config.js           Lint rules, allowed globals, ignored folders
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
@@ -48,6 +49,7 @@ emmb3d/
 │   │   ├── database.spec.js   Database screen (Component Library): cards, filter, sort, compare, View 3D
 │   │   ├── boards.spec.js     Board Explorer layout, board size, styles, behaviour and board data
 │   │   ├── datasheet.spec.js  Datasheet sidebar and section-bar styles, list clicks, layout fit (F5)
+│   │   ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
@@ -64,7 +66,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 1. `styles/main.css`
 2. `styles/components/panels.css`: shared page styles. Must come after `main.css` so it can build on its design tokens.
-3. `styles/views/simulator.css`, `styles/views/boards.css`, `styles/views/datasheet.css` and `styles/views/ai.css`: per-screen styles. After the shared styles, so they can build on them.
+3. `styles/views/simulator.css`, `styles/views/boards.css`, `styles/views/datasheet.css`, `styles/views/ai.css` and `styles/views/projects.css`: per-screen styles. After the shared styles, so they can build on them.
 4. `engines/background/circuit-bg.js`
 5. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
 6. `engines/three-viewer/index.js` → `window.ThreeViewer`
