@@ -39,6 +39,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `src/styles/views/boards.css` (F4) and `tests/smoke/boards.spec.js`: 3 tests for the Board Explorer layout (94 tests in total).
 - `tests/smoke/boards.spec.js`: 4 tests for the Board Explorer's behaviour (98 tests in total).
 - Board Explorer: 4 new boards with pinouts from official sources (Arduino Mega 2560 Rev3, NodeMCU 1.0 / ESP8266, Raspberry Pi Pico, STM32 Nucleo-F401RE) and an "STM32 Blue Pill" tab (8 tabs). Plus 3 tests for the board data (101 tests in total).
+- `src/styles/views/datasheet.css` (F5) and `tests/smoke/datasheet.spec.js`: 5 tests for the Datasheet sidebar, section bar and layout (106 tests in total).
 - A Battery button in the Simulator palette, so a circuit has a power source.
 - `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
 - `tests/smoke/simulator.spec.js`: 5 tests for the oscilloscope and the multimeter's resistance (87 tests in total). Simulator: `setScope()` for the oscilloscope settings.
@@ -49,6 +50,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- The Datasheet Viewer's sidebar and section bar are styled (F5), and the screen is no longer cut off. Before: the search box was a plain white browser input with black Arial text, the 6 section buttons were browser grey and the selected one looked exactly like the rest, and list rows had no padding, no hover and no pointer. The bottom 204 px of the screen was also clipped, because both columns grew to 832 px (1318 px on Examples) inside a 628 px layout; the content area now scrolls instead.
+- A flaky smoke test (E13). The Board Explorer's "does not repeat pin clicks" test counted every toast before the click and expected one more, but toasts delete themselves after 3.3 s, so under load an old toast expired as the new one appeared. It now counts only the toast that click makes. Measured: 1 failure in 12 runs before, 12 of 12 green after, and it still catches D22.
 - Every Board Explorer tab shows its own board (D24). The Mega, ESP8266 and Pico tabs used to show the Uno, the ESP32 and the Pi 4, and "STM32 Nucleo" showed a Blue Pill.
 - Board Explorer behaviour (D22, D23, D25): a pin click shows one toast however often you visit (before: one per visit), the board redraws at the right size when the window is resized, a clicked pin is highlighted in the list, and the Board Explorer's selected pin no longer changes the 3D Viewer's or carries over to another board.
 - The Board Explorer is styled (F4): the board sits beside the info panel and is drawn whole (862×529 instead of 174 px tall and cut off), it no longer grows when a filter is clicked, and the board tabs, pin filters, zoom buttons, specs and pin list are styled with the design tokens.
@@ -86,3 +89,5 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - D12 confirmed: an LED lights without a loop back to the battery, or when reversed (moved to #14b). D19: deleting a part keeps one of its wires. C7: the oscilloscope controls and the node count do nothing. D20: the simulation clock counts frames, not real time. E12: unused Simulator CSS in `main.css`.
 - D21: the oscilloscope shows made-up signals (CH1 is not connected to the circuit and runs at 1 Hz while labelled 1 kHz), and the multimeter's Resistance mode adds up every resistor on the board.
 - D22: the Board Explorer adds its canvas click handlers again on every visit (3 visits → 3 toasts per pin click). D23: a clicked board pin isn't highlighted in the list. D24: 3 of the 7 board tabs show a different board (real data planned in #16c). D25: the Board Explorer and the 3D Viewer shared one selected pin (fixed in #16b).
+- E14: a hiccup loading the Google Fonts CDN fails whichever smoke test is running, because the fixture fails on any `console.error`. Seen once as `ERR_CERT_VERIFIER_CHANGED`. Planned for #25.
+- C8: the Datasheet search box does nothing — no JS references it. D26: the Datasheet "Pinout" section has no data and shows a placeholder, while a `package` section has data but no button. Both planned for #17c. E12 also covers the unused Datasheet CSS in `main.css`.
