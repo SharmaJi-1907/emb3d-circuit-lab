@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- The lint warning cap drops from 15 to 13: the two unused `label` parameters are used now that chips are labelled.
 - Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
 - Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
 - Lint warning cap lowered from 27 to 25, then to 24, then to 18, then to 17, then to 15.
@@ -14,6 +15,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- `tests/smoke/viewer-models.spec.js`: 6 tests for the 3D models — pin counts, chip labels and freeing old models (157 tests in total). 3D viewer: read-only `getMemoryInfo()` and `getModelInfo()` hooks.
 - `public/manifest.json` and `public/favicon.svg` (E2), so the page no longer 404s for either. New `tests/smoke/assets.spec.js` with 8 tests (151 tests in total).
 - `README.md`, `CHANGELOG.md`, `.editorconfig`, expanded `.gitignore`.
 - `docs/` with an index, architecture, contributing guide and decision records.
@@ -67,6 +69,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
+- The 3D Viewer no longer leaks graphics memory (D16). Every model that leaves the scene now has its geometries, materials and textures freed. Measured: 61 → 61 geometries after 5 visits (was 61 → 297), and 48 after switching through 6 parts (was 449).
+- Every part gets a model with its real pin count (D8). The L298N is drawn as a Multiwatt-15 and the AMS1117 as a SOT-223 through a new single-row builder; the nRF24L01+ as a DIP-8 module. Cases for `nrf52840` and `bme280`, which are not in the data, are gone, and the fallback follows the part's own pin count instead of always drawing 8 pins. The **ESP32 and HC-SR04 had no interactive pins at all** — their headers were built but never tagged — so hover, click and pin-table highlighting now work on them too.
+- The part's name is printed on the 3D chip (D11). `buildDIP` and `buildQFP` took a label and threw it away; it is now drawn onto the chip, shrunk to fit if long.
 - The notifications feed says something real (E5). It used to show invented messages with "3 mins ago" timestamps; it now reports the actual component, board, datasheet and project counts, timestamped when the app started.
 - A hiccup at the font CDN no longer fails a random smoke test (E14). It is the one entry in the known-noise list, and a test blocks both font hosts to prove the app still starts clean without them.
 - The notifications drawer works (C6). The bell used to show a "No new notifications" toast while the drawer markup sat unused, and the unread dot on the bell had no CSS at all (0 px wide and transparent). The bell now opens and closes the drawer, Esc and a click elsewhere close it, and "Clear All" empties the list and hides the dot. Its inline styles moved to CSS with design tokens, so it follows the light theme.
