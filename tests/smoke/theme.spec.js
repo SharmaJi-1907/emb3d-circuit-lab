@@ -4,7 +4,7 @@
    tokens, overridden under :root[data-theme="light"] in main.css.
 ═══════════════════════════════════════════════════════════════════ */
 
-import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
+import { test, expect, openApp, appReady, goToView, expectNoErrors, styleOf } from './helpers.js';
 
 const themeOf = (page) => page.evaluate(() => document.documentElement.dataset.theme || 'dark');
 
@@ -58,7 +58,7 @@ test('the choice survives a reload (C5)', async ({ page, errors }) => {
   expect(await themeOf(page)).toBe('light');
 
   await page.reload();
-  await page.waitForFunction(() => window.CircuitApp && window.ThreeViewer && window.ThreeViewer.isReady());
+  await appReady(page);
   expect(await themeOf(page), 'still light after a reload').toBe('light');
   expect(brightness((await styleOf(page, 'body', ['backgroundColor'])).backgroundColor)).toBeGreaterThan(200);
   expectNoErrors(errors);

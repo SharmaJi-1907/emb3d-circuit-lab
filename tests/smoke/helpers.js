@@ -56,15 +56,29 @@ export function styleOf(page, selector, props) {
   }, props);
 }
 
-// Open the app and wait until it has fully started (app + 3D viewer).
+// Wait until the app has started. This does NOT wait for the 3D engine:
+// headless Chrome builds WebGL in software, and most screens never show 3D,
+// so waiting for it on every test cost the whole suite time (E15).
+// Tests that need the engine call waitForViewer() or openViewer().
+export async function appReady(page) {
+  await page.waitForFunction(() => window.CircuitApp && window.CircuitLabData);
+}
+
+// Open the app and wait until it has started.
 export async function openApp(page) {
   await page.goto('/');
-  await page.waitForFunction(() => window.CircuitApp && window.ThreeViewer && window.ThreeViewer.isReady());
+  await appReady(page);
+}
+
+// Wait until the 3D engine has finished starting up.
+export async function waitForViewer(page) {
+  await page.waitForFunction(() => window.ThreeViewer && window.ThreeViewer.isReady());
 }
 
 // Open the app, go to the 3D Viewer and wait until its model has finished loading.
 export async function openViewer(page) {
   await openApp(page);
+  await waitForViewer(page);
   await goToView(page, 'viewer');
   await waitForStableModel(page);
 }
@@ -82,7 +96,9 @@ export async function settle(page, ms = 300) {
 
 // Size of the loaded 3D model as [x, y, z], or null if there is no model or its position is broken (NaN).
 export async function modelSize(page) {
-  const bounds = await page.evaluate(() => window.ThreeViewer.getModelBounds());
+  // The engine may not have started yet when a test reaches the Viewer by
+  // navigating rather than through openViewer(), so this waits rather than throws.
+  const bounds = await page.evaluate(() => window.ThreeViewer?.getModelBounds?.() ?? null);
   if (!bounds) return null;
   const size = bounds.max.map((max, i) => max - bounds.min[i]);
   return size.every((n) => Number.isFinite(n) && n > 0) ? size : null;

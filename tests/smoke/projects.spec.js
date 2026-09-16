@@ -4,7 +4,7 @@
    are kept in the browser, separate from the 6 stored examples.
 ═══════════════════════════════════════════════════════════════════ */
 
-import { test, expect, openApp, goToView, expectNoErrors, styleOf } from './helpers.js';
+import { test, expect, openApp, appReady, goToView, expectNoErrors, styleOf } from './helpers.js';
 
 const BROWSER_GREY = 'rgb(239, 239, 239)';
 
@@ -95,7 +95,7 @@ test('projects you make survive a reload, and can be deleted (C4)', async ({ pag
   await expect(cards(page)).toHaveCount(stored + 1);
 
   await page.reload();
-  await page.waitForFunction(() => window.CircuitApp && window.ThreeViewer && window.ThreeViewer.isReady());
+  await appReady(page);
   await goToView(page, 'projects');
   await expect(mine(page), 'still there after a reload').toHaveCount(1);
   await expect(mine(page).locator('.project-card-name')).toHaveText('Keeps its place');
