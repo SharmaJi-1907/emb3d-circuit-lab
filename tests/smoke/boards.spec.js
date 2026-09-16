@@ -122,3 +122,99 @@ test('board pins and 3D Viewer pins are separate, and a new board starts with no
   await expect(page.locator('#pin-table-body .pin-row.selected'), 'the 3D Viewer has no pin selected').toHaveCount(0);
   expectNoErrors(errors);
 });
+
+/* ── Board data (D24) ─────────────────────────────────────────── */
+// Each tab and a word its board's name must contain.
+const TABS = {
+  'Arduino Uno': 'Arduino Uno',
+  'Arduino Mega': 'Arduino Mega',
+  ESP32: 'ESP32',
+  ESP8266: 'ESP8266',
+  'Raspberry Pi 4': 'Raspberry Pi 4',
+  'RPi Pico': 'Raspberry Pi Pico',
+  'STM32 Nucleo': 'Nucleo',
+  'STM32 Blue Pill': 'Blue Pill',
+};
+
+test('every board tab shows its own board (D24)', async ({ page, errors }) => {
+  await openBoards(page);
+  await expect(page.locator('.board-tab')).toHaveCount(Object.keys(TABS).length);
+  const shown = [];
+  for (const [tab, word] of Object.entries(TABS)) {
+    await page.locator('.board-tab').filter({ hasText: new RegExp(`^${tab}$`) }).click();
+    await expect(page.locator('#board-name'), `the "${tab}" tab`).toContainText(word);
+    shown.push(await page.locator('#board-name').textContent());
+  }
+  expect(new Set(shown).size, 'every tab shows a different board').toBe(shown.length);
+
+  await goToView(page, 'dashboard');
+  const stat = page.locator('#view-dashboard .stat-card').filter({ hasText: 'Dev Boards' });
+  await expect(stat.locator('.stat-value')).toHaveText(String(Object.keys(TABS).length));
+  expectNoErrors(errors);
+});
+
+test('every board\'s pin data is well-formed', async ({ page, errors }) => {
+  await openApp(page);
+  const problems = await page.evaluate(() => {
+    const TYPES = ['power', 'ground', 'digital', 'analog', 'pwm', 'uart', 'spi', 'i2c', 'can', 'usb'];
+    const found = [];
+    for (const [key, board] of Object.entries(window.CircuitLabData.boards)) {
+      const nums = new Set();
+      board.pins.forEach((p, i) => {
+        if (nums.has(p.num)) found.push(`${key}: pin number ${p.num} is used twice`);
+        nums.add(p.num);
+        if (!TYPES.includes(p.type)) found.push(`${key} ${p.name}: unknown type "${p.type}"`);
+        if (!(p.x > 0 && p.x < 1 && p.y > 0 && p.y < 1)) found.push(`${key} ${p.name}: outside the board`);
+        // Pads are 11 px wide on the 460 × 280 px drawing
+        board.pins.slice(i + 1).forEach((q) => {
+          if (Math.hypot((p.x - q.x) * 460, (p.y - q.y) * 280) < 11) found.push(`${key}: ${p.name} and ${q.name} overlap`);
+        });
+      });
+    }
+    return found;
+  });
+  expect(problems).toEqual([]);
+  expectNoErrors(errors);
+});
+
+test('key pins match the official pinouts (D24)', async ({ page, errors }) => {
+  await openApp(page);
+  // [board, pin name, type] from the official pinouts (sources in src/data/data.js)
+  const expected = [
+    ['arduino-mega', 'D0/RX0', 'uart'], ['arduino-mega', 'D14/TX3', 'uart'], ['arduino-mega', 'D19/RX1', 'uart'],
+    ['arduino-mega', 'D20/SDA', 'i2c'], ['arduino-mega', 'D21/SCL', 'i2c'], ['arduino-mega', 'D13~', 'pwm'],
+    ['arduino-mega', 'D44~', 'pwm'], ['arduino-mega', 'D50/MISO', 'spi'], ['arduino-mega', 'D53/SS', 'spi'],
+    ['arduino-mega', 'A15', 'analog'],
+    ['esp8266-nodemcu', 'D0/GPIO16', 'digital'], ['esp8266-nodemcu', 'D1/GPIO5 SCL', 'i2c'],
+    ['esp8266-nodemcu', 'D2/GPIO4 SDA', 'i2c'], ['esp8266-nodemcu', 'D5/GPIO14 SCK', 'spi'],
+    ['esp8266-nodemcu', 'D9/GPIO3 RX', 'uart'], ['esp8266-nodemcu', 'A0', 'analog'],
+    ['rpi-pico', 'GP0', 'uart'], ['rpi-pico', 'GP4', 'i2c'], ['rpi-pico', 'GP18', 'spi'],
+    ['rpi-pico', 'GP26/ADC0', 'analog'], ['rpi-pico', 'GP28/ADC2', 'analog'], ['rpi-pico', 'RUN', 'digital'],
+    ['nucleo-f401re', 'PA5/D13', 'spi'], ['nucleo-f401re', 'PB8/D15', 'i2c'], ['nucleo-f401re', 'PB9/D14', 'i2c'],
+    ['nucleo-f401re', 'PA3/D0', 'uart'], ['nucleo-f401re', 'PA0/A0', 'analog'], ['nucleo-f401re', 'PC13', 'digital'],
+  ];
+  const result = await page.evaluate((list) => {
+    const boards = window.CircuitLabData.boards;
+    const pins = (key) => boards[key]?.pins ?? [];
+    const count = (key, re) => pins(key).filter((p) => re.test(p.name)).length;
+    const pico = Object.fromEntries(pins('rpi-pico').map((p) => [p.num, p]));
+    return {
+      types: Object.fromEntries(list.map(([key, name]) => [`${key} ${name}`, pins(key).find((p) => p.name === name)?.type ?? 'missing'])),
+      megaDigital: count('arduino-mega', /^D\d+/),
+      megaAnalog: count('arduino-mega', /^A\d+$/),
+      nucleoGpio: count('nucleo-f401re', /^P[A-H]\d+/),
+      picoPins: pins('rpi-pico').length,
+      picoNamed: [1, 30, 36, 40].map((n) => pico[n]?.name ?? 'missing'),
+      picoLeftSide: pins('rpi-pico').filter((p) => (p.num <= 20) === (p.x < 0.5)).length,
+    };
+  }, expected);
+
+  expect(result.types).toEqual(Object.fromEntries(expected.map(([key, name, type]) => [`${key} ${name}`, type])));
+  expect(result.megaDigital, 'Mega: D0–D53').toBe(54);
+  expect(result.megaAnalog, 'Mega: A0–A15').toBe(16);
+  expect(result.nucleoGpio, 'Nucleo-F401RE: GPIO pins on the morpho headers').toBe(50);
+  expect(result.picoPins, 'Pico: 40 pins').toBe(40);
+  expect(result.picoNamed, 'Pico pins 1, 30, 36, 40').toEqual(['GP0', 'RUN', '3V3(OUT)', 'VBUS']);
+  expect(result.picoLeftSide, 'Pico: pins 1–20 on the left, 21–40 on the right').toBe(40);
+  expectNoErrors(errors);
+});

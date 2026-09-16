@@ -956,14 +956,16 @@ window.CircuitApp = (function () {
   }
 
   /* ── Board Explorer View Panel ──────────────────────────────── */
+  // Board tab (data-board in index.html) → board in CircuitLabData.boards
   const BOARD_MAPPING = {
     'arduino-uno': 'arduino-uno',
-    'arduino-mega': 'arduino-uno', // Map Mega back to Uno as fallback
+    'arduino-mega': 'arduino-mega',
     'esp32': 'esp32-devkit',
-    'esp8266': 'esp32-devkit',
+    'esp8266': 'esp8266-nodemcu',
     'rpi4': 'raspberry-pi-4',
-    'rpi-pico': 'raspberry-pi-4',
-    'stm32': 'stm32-bluepill'
+    'rpi-pico': 'rpi-pico',
+    'stm32': 'nucleo-f401re',
+    'stm32-bluepill': 'stm32-bluepill',
   };
 
   function initBoardExplorer() {
