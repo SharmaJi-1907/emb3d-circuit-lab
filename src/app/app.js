@@ -1873,11 +1873,33 @@ Could you be more specific about what you're trying to build? For example:
      The bell opens the drawer, "Clear All" empties it, and the unread
      dot follows the list. The items live here so they can be cleared.
   ──────────────────────────────────────────────────────────────── */
-  const NOTIFICATIONS = [
-    { title: '3D Scene Instantiated', text: 'Procedural shapes compiled with zero cache misses.', time: 'Just now', unread: true },
-    { title: 'Oscilloscope Calibrated', text: '2-channel grid locked onto realtime canvas plotter.', time: '3 mins ago', unread: true },
-    { title: 'Database Sync Successful', text: 'Pin map datasets for MCU boards and passive axial packages verified.', time: '10 mins ago', unread: false },
-  ];
+  // Built from what actually loaded, instead of the made-up messages and
+  // timestamps ("3 mins ago") that used to be hard-coded in the page (E5).
+  function startupNotifications() {
+    const d = window.CircuitLabData;
+    if (!d) return [];
+    const started = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return [
+      {
+        title: 'Component library loaded',
+        text: `${d.components.length} components and ${Object.keys(d.boards).length} boards are ready to browse.`,
+        time: started,
+        unread: true,
+      },
+      {
+        title: 'Datasheets ready',
+        text: `${d.datasheets.length} datasheets with pinouts, electrical limits and code examples.`,
+        time: started,
+        unread: true,
+      },
+      {
+        title: 'Simulator ready',
+        text: `${d.projects.length} example projects. Open one, or build a circuit from the palette.`,
+        time: started,
+        unread: false,
+      },
+    ];
+  }
 
   function renderNotifications() {
     const list = document.getElementById('notif-list-body');
@@ -1908,7 +1930,7 @@ Could you be more specific about what you're trying to build? For example:
   }
 
   function initNotifications() {
-    state.notifications = NOTIFICATIONS.map(n => ({ ...n }));
+    state.notifications = startupNotifications();
     renderNotifications();
 
     const btn = document.getElementById('notif-btn');
