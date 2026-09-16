@@ -1,0 +1,94 @@
+/* ── AI Assistant screen (F8, ADR 0002) ─────────────────────────
+   Replaces the inline styles that were in index.html, which used
+   hard-coded colours (#222, #07070a, #0c0c14, #fff) and overrode the
+   design tokens. Styles the page's own markup:
+   .ai-layout → .ai-header · .ai-suggestions · #ai-chat-messages ·
+   .ai-input-area. Design tokens only, from main.css.
+   The message bubbles, chips and welcome bubble stay in main.css (F6).
+──────────────────────────────────────────────────────────────── */
+
+.ai-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+/* Header: avatar beside the title */
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ai-avatar-large {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-avatar-large i {
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+/* Suggestion chips (the chips themselves are styled in main.css) */
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Chat area */
+#ai-chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Input row */
+.ai-input-area { padding: 15px; }
+
+.ai-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+#ai-user-query {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--t-base);
+}
+#ai-user-query::placeholder { color: var(--text-muted); }
+#ai-user-query:focus { border-color: var(--border-active); }
+
+#ai-send-btn {
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+/* Narrow screens: let the chips wrap without squeezing the chat */
+@media (max-width: 700px) {
+  .ai-layout { gap: 12px; }
+  .ai-input-area { padding: 10px; }
+}
