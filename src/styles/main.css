@@ -1285,15 +1285,6 @@ body {
 /* ── Circuit Simulator ────────────────────────────────────────── */
 
 /* Sim Toolbar */
-#sim-toolbar {
-  grid-column: 1 / 4;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-}
 
 .sim-toolbar-group {
   display: flex;
@@ -1328,17 +1319,6 @@ body {
   align-items: center;
   gap: 6px;
 }
-.sim-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-muted);
-}
-.sim-status-dot.running {
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  animation: pulse 1s infinite;
-}
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
@@ -1346,22 +1326,6 @@ body {
 }
 
 /* Component Palette */
-#sim-palette {
-  grid-row: 2 / 4;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 10px 8px;
-}
-
-.palette-section-title {
-  font-size: 9px;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 6px 4px 4px;
-}
 
 .palette-item {
   display: flex;
@@ -1385,26 +1349,6 @@ body {
 .palette-item-name { font-size: 10px; font-family: var(--font-mono); }
 
 /* Sim Canvas */
-#sim-canvas-area {
-  grid-column: 2;
-  grid-row: 2;
-  position: relative;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 19px,
-    rgba(0,212,255,0.03) 19px,
-    rgba(0,212,255,0.03) 20px
-  ),
-  repeating-linear-gradient(
-    90deg,
-    transparent,
-    transparent 19px,
-    rgba(0,212,255,0.03) 19px,
-    rgba(0,212,255,0.03) 20px
-  );
-  overflow: hidden;
-}
 
 #sim-canvas {
   width: 100%;
@@ -1412,32 +1356,7 @@ body {
   display: block;
 }
 
-.sim-canvas-hint {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  pointer-events: none;
-  opacity: 0.5;
-}
-.sim-canvas-hint-icon { font-size: 32px; margin-bottom: 8px; }
-
 /* Instruments Panel */
-#sim-instruments {
-  grid-column: 3;
-  grid-row: 2 / 4;
-  background: var(--bg-panel);
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
 .instrument-card {
   background: var(--bg-elevated);
@@ -1528,17 +1447,6 @@ body {
   outline: none;
 }
 
-/* Oscilloscope bottom panel */
-#sim-osc-panel {
-  grid-column: 2;
-  grid-row: 3;
-  background: var(--bg-overlay);
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
 .osc-header {
   display: flex;
   align-items: center;
@@ -1561,12 +1469,6 @@ body {
 }
 .osc-ch-1 { background: rgba(0,212,255,0.15); color: var(--cyan); }
 .osc-ch-2 { background: rgba(0,255,136,0.15); color: var(--green); }
-
-#osc-main-canvas {
-  flex: 1;
-  display: block;
-  width: 100%;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    BOARD EXPLORER
@@ -1783,55 +1685,6 @@ body {
   overflow: hidden;
 }
 
-.datasheet-toc {
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.toc-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-}
-.toc-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.toc-meta { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
-
-.toc-list { flex: 1; padding: 8px 0; }
-
-.toc-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: all var(--t-fast);
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-.toc-item:hover { background: var(--bg-hover); color: var(--text-primary); }
-.toc-item.active {
-  background: var(--cyan-dim);
-  color: var(--cyan);
-  border-right: 2px solid var(--cyan);
-}
-.toc-num {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-muted);
-  width: 16px;
-  flex-shrink: 0;
-}
-
-.toc-actions { padding: 12px 16px; border-top: 1px solid var(--border); }
-
-.datasheet-content {
-  overflow-y: auto;
-  padding: 24px 32px;
-  background: var(--bg-surface);
-}
-
 .ds-section { max-width: 800px; }
 .ds-section-title {
   font-size: 20px;
@@ -1961,14 +1814,6 @@ body {
   height: 100%;
 }
 
-#ai-messages {
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .ai-message {
   display: flex;
   gap: 12px;
@@ -2049,16 +1894,6 @@ body {
 }
 .ai-message.user .ai-message-time { text-align: right; }
 
-/* Suggested Queries */
-#ai-suggestions {
-  padding: 10px 20px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  background: var(--bg-panel-soft);
-}
-
 .ai-suggestion,
 .ai-suggestion-chip {
   background: var(--bg-elevated);
@@ -2080,30 +1915,6 @@ body {
 }
 
 /* AI Input */
-#ai-input-area {
-  padding: 12px 20px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 8px;
-  background: var(--bg-panel);
-}
-
-#ai-input {
-  flex: 1;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  padding: 10px 14px;
-  outline: none;
-  transition: border-color var(--t-base);
-  resize: none;
-  height: 42px;
-}
-#ai-input:focus { border-color: var(--border-active); }
-#ai-input::placeholder { color: var(--text-muted); }
 
 /* ═══════════════════════════════════════════════════════════════
    PROJECTS
@@ -2180,14 +1991,8 @@ body {
   #viewer-pin-panel { grid-column: 1; grid-row: 3; max-height: 200px; }
   #pin-detail-panel { display: none; }
 
-  #sim-palette { display: none; }
-  #sim-instruments { display: none; }
-  #sim-canvas-area { grid-column: 1; grid-row: 2; }
-  #sim-osc-panel { grid-column: 1; grid-row: 3; }
-
   .board-pinout-container { grid-template-columns: 1fr; }
   .datasheet-layout { grid-template-columns: 1fr; }
-  .datasheet-toc { display: none; }
 }
 
 /* ── Animations ───────────────────────────────────────────────── */
