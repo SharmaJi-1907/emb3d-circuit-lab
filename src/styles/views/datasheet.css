@@ -137,6 +137,13 @@
   padding: 20px 16px;
 }
 
+/* "No datasheet matches ..." in the sidebar list (C8) */
+.ds-empty {
+  padding: 12px 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .placeholder-msg {
   padding: 24px 0;
   color: var(--text-muted);

@@ -1282,16 +1282,14 @@ window.CircuitApp = (function () {
     const panel = document.getElementById('view-datasheet');
     if (!panel) return;
 
-    // Load available datasheets to sidebar list
-    const dsList = document.getElementById('ds-list');
-    if (dsList && window.CircuitLabData) {
-      dsList.innerHTML = CircuitLabData.datasheets.map(ds => `
-        <div class="ds-item ${state.selectedComponent?.id === ds.componentId ? 'active' : ''}"
-          onclick="CircuitApp.selectDatasheetByComponent('${ds.componentId}')">
-          <div class="ds-item-name">${ds.name}</div>
-          <div class="ds-item-mfr">${ds.manufacturer}</div>
-        </div>
-      `).join('');
+    renderDatasheetList();
+
+    // The search box filters the list as you type. Wired on the first visit
+    // only, so repeat visits don't pile up handlers (C8).
+    const search = document.getElementById('ds-search');
+    if (search && !search._wired) {
+      search._wired = true;
+      search.addEventListener('input', renderDatasheetList);
     }
 
     // Bind TOC buttons
@@ -1323,6 +1321,31 @@ window.CircuitApp = (function () {
     renderDatasheetContent();
   }
 
+  // Draw the sidebar list, keeping only the datasheets that match the search
+  // box. Matching is on the name and the maker, ignoring case (C8).
+  function renderDatasheetList() {
+    const dsList = document.getElementById('ds-list');
+    if (!dsList || !window.CircuitLabData) return;
+
+    const query = (document.getElementById('ds-search')?.value || '').trim().toLowerCase();
+    const shown = CircuitLabData.datasheets.filter(ds =>
+      !query || `${ds.name} ${ds.manufacturer}`.toLowerCase().includes(query)
+    );
+
+    if (!shown.length) {
+      dsList.innerHTML = `<div class="ds-empty">No datasheet matches "${escapeHtml(query)}"</div>`;
+      return;
+    }
+
+    dsList.innerHTML = shown.map(ds => `
+      <div class="ds-item ${state.selectedComponent?.id === ds.componentId ? 'active' : ''}"
+        onclick="CircuitApp.selectDatasheetByComponent('${ds.componentId}')">
+        <div class="ds-item-name">${ds.name}</div>
+        <div class="ds-item-mfr">${ds.manufacturer}</div>
+      </div>
+    `).join('');
+  }
+
   function selectDatasheetByComponent(id) {
     const comp = CircuitLabData.components.find(c => c.id === id);
     if (comp) {
@@ -1331,6 +1354,39 @@ window.CircuitApp = (function () {
       document.querySelectorAll('.ds-item').forEach(item => item.classList.remove('active'));
       initDatasheetViewer();
     }
+  }
+
+  // The Pinout section: every pin of the datasheet's component (D26).
+  function renderDatasheetPinout(ds) {
+    const comp = CircuitLabData.components.find(c => c.id === ds.componentId);
+    const pins = comp?.pinout || [];
+    if (!pins.length) {
+      return `<div class="placeholder-msg">No pin list is stored for ${ds.name}.</div>`;
+    }
+    return `
+      <div class="ds-section">
+        <h3 class="ds-section-title">Pinout — ${comp.package || ds.name} (${pins.length} pins)</h3>
+        <div class="ds-table-wrapper">
+          <table class="ds-table">
+            <thead>
+              <tr><th>Pin</th><th>Name</th><th>Alt name</th><th>Type</th><th>Voltage</th><th>Alt functions</th></tr>
+            </thead>
+            <tbody>
+              ${pins.map(p => `
+                <tr>
+                  <td>${p.num}</td>
+                  <td>${p.name}</td>
+                  <td>${p.altName || '—'}</td>
+                  <td>${(PIN_TYPE_CONFIG[p.type] || PIN_TYPE_CONFIG.digital).label}</td>
+                  <td>${p.voltage || '—'}</td>
+                  <td>${p.altFunctions || '—'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
   }
 
   function renderDatasheetContent() {
@@ -1350,6 +1406,15 @@ window.CircuitApp = (function () {
     if (mfrEl) mfrEl.textContent = ds.manufacturer;
 
     const sectionKey = state.datasheetSection || 'overview';
+
+    // The Pinout section is drawn from the linked component's pin list — the
+    // same data the 3D Viewer's pin table uses. The datasheet data has no
+    // `pinout` section of its own, so this runs before the check below (D26).
+    if (sectionKey === 'pinout') {
+      contentBox.innerHTML = renderDatasheetPinout(ds);
+      return;
+    }
+
     const sec = ds.sections[sectionKey];
 
     if (!sec) {
@@ -1399,6 +1464,31 @@ window.CircuitApp = (function () {
                       <td style="padding:10px; font-family:var(--font-mono); color:var(--cyan);">${s.typ}</td>
                       <td style="padding:10px; font-family:var(--font-mono);">${s.max}</td>
                       <td style="padding:10px; color:var(--text-muted);">${s.unit}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+        break;
+
+      case 'package':
+        contentBox.innerHTML = `
+          <div class="ds-section">
+            <h3 class="ds-section-title">${sec.title}</h3>
+            <div class="ds-table-wrapper">
+              <table class="ds-table">
+                <thead>
+                  <tr><th>Package</th><th>Width</th><th>Length</th><th>Height</th></tr>
+                </thead>
+                <tbody>
+                  ${sec.packages.map(pk => `
+                    <tr>
+                      <td>${pk.name}</td>
+                      <td>${pk.width}</td>
+                      <td>${pk.length}</td>
+                      <td>${pk.height}</td>
                     </tr>
                   `).join('')}
                 </tbody>
