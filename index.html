@@ -8,24 +8,17 @@
   <title>CircuitLab — Electronics Visualization Platform</title>
 
   <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
   <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- GSAP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="/src/styles/main.css" />
 </head>
 <body>
 
@@ -489,7 +482,7 @@
           <div class="ai-layout">
             <div class="ai-header">
               <div class="ai-avatar-large">
-                <i class="fa-solid fa-robot"></i>
+                <span class="ai-avatar-glyph" aria-hidden="true">🤖</span>
               </div>
               <div>
                 <h1 class="view-title">AI Electronics Assistant</h1>

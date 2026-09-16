@@ -1,0 +1,17 @@
+{
+  "name": "CircuitLab — Electronics Visualization Platform",
+  "short_name": "CircuitLab",
+  "description": "Browser electronics lab: 3D component viewer, circuit simulator, component database, board pinouts and datasheets.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05050a",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}
