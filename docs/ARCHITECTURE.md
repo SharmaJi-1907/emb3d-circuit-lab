@@ -30,7 +30,8 @@ emmb3d/
 │   │   ├── base/              variables, reset, typography
 │   │   ├── layout/            sidebar, topbar
 │   │   ├── components/
-│   │   │   └── panels.css     Shared cards, panels, titles, sidebar/top-bar buttons (F2)
+│   │   │   ├── panels.css     Shared cards, panels, titles, keyboard keys, sidebar/top-bar buttons (F2, C5)
+│   │   │   └── notifications.css  Notifications drawer, unread dot, selected search result (C6, D14)
 │   │   └── views/             per-screen styles
 │   │       ├── simulator.css  Circuit Simulator layout, toolbar, palette, board, instruments (F3)
 │   │       ├── boards.css     Board Explorer layout, tabs, filters, specs, pin list (F4)
@@ -51,6 +52,7 @@ emmb3d/
 │   │   ├── datasheet.spec.js  Datasheet sidebar and section-bar styles, list clicks, layout fit (F5)
 │   │   ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
 │   │   ├── theme.spec.js      Light/dark theme: both toggles, persistence, readability (C5)
+│   │   ├── topbar.spec.js     Notifications drawer and the search pop-up's arrow keys (C6, D14)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
@@ -66,7 +68,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 `index.html` → `src/main.js` imports, in order:
 
 1. `styles/main.css`
-2. `styles/components/panels.css`: shared page styles. Must come after `main.css` so it can build on its design tokens.
+2. `styles/components/panels.css` and `styles/components/notifications.css`: shared page styles. Must come after `main.css` so they can build on its design tokens.
 3. `styles/views/simulator.css`, `styles/views/boards.css`, `styles/views/datasheet.css`, `styles/views/ai.css` and `styles/views/projects.css`: per-screen styles. After the shared styles, so they can build on them.
 4. `engines/background/circuit-bg.js`
 5. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).

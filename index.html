@@ -631,32 +631,13 @@
   </div>
 
   <!-- Notifications Drawer -->
-  <div class="notif-drawer hidden" id="notif-drawer" style="position:fixed; top:70px; right:20px; width:360px; max-height:480px; overflow-y:auto; z-index:999; border-radius:8px;">
-      <div class="notif-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #222;">
-          <h4>Live Feed & Status Log</h4>
-          <button class="clear-notif-btn" id="clear-notifs" style="background:none; border:none; color:#00d4ff; font-size:12px; cursor:pointer;">Clear All</button>
+  <div class="notif-drawer hidden" id="notif-drawer">
+      <div class="notif-header">
+          <h4>Live Feed &amp; Status Log</h4>
+          <button class="clear-notif-btn" id="clear-notifs">Clear All</button>
       </div>
-      <div class="notif-list" id="notif-list-body" style="padding:15px; display:flex; flex-direction:column; gap:12px; font-size:13px;">
-          <div class="notif-item unread">
-              <span class="n-dot"></span>
-              <div class="n-text">
-                  <strong>3D Scene Instantiated:</strong> Procedural shapes compiled with zero cache misses.
-                  <span class="n-time" style="display:block; opacity:0.5; font-size:11px; margin-top:4px;">Just Now</span>
-              </div>
-          </div>
-          <div class="notif-item unread">
-              <span class="n-dot"></span>
-              <div class="n-text">
-                  <strong>Oscilloscope Calibrated:</strong> 2-channel grid locked onto realtime canvas plotter.
-                  <span class="n-time" style="display:block; opacity:0.5; font-size:11px; margin-top:4px;">3 mins ago</span>
-              </div>
-          </div>
-          <div class="notif-item">
-              <div class="n-text">
-                  <strong>Database Sync Successful:</strong> Pin map datasets for MCU boards and passive axial packages verified.
-                  <span class="n-time" style="display:block; opacity:0.5; font-size:11px; margin-top:4px;">10 mins ago</span>
-              </div>
-          </div>
+      <div class="notif-list" id="notif-list-body">
+          <!-- Populated by JS -->
       </div>
   </div>
 

@@ -146,7 +146,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 18 | `fix/projects-view` | C4; test timeout raised to 60 s, E15 logged | ✅ |
 | 18b | `chore/faster-smoke-tests` | E15: stop non-3D tests waiting for the 3D engine, then lower the timeout again | ⏳ |
 | 19 | `fix/settings-theme` | C5; F10 logged | ✅ |
-| 20 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ⏳ |
+| 20 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ✅ |
 | 21 | `fix/single-background` | D4 | ⏳ |
 | 22 | `feat/hash-routing` | D9 | ⏳ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models); restore resistor/capacitor data from `legacy/` history | ⏳ |

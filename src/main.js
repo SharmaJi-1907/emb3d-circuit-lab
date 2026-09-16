@@ -1,6 +1,7 @@
 // EMB3D Entry Point
 import './styles/main.css';
 import './styles/components/panels.css';
+import './styles/components/notifications.css';
 import './styles/views/simulator.css';
 import './styles/views/boards.css';
 import './styles/views/datasheet.css';
