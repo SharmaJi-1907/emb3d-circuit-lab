@@ -20,6 +20,7 @@ window.CircuitApp = (function () {
     aiMessages: [],
     datasheetSection: 'overview',
     theme: 'dark',
+    searchIndex: 0,
     sidebarCollapsed: false,
     notifications: [],
     projects: [],
@@ -315,9 +316,24 @@ window.CircuitApp = (function () {
         renderModalSearchResults(query);
       });
 
+      // ↑ ↓ move through the results and ↵ opens one, as the footer promises (D14).
       modalSearchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           hideSearchModal();
+          return;
+        }
+        const hits = document.querySelectorAll('#modal-search-results .search-result-item');
+        if (!hits.length) return;
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const step = e.key === 'ArrowDown' ? 1 : -1;
+          // Wrap around, so ↑ from the top goes to the bottom.
+          state.searchIndex = (state.searchIndex + step + hits.length) % hits.length;
+          highlightSearchResult();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          hits[state.searchIndex]?.click();
         }
       });
     }
@@ -357,9 +373,17 @@ window.CircuitApp = (function () {
     }
   }
 
+  // Mark the result the arrow keys are on, and keep it in view (D14).
+  function highlightSearchResult() {
+    const hits = document.querySelectorAll('#modal-search-results .search-result-item');
+    hits.forEach((el, i) => el.classList.toggle('selected', i === state.searchIndex));
+    hits[state.searchIndex]?.scrollIntoView({ block: 'nearest' });
+  }
+
   function renderModalSearchResults(query) {
     const resultsContainer = document.getElementById('modal-search-results');
     if (!resultsContainer) return;
+    state.searchIndex = 0; // a new search starts at the top (D14)
 
     if (!query) {
       resultsContainer.innerHTML = '<div class="search-no-results">Type to search components, boards, and datasheets...</div>';
@@ -386,6 +410,7 @@ window.CircuitApp = (function () {
         </div>
       `).join('');
     }
+    highlightSearchResult();
   }
 
   /* ── Dashboard ──────────────────────────────────────────────── */
@@ -1794,6 +1819,7 @@ Could you be more specific about what you're trying to build? For example:
 
       if (e.key === 'Escape') {
         hideSearchModal();
+        toggleNotifications(false); // Esc closes the drawer too (C6)
         if (shortcutsModal) {
           shortcutsModal.classList.add('hidden');
         }
@@ -1843,13 +1869,73 @@ Could you be more specific about what you're trying to build? For example:
   }
 
   /* ── Notifications ──────────────────────────────────────────── */
+  /* ── Notifications drawer (C6) ──────────────────────────────────
+     The bell opens the drawer, "Clear All" empties it, and the unread
+     dot follows the list. The items live here so they can be cleared.
+  ──────────────────────────────────────────────────────────────── */
+  const NOTIFICATIONS = [
+    { title: '3D Scene Instantiated', text: 'Procedural shapes compiled with zero cache misses.', time: 'Just now', unread: true },
+    { title: 'Oscilloscope Calibrated', text: '2-channel grid locked onto realtime canvas plotter.', time: '3 mins ago', unread: true },
+    { title: 'Database Sync Successful', text: 'Pin map datasets for MCU boards and passive axial packages verified.', time: '10 mins ago', unread: false },
+  ];
+
+  function renderNotifications() {
+    const list = document.getElementById('notif-list-body');
+    const dot = document.querySelector('#notif-btn .notif-dot');
+    if (!list) return;
+
+    if (!state.notifications.length) {
+      list.innerHTML = '<div class="notif-empty">Nothing new right now.</div>';
+    } else {
+      list.innerHTML = state.notifications.map(n => `
+        <div class="notif-item ${n.unread ? 'unread' : ''}">
+          ${n.unread ? '<span class="n-dot"></span>' : ''}
+          <div class="n-text">
+            <strong>${n.title}:</strong> ${n.text}
+            <span class="n-time">${n.time}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    if (dot) dot.hidden = !state.notifications.some(n => n.unread);
+  }
+
+  function toggleNotifications(show) {
+    const drawer = document.getElementById('notif-drawer');
+    if (!drawer) return;
+    const open = show === undefined ? drawer.classList.contains('hidden') : show;
+    drawer.classList.toggle('hidden', !open);
+  }
+
   function initNotifications() {
+    state.notifications = NOTIFICATIONS.map(n => ({ ...n }));
+    renderNotifications();
+
     const btn = document.getElementById('notif-btn');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        showToast('No new notifications', 'info');
+    if (btn && !btn._wired) {
+      btn._wired = true;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // so the document handler below doesn't close it again
+        toggleNotifications();
       });
     }
+
+    const clear = document.getElementById('clear-notifs');
+    if (clear && !clear._wired) {
+      clear._wired = true;
+      clear.addEventListener('click', () => {
+        state.notifications = [];
+        renderNotifications();
+      });
+    }
+
+    // A click anywhere else closes the drawer.
+    document.addEventListener('click', (e) => {
+      const drawer = document.getElementById('notif-drawer');
+      if (drawer && !drawer.classList.contains('hidden') && !drawer.contains(e.target)) {
+        toggleNotifications(false);
+      }
+    });
   }
 
   /* ── Toast System ───────────────────────────────────────────── */

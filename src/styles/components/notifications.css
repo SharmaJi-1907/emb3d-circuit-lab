@@ -1,0 +1,107 @@
+/* ── Notifications drawer (C6) ──────────────────────────────────
+   Replaces the inline styles that were on the drawer in index.html,
+   which used hard-coded colours (#222, #00d4ff) and stayed dark once
+   the light theme arrived (C5). Design tokens only.
+──────────────────────────────────────────────────────────────── */
+
+.notif-drawer {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  width: 360px;
+  max-height: 480px;
+  overflow-y: auto;
+  z-index: 999;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+.notif-drawer.hidden { display: none; }
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-header h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.clear-notif-btn {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: background var(--t-fast);
+}
+.clear-notif-btn:hover { background: var(--cyan-dim); }
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+.notif-item {
+  display: flex;
+  gap: 8px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.notif-item strong { color: var(--text-primary); }
+
+.notif-item .n-dot {
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  flex-shrink: 0;
+}
+
+.n-time {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.notif-empty {
+  padding: 8px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* The unread marker on the bell */
+#notif-btn { position: relative; }
+
+#notif-btn .notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+}
+#notif-btn .notif-dot[hidden] { display: none; }
+
+/* The search result the arrow keys are on (D14) */
+.search-result-item.selected {
+  background: var(--cyan-dim);
+  outline: 1px solid var(--border-active);
+}
