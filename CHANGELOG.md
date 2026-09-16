@@ -58,7 +58,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - 12 hard-coded dark surfaces in `main.css` became design tokens (`--bg-panel`, `--bg-panel-soft`, `--bg-overlay`, `--glass`, `--bg-code`), so they follow the theme. The 16 `<kbd>` keys in Settings and the shortcuts pop-up lost their inline `background:#222` and are styled in `panels.css` instead — in light mode they had been black boxes with invisible text.
-- The smoke-test timeout is 60 s instead of 30 s. With 4 browsers drawing 3D in software, and `openApp()` waiting for the 3D engine on every screen, a test can sit waiting for CPU at peak; 4 tests timed out on a `--repeat-each=4` run with no assertion failing. The real saving is to stop non-3D tests waiting for the engine at all (E15, planned for #18b).
+- The smoke-test timeout is back to 30 s. It was raised to 60 s in #18 as a stop-gap after 4 tests timed out with no assertion failing. Only the 3D tests wait for the 3D engine now (E15), and 572 slots pass clean at 30 s where 516 failed 4 at 30 s before.
+- Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
 - The notifications drawer works (C6). The bell used to show a "No new notifications" toast while the drawer markup sat unused, and the unread dot on the bell had no CSS at all (0 px wide and transparent). The bell now opens and closes the drawer, Esc and a click elsewhere close it, and "Clear All" empties the list and hides the dot. Its inline styles moved to CSS with design tokens, so it follows the light theme.
