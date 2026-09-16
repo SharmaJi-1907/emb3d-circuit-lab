@@ -14,6 +14,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- `public/manifest.json` and `public/favicon.svg` (E2), so the page no longer 404s for either. New `tests/smoke/assets.spec.js` with 8 tests (151 tests in total).
 - `README.md`, `CHANGELOG.md`, `.editorconfig`, expanded `.gitignore`.
 - `docs/` with an index, architecture, contributing guide and decision records.
 - `docs/GIT_WORKFLOW.md`: branch-per-issue workflow, commit format and branch plan.
@@ -53,6 +54,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/simulator.spec.js`: 4 tests for the Simulator's setup and drawing loop (91 tests in total). Simulator: read-only `getFrameCount()`.
 
 ### Removed
+- GSAP and ScrollTrigger, downloaded on every page load and used by nothing (E10). FontAwesome went too — a whole CDN stylesheet for one glyph, the robot in the AI header, now a 🤖 character. Three CDN requests gone from every page load.
+- 29 dead CSS rules from `main.css` (E12): 2267 → 2072 lines, built CSS 54.76 kB → 52.97 kB. Every selector was checked against the live app first; all 22 matched nothing on any of the 9 screens.
+- The duplicate `<link rel="stylesheet">` for `main.css` (E3) — `src/main.js` already imports it.
+- The empty `public/icons` folder (E4).
 - The Simulator's unused signal generator and its `setSigGen()` function (nothing called it; it only fed the made-up oscilloscope sine).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
@@ -62,6 +67,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
+- The notifications feed says something real (E5). It used to show invented messages with "3 mins ago" timestamps; it now reports the actual component, board, datasheet and project counts, timestamped when the app started.
+- A hiccup at the font CDN no longer fails a random smoke test (E14). It is the one entry in the known-noise list, and a test blocks both font hosts to prove the app still starts clean without them.
 - The notifications drawer works (C6). The bell used to show a "No new notifications" toast while the drawer markup sat unused, and the unread dot on the bell had no CSS at all (0 px wide and transparent). The bell now opens and closes the drawer, Esc and a click elsewhere close it, and "Clear All" empties the list and hides the dot. Its inline styles moved to CSS with design tokens, so it follows the light theme.
 - The search pop-up's ↑↓ and ↵ keys work (D14). The footer had promised them since the start. ↑↓ move a highlight through the results and wrap at both ends, ↵ opens the highlighted part, and a new search starts at the top.
 - The theme buttons work (C5). The Settings "Toggle Dark Mode" button and the top-bar button did nothing; `state.theme` existed but nothing read it. The 3D viewport, the simulated multimeter display and code blocks stay dark on purpose in both themes.

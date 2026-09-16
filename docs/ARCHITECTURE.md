@@ -53,6 +53,7 @@ emmb3d/
 │   │   ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
 │   │   ├── theme.spec.js      Light/dark theme: both toggles, persistence, readability (C5)
 │   │   ├── topbar.spec.js     Notifications drawer and the search pop-up's arrow keys (C6, D14)
+│   │   ├── assets.spec.js     What the page loads: manifest, favicon, no GSAP/FontAwesome, dead CSS (E2–E14)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
