@@ -109,3 +109,77 @@ test('the screen fits and the content scrolls instead of being cut off (F5)', as
   expect(scrolls, 'the screen itself should not scroll').toBe(false);
   expectNoErrors(errors);
 });
+
+/* ── Search box (C8) ──────────────────────────────────────────── */
+test('the search box filters the datasheet list (C8)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  await expect(page.locator('.ds-item')).toHaveCount(2);
+
+  await page.locator('#ds-search').fill('esp');
+  await expect(page.locator('.ds-item')).toHaveCount(1);
+  await expect(page.locator('.ds-item-name')).toHaveText('ESP32-WROOM-32');
+
+  // The maker is searched too, not just the name.
+  await page.locator('#ds-search').fill('microchip');
+  await expect(page.locator('.ds-item')).toHaveCount(1);
+  await expect(page.locator('.ds-item-name')).toHaveText('ATmega328P');
+
+  await page.locator('#ds-search').fill('nothing here');
+  await expect(page.locator('.ds-item')).toHaveCount(0);
+  await expect(page.locator('.ds-empty')).toContainText('No datasheet matches');
+
+  await page.locator('#ds-search').fill('');
+  await expect(page.locator('.ds-item')).toHaveCount(2);
+  expectNoErrors(errors);
+});
+
+test('the search box still works after leaving and coming back (C8)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  for (const view of ['dashboard', 'datasheet', 'dashboard', 'datasheet']) await goToView(page, view);
+  await page.locator('#ds-search').fill('esp');
+  await expect(page.locator('.ds-item'), 'one handler, not one per visit').toHaveCount(1);
+  expectNoErrors(errors);
+});
+
+/* ── Every section has content (D26) ──────────────────────────── */
+test('every section button shows real content, not a placeholder (D26)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  const sections = ['Overview', 'Pinout', 'Electrical', 'Timing', 'Memory', 'Examples', 'Package'];
+  await expect(page.locator('#view-datasheet .toc-btn')).toHaveCount(sections.length);
+
+  for (const name of sections) {
+    await page.locator('#view-datasheet .toc-btn', { hasText: new RegExp(`^${name}$`) }).click();
+    await expect(page.locator('#ds-content .ds-section'), `the "${name}" section`).toBeVisible();
+    await expect(page.locator('#ds-content .placeholder-msg'), `"${name}" should not be a placeholder`).toHaveCount(0);
+  }
+  expectNoErrors(errors);
+});
+
+test('the Pinout section lists every pin of the part (D26)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  await page.locator('#view-datasheet .toc-btn', { hasText: /^Pinout$/ }).click();
+
+  const expected = await page.evaluate(() =>
+    window.CircuitLabData.components.find((c) => c.id === 'atmega328p').pinout);
+  await expect(page.locator('#ds-content .ds-table tbody tr')).toHaveCount(expected.length);
+
+  const firstRow = page.locator('#ds-content .ds-table tbody tr').first();
+  await expect(firstRow).toContainText(expected[0].name);
+  await expect(firstRow).toContainText(expected[0].altName);
+
+  // It follows the chosen datasheet.
+  await page.locator('.ds-item').nth(1).click();
+  const esp = await page.evaluate(() =>
+    window.CircuitLabData.components.find((c) => c.id === 'esp32-wroom').pinout.length);
+  await expect(page.locator('#ds-content .ds-table tbody tr')).toHaveCount(esp);
+  expectNoErrors(errors);
+});
+
+test('the Package section shows the package sizes (D26)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  await page.locator('#view-datasheet .toc-btn', { hasText: /^Package$/ }).click();
+  const packs = await page.evaluate(() => window.CircuitLabData.datasheets[0].sections.package.packages);
+  await expect(page.locator('#ds-content .ds-table tbody tr')).toHaveCount(packs.length);
+  await expect(page.locator('#ds-content .ds-table')).toContainText(packs[0].name);
+  expectNoErrors(errors);
+});
