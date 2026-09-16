@@ -139,7 +139,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 15 | `fix/simulator-init-once` | D3, D5, D20 (clock counts frames) | ✅ |
 | 16 | `style/board-explorer` | F4 | ✅ |
 | 16b | `fix/board-explorer-behaviour` | D22 (handlers added on every visit, redraw on resize), D23 (pin highlight), D25 (shared selected pin, found here) | ✅ |
-| 16c | `feat/board-data` | D24: real pin data for Arduino Mega, ESP8266 and Raspberry Pi Pico; the "STM32 Nucleo" tab | ⏳ |
+| 16c | `feat/board-data` | D24: real pin data for Arduino Mega, ESP8266 (NodeMCU), Raspberry Pi Pico and STM32 Nucleo-F401RE, plus an "STM32 Blue Pill" tab | ✅ |
 | 17 | `style/datasheet-sidebar` | F5 | ⏳ |
 | 17b | `style/ai-screen` | F8: move the AI screen's inline styles to CSS with design tokens | ⏳ |
 | 18 | `fix/projects-view` | C4 | ⏳ |
