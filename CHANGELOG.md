@@ -38,6 +38,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `src/styles/views/simulator.css`: the first per-screen stylesheet (F3).
 - `src/styles/views/boards.css` (F4) and `tests/smoke/boards.spec.js`: 3 tests for the Board Explorer layout (94 tests in total).
 - `tests/smoke/boards.spec.js`: 4 tests for the Board Explorer's behaviour (98 tests in total).
+- Board Explorer: 4 new boards with pinouts from official sources (Arduino Mega 2560 Rev3, NodeMCU 1.0 / ESP8266, Raspberry Pi Pico, STM32 Nucleo-F401RE) and an "STM32 Blue Pill" tab (8 tabs). Plus 3 tests for the board data (101 tests in total).
 - A Battery button in the Simulator palette, so a circuit has a power source.
 - `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
 - `tests/smoke/simulator.spec.js`: 5 tests for the oscilloscope and the multimeter's resistance (87 tests in total). Simulator: `setScope()` for the oscilloscope settings.
@@ -48,6 +49,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- Every Board Explorer tab shows its own board (D24). The Mega, ESP8266 and Pico tabs used to show the Uno, the ESP32 and the Pi 4, and "STM32 Nucleo" showed a Blue Pill.
 - Board Explorer behaviour (D22, D23, D25): a pin click shows one toast however often you visit (before: one per visit), the board redraws at the right size when the window is resized, a clicked pin is highlighted in the list, and the Board Explorer's selected pin no longer changes the 3D Viewer's or carries over to another board.
 - The Board Explorer is styled (F4): the board sits beside the info panel and is drawn whole (862×529 instead of 174 px tall and cut off), it no longer grows when a filter is clicked, and the board tabs, pin filters, zoom buttons, specs and pin list are styled with the design tokens.
 - The Simulator is set up once instead of on every visit (D3), draws nothing while its screen is hidden (D5), and its clock follows real time instead of counting frames (D20). Before: 3 visits started 3 drawing loops and a clock running 3× too fast, and the hidden screen was drawn 60 times a second. The board sizes itself when its screen is shown, so a window resize while it was hidden is handled.
