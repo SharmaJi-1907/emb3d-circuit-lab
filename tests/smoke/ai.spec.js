@@ -187,7 +187,6 @@ test('a named part gets that part\'s card, however it is written (D1)', async ({
   await openApp(page);
   await expectAnswers(page, [
     ['tell me about the NE555', 'part:ne555'],
-    ['What is the timing equation for NE555 Astable Mode?', 'part:ne555'], // suggestion chip
     ['Explain datasheet specifications and alt functions for ATmega328P microcontroller.', 'part:atmega328p'], // Datasheet "Ask AI"
     ['how do I use the MPU-6050', 'part:mpu6050'],
     ['how do I use the mpu6050', 'part:mpu6050'],
@@ -347,5 +346,65 @@ test('the AI screen keeps its layout without inline styles (F8)', async ({ page,
 
   const scrolls = await page.locator('#view-ai').evaluate((v) => v.scrollHeight > v.clientHeight);
   expect(scrolls, 'the screen itself should not scroll').toBe(false);
+  expectNoErrors(errors);
+});
+
+/* ── Suggestion chips have real answers (D17) ─────────────────── */
+// Every chip's question, read from the page, with the answer it must get.
+const CHIP_ANSWERS = {
+  'How do I connect the RESET pin?': 'topic:How do I connect the RESET pin?',
+  'What is the timing equation for NE555 Astable Mode?': 'topic:What is the timing equation for NE555 Astable Mode?',
+  'Can ESP32 pins tolerate 5V signals?': 'topic:Can ESP32 pins tolerate 5V signals?',
+};
+
+test('every suggestion chip has its own stored answer (D17)', async ({ page, errors }) => {
+  await openAI(page);
+  const asked = await page.locator('#view-ai .ai-suggestion-chip').evaluateAll(
+    (els) => els.map((el) => el.dataset.query));
+  expect(asked, 'the chips still ask these questions').toEqual(Object.keys(CHIP_ANSWERS));
+  await expectAnswers(page, Object.entries(CHIP_ANSWERS));
+  expectNoErrors(errors);
+});
+
+test('a chip question beats the part card, a plain part question does not (D17)', async ({ page, errors }) => {
+  await openApp(page);
+  await expectAnswers(page, [
+    // Asking about the topic wins, even though the question names a part.
+    ['What is the timing equation for NE555 Astable Mode?', 'topic:What is the timing equation for NE555 Astable Mode?'],
+    ['Can ESP32 pins tolerate 5V signals?', 'topic:Can ESP32 pins tolerate 5V signals?'],
+    // Asking about the part itself still gives the part card.
+    ['tell me about the NE555', 'part:ne555'],
+    ['tell me about the ESP32-WROOM-32', 'part:esp32-wroom'],
+    // One passing mention must not hijack an unrelated question.
+    ['What resistor do I need for an LED at 5V?', LED],
+    ['Explain how an ESP32 works', ESP32],
+    ['PWM frequency', PWM],
+  ]);
+  expectNoErrors(errors);
+});
+
+test('the chip answers carry the facts they promise (D17)', async ({ page, errors }) => {
+  await openAI(page);
+  const answers = await page.evaluate((qs) =>
+    Object.fromEntries(qs.map((q) => [q, window.CircuitApp.getAIResponse(q)])), Object.keys(CHIP_ANSWERS));
+
+  const reset = answers['How do I connect the RESET pin?'];
+  expect(reset, 'RESET is active low').toMatch(/active\s+LOW/i);
+  expect(reset, 'the internal pull-up range').toContain('30–60');
+  expect(reset, 'the minimum pulse width').toContain('2.5');
+
+  const ne555 = answers['What is the timing equation for NE555 Astable Mode?'];
+  expect(ne555, 'the frequency constant').toContain('1.44');
+  expect(ne555, 'the charge/discharge constant').toContain('0.693');
+  expect(ne555, 'the RA + 2RB term').toContain('RA + 2RB');
+
+  const esp32 = answers['Can ESP32 pins tolerate 5V signals?'];
+  expect(esp32, 'the absolute maximum pin voltage').toContain('3.6 V');
+  expect(esp32, 'says plainly that it is not 5V tolerant').toMatch(/not\s+\*?\*?5\s?V\*?\*?\s+tolerant/i);
+
+  // None of them falls back to the "be more specific" reply.
+  for (const [q, text] of Object.entries(answers)) {
+    expect(text.startsWith('I can help with that!'), `"${q}" should not fall back`).toBe(false);
+  }
   expectNoErrors(errors);
 });
