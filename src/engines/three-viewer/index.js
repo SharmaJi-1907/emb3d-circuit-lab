@@ -290,7 +290,111 @@ window.ThreeViewer = (function () {
     camera.lookAt(0, 0, 0);
   }
 
+  /* ── Freeing a model ──────────────────────────────────────────
+     Three.js does not free GPU memory when an object leaves the scene;
+     every geometry, material and texture has to be disposed (D16).
+  ──────────────────────────────────────────────────────────────── */
+  function disposeObject(root) {
+    root.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+      for (const mat of materials) {
+        if (!mat) continue;
+        for (const key of Object.keys(mat)) {
+          const value = mat[key];
+          if (value && value.isTexture) value.dispose();
+        }
+        mat.dispose();
+      }
+      // A highlighted pin keeps its original material aside; free that too.
+      if (obj.userData && obj.userData.originalMaterial) {
+        obj.userData.originalMaterial.dispose();
+        obj.userData.originalMaterial = null;
+      }
+    });
+  }
+
   /* ── Component Model Builders ─────────────────────────────── */
+
+  // The part's name, drawn onto a canvas and used as a texture, so it can be
+  // read on top of the chip. buildDIP and buildQFP took a label and threw it
+  // away before this (D11).
+  function makeLabelMesh(text, width, height) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#e8e8e8';
+    ctx.font = 'bold 64px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Shrink long names so they stay inside the chip body.
+    let size = 64;
+    while (ctx.measureText(text).width > canvas.width - 40 && size > 20) {
+      size -= 4;
+      ctx.font = `bold ${size}px monospace`;
+    }
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(width, height),
+      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+    );
+    mesh.name = 'chip-label';
+    return mesh;
+  }
+
+  // Single row of pins with a metal tab: Multiwatt-15 (L298N), SOT-223
+  // (AMS1117) and anything else with an odd pin count (D8).
+  function buildSIP(pinCount, label) {
+    const group = new THREE.Group();
+    const pitch = 0.22;
+    const bodyW = (pinCount - 1) * pitch + 0.5;
+    const bodyH = 0.5;
+    const bodyD = 0.18;
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(bodyW, bodyH, bodyD), MAT.chip.clone());
+    body.castShadow = true;
+    group.add(body);
+
+    // The metal tab along the back, which is what these packages are known for
+    const tab = new THREE.Mesh(
+      new THREE.BoxGeometry(bodyW * 0.92, bodyH * 0.42, 0.05),
+      new THREE.MeshStandardMaterial({ color: 0xb8b8c0, roughness: 0.25, metalness: 0.9 })
+    );
+    tab.position.set(0, bodyH * 0.29, -bodyD / 2 - 0.02);
+    group.add(tab);
+
+    const labelMesh = makeLabelMesh(label, bodyW * 0.8, bodyW * 0.8 * 0.22);
+    labelMesh.position.set(0, -bodyH * 0.1, bodyD / 2 + 0.001);
+    group.add(labelMesh);
+
+    pinMeshes = [];
+    for (let i = 0; i < pinCount; i++) {
+      const pinNum = i + 1;
+      const x = (i - (pinCount - 1) / 2) * pitch;
+      const pinData = getPinData(pinNum);
+      const pinColor = pinData ? PIN_COLORS[pinData.type] || 0xc0c0c0 : 0xc0c0c0;
+
+      const pin = new THREE.Mesh(
+        new THREE.BoxGeometry(0.05, 0.3, 0.04),
+        new THREE.MeshStandardMaterial({
+          color: pinColor, roughness: 0.1, metalness: 0.9,
+          emissive: pinColor, emissiveIntensity: 0.1,
+        })
+      );
+      pin.position.set(x, -bodyH / 2 - 0.15, 0);
+      pin.castShadow = true;
+      pin.userData = { pinNum, type: pinData ? pinData.type : 'digital' };
+      group.add(pin);
+      pinMeshes.push(pin);
+    }
+    return group;
+  }
+
   function buildDIP(pinCount, label) {
     const group = new THREE.Group();
     const cols = 2;
@@ -313,12 +417,11 @@ window.ThreeViewer = (function () {
     notch.position.set(0, bodyH / 2 + 0.005, -bodyL / 2 + 0.15);
     group.add(notch);
 
-    // Label text plane
-    const labelGeo = new THREE.PlaneGeometry(0.6, 0.12);
-    const labelMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.15 });
-    const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+    // The part's name, printed on the top of the chip (D11)
+    const labelMesh = makeLabelMesh(label, bodyL * 0.7, bodyL * 0.7 * 0.25);
     labelMesh.position.y = bodyH / 2 + 0.001;
     labelMesh.rotation.x = -Math.PI / 2;
+    labelMesh.rotation.z = Math.PI / 2;
     group.add(labelMesh);
 
     // Pins
@@ -383,6 +486,12 @@ window.ThreeViewer = (function () {
     const mark = new THREE.Mesh(markGeo, markMat);
     mark.position.set(-bodySize / 2 + 0.06, bodyH / 2 + 0.001, -bodySize / 2 + 0.06);
     group.add(mark);
+
+    // The part's name, printed on the top of the chip (D11)
+    const labelMesh = makeLabelMesh(label, bodySize * 0.75, bodySize * 0.75 * 0.25);
+    labelMesh.position.y = bodyH / 2 + 0.002;
+    labelMesh.rotation.x = -Math.PI / 2;
+    group.add(labelMesh);
 
     // Pins on all 4 sides
     pinMeshes = [];
@@ -541,11 +650,12 @@ window.ThreeViewer = (function () {
     led.position.set(-0.3, 0.08, 0.4);
     group.add(led);
 
-    // Pin headers
-    addPinHeader(group, 19, 0.1, 0.08, 0.45, 'horizontal-left');
-    addPinHeader(group, 19, 0.1, 0.08, -0.45, 'horizontal-right');
-
+    // Pin headers. The list is started first: it used to be cleared after the
+    // headers were added, so the ESP32 had no pins to hover or highlight (D8).
     pinMeshes = [];
+    addPinHeader(group, 19, 0.1, 0.08, 0.45, 'horizontal-left', 1);
+    addPinHeader(group, 19, 0.1, 0.08, -0.45, 'horizontal-right', 20);
+
     return group;
   }
 
@@ -667,7 +777,7 @@ window.ThreeViewer = (function () {
     return group;
   }
 
-  function addPinHeader(group, count, pitch, height, zOffset, orientation) {
+  function addPinHeader(group, count, pitch, height, zOffset, orientation, firstPin = 1) {
     const headerGeo = new THREE.BoxGeometry(count * pitch, height, 0.1);
     const headerMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
     const header = new THREE.Mesh(headerGeo, headerMat);
@@ -685,8 +795,16 @@ window.ThreeViewer = (function () {
 
     // Individual pins
     for (let i = 0; i < count; i++) {
+      const pinNum = firstPin + i;
+      const pinData = getPinData(pinNum);
+      const pinColor = pinData ? PIN_COLORS[pinData.type] || 0xffd700 : 0xffd700;
       const pinGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.2, 8);
-      const pin = new THREE.Mesh(pinGeo, MAT.gold.clone());
+      const pin = new THREE.Mesh(pinGeo, new THREE.MeshStandardMaterial({
+        color: pinColor, roughness: 0.1, metalness: 0.9,
+        emissive: pinColor, emissiveIntensity: 0.1,
+      }));
+      pin.userData = { pinNum, type: pinData ? pinData.type : 'digital' };
+      pinMeshes.push(pin);
       if (orientation === 'vertical') {
         pin.position.set(1.2 - (count / 2 - 0.5 - i) * pitch, 0.15, zOffset);
       } else if (orientation === 'horizontal-left') {
@@ -727,10 +845,13 @@ window.ThreeViewer = (function () {
 
     currentComponentData = data;
 
-    // Remove old model
+    // Remove old model, and give its geometries and materials back to the GPU.
+    // scene.remove() alone leaked about 59 geometries per visit (D16).
     if (currentModel) {
       scene.remove(currentModel);
+      disposeObject(currentModel);
       currentModel = null;
+      pinMeshes = [];
     }
     explodeMode = false; // a new model starts assembled
 
@@ -752,20 +873,25 @@ window.ThreeViewer = (function () {
       case 'stm32f103':
         model = buildQFP(48, 'STM32F103');
         break;
-      case 'nrf52840':
-        model = buildQFP(48, 'nRF52840');
-        break;
-      case 'bme280':
-        model = buildQFP(8, 'BME280');
-        break;
       case 'mpu6050':
         model = buildQFP(24, 'MPU-6050');
+        break;
+      case 'l298n':
+        model = buildSIP(15, 'L298N');      // Multiwatt-15
+        break;
+      case 'ams1117':
+        model = buildSIP(3, 'AMS1117');     // SOT-223
+        break;
+      case 'nrf24l01':
+        model = buildDIP(8, 'nRF24L01+');   // module with a 2x4 header
         break;
       case 'hc-sr04':
         model = buildHCSR04();
         break;
       default:
-        model = buildDIP(8, data.name);
+        // Follow the part's real pin count instead of always drawing an 8-pin
+        // chip. A dual row needs an even count, so odd counts get a single row.
+        model = data.pins % 2 === 0 ? buildDIP(data.pins, data.name) : buildSIP(data.pins, data.name);
     }
 
     // Animate in
@@ -819,10 +945,11 @@ window.ThreeViewer = (function () {
     chip.position.set(0, 0.08, 0);
     group.add(chip);
 
-    // Pin header
-    addPinHeader(group, 4, 0.1, 0.1, 0, 'vertical');
-
+    // Pin header (VCC, Trig, Echo, GND). Started before the header is added, so
+    // the pins survive and can be hovered and highlighted (D8).
     pinMeshes = [];
+    addPinHeader(group, 4, 0.1, 0.1, 0, 'vertical', 1);
+
     return group;
   }
 
@@ -1018,5 +1145,19 @@ window.ThreeViewer = (function () {
     isExploded: () => explodeMode,
     getModelBounds,
     getFrameCount: () => (renderer ? renderer.info.render.frame : 0),
+    // What the GPU is still holding. Used to prove old models are freed (D16).
+    getMemoryInfo: () => (renderer ? { ...renderer.info.memory } : null),
+    // What the current model is made of: how many pins it drew, and whether the
+    // part's name is printed on it (D8, D11).
+    getModelInfo: () => {
+      if (!currentModel) return null;
+      let pins = 0;
+      let hasLabel = false;
+      currentModel.traverse((o) => {
+        if (o.userData && o.userData.pinNum !== undefined) pins++;
+        if (o.name === 'chip-label') hasLabel = true;
+      });
+      return { component: currentComponentData ? currentComponentData.id : null, pins, hasLabel };
+    },
   };
 })();
