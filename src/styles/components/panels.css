@@ -19,7 +19,7 @@
 
 /* Cards and panels */
 .glass-panel {
-  background: rgba(17, 17, 40, 0.85);
+  background: var(--glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(12px);
@@ -78,4 +78,18 @@
   background: var(--bg-hover);
   border-color: var(--border-hover);
   color: var(--cyan);
+}
+
+/* Keyboard keys, in the Settings screen and the shortcuts pop-up.
+   They carried an inline background:#222, which stayed dark — and unreadable —
+   once the light theme arrived (C5). */
+kbd {
+  padding: 2px 7px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
 }
