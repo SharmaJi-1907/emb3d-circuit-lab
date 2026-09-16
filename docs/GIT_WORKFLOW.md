@@ -151,7 +151,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 22 | `feat/hash-routing` | D9 | ⏳ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models); restore resistor/capacitor data from `legacy/` history | ⏳ |
 | 24 | `chore/upgrade-threejs` | E7 | ⏳ |
-| 25 | `chore/cleanup-assets` | E2–E5, E10, E12 (unused Simulator and Datasheet CSS), E14 (font CDN errors fail tests) | ⏳ |
+| 25 | `chore/cleanup-assets` | E2–E5, E10 (GSAP and FontAwesome removed), E12 (dead CSS), E14 (font CDN errors fail tests) | ✅ |
 | 26 | `chore/update-dependencies` | E6 | ⏳ |
 | 27+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
 
