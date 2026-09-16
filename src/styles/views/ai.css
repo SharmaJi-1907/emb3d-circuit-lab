@@ -87,6 +87,32 @@
   flex-shrink: 0;
 }
 
+/* Tables inside a reply (D18). Lists reuse the bubble rules in main.css. */
+.ai-message-content .ai-table {
+  width: 100%;
+  margin: 8px 0;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ai-message-content .ai-table th,
+.ai-message-content .ai-table td {
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.ai-message-content .ai-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.ai-message-content .ai-table td { color: var(--text-primary); }
+.ai-message-content .ai-table tr:last-child td { border-bottom: none; }
+
 /* Narrow screens: let the chips wrap without squeezing the chat */
 @media (max-width: 700px) {
   .ai-layout { gap: 12px; }
