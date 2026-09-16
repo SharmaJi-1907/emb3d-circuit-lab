@@ -42,6 +42,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `src/styles/views/datasheet.css` (F5) and `tests/smoke/datasheet.spec.js`: 5 tests for the Datasheet sidebar, section bar and layout (106 tests in total).
 - `src/styles/views/ai.css` (F8) and 4 tests in `tests/smoke/ai.spec.js` for the AI screen's styles and layout (110 tests in total).
 - Datasheet Viewer: a working search box, a **Pinout** section built from the part's own pin list, and a 7th **Package** button for package sizes. Plus 5 tests in `tests/smoke/datasheet.spec.js` (115 tests in total).
+- 4 tests in `tests/smoke/ai.spec.js` for lists and tables in AI replies (122 tests in total).
 - Three new AI answers for the suggestion chips — the RESET pin, the NE555 astable timing equations, and ESP32 5 V tolerance — each checked against the manufacturer's datasheet. Plus 3 tests in `tests/smoke/ai.spec.js` (118 tests in total).
 - A Battery button in the Simulator palette, so a circuit has a power source.
 - `tests/smoke/simulator.spec.js`: 7 tests for the circuit logic (82 tests in total). Simulator: `loadCircuit()` reads the JSON that Export writes (Export now includes each part's `id`); `getState()` also returns each part's readings.
@@ -53,6 +54,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ### Fixed
+- AI replies show lists and tables properly (D18). Before, all 45 "- " lines and 34 table rows across the 9 stored answers came out as raw text — the formatter only handled "•", which no answer uses. A run of "- " lines now becomes a list, and a `|---|` separator turns the rows around it into a table, styled with the design tokens. Lists and tables are set aside before the other rules, the same way code blocks are, so they can't swallow the headings between them.
 - All three AI suggestion chips now get a real answer (D17). Before: "Reset Hookup" got the "be more specific" reply, "555 Astable Eq" got the NE555 spec card with no equation, and "ESP32 5V Tolerance" got an ESP32 overview that never mentions 5 V. The answer matcher also learned that a question about a topic beats the part card when it names a part — so asking for the NE555 timing equation gives the equation, while "tell me about the NE555" still gives the card.
 - The Board Explorer's board is drawn at the full new size after the window changes size (D27). The resize handler measured the board while the event was still firing, so it could catch the old box and leave the drawing 1 px short (682×458 in a 682×459 board); it now waits one frame and rounds instead of truncating. Measured: the resize test failed 3 times in 60 runs before, 0 in 60 after.
 - The Datasheet search box works (C8). Typing filters the list by name or maker, ignoring case; no match shows "No datasheet matches …". It is wired on the first visit only, so repeat visits don't pile up handlers.
