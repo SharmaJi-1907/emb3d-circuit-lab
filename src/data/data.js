@@ -1336,6 +1336,110 @@ ledcWrite(channel, 128);  // 50% duty
 - Motor control: 20–50 kHz
 - Audio: 44.1 kHz+
 - Servo: 50 Hz, 1–2ms pulse`,
+
+    'How do I connect the RESET pin?': `**Connecting the RESET Pin (ATmega328P / Arduino Uno)**
+
+RESET is **active LOW** — pulling it to GND restarts the chip. Leave it HIGH to run.
+
+**The basics:**
+| What | Value |
+|------|-------|
+| Idle level | HIGH (tied to VCC) |
+| Reset level | LOW |
+| Threshold (VRST) | 0.2 VCC to 0.9 VCC |
+| Minimum LOW pulse | 2.5 µs |
+| Internal pull-up | 30–60 kΩ |
+
+**Wiring a reset button:**
+\`\`\`
+VCC ---[ 10k ]--- RESET ---[ button ]--- GND
+\`\`\`
+
+The chip has its own 30–60 kΩ pull-up, but an external **10 kΩ** is standard: it is
+stiffer and keeps the pin from picking up noise. Never leave RESET floating, and never
+drive it above VCC.
+
+**Auto-reset when uploading:**
+Arduino boards join the USB chip's DTR line to RESET through a **100 nF** capacitor, so
+opening the serial port gives one short LOW pulse and the bootloader starts.
+To stop a board resetting when the Serial Monitor opens, put a **10 µF** capacitor
+between RESET and GND (remove it before the next upload).
+
+⚠️ RESET can be turned into a plain I/O pin with the **RSTDISBL** fuse — do not do this
+unless you have a high-voltage programmer, because it locks out normal ISP programming.
+
+_Values from the Microchip ATmega328/P datasheet, Electrical Characteristics
+("Reset, Brown-out and Internal Voltage Characteristics")._`,
+
+    'What is the timing equation for NE555 Astable Mode?': `**NE555 Astable (Free-Running) Timing**
+
+In astable mode C charges through **RA + RB** and discharges through **RB** only.
+
+**The equations:**
+\`\`\`
+tH = 0.693 × (RA + RB) × C     (output HIGH)
+tL = 0.693 × RB × C            (output LOW)
+
+T  = tH + tL = 0.693 × (RA + 2RB) × C
+
+           1.44
+f = 1/T = --------------
+          (RA + 2RB) × C
+
+Duty cycle (HIGH) = (RA + RB) / (RA + 2RB)
+\`\`\`
+
+**Worked example** — RA = 10 kΩ, RB = 10 kΩ, C = 10 µF:
+\`\`\`
+f = 1.44 / ((10000 + 20000) × 0.00001) = 4.8 Hz
+Duty = (10k + 10k) / (10k + 20k) = 67%
+\`\`\`
+
+**Things to know:**
+- Duty cycle is always **above 50%**, because the charge path is longer than the
+  discharge path. Add a diode across RB to get 50% or less.
+- C swings between about **0.33 × VCC** and **0.67 × VCC**, so timing does not change
+  with supply voltage.
+- Keep it at **100 kHz or below**; above that use a TLC555 (CMOS).
+- VCC range: 5 V to 15 V.
+
+_Equations from the Texas Instruments NE555 datasheet (SLFS022), "Astable Operation"._`,
+
+    'Can ESP32 pins tolerate 5V signals?': `**ESP32 and 5 V — the short answer: no.**
+
+ESP32 GPIOs are **not 5 V tolerant**. The absolute maximum on a pin is **3.6 V**.
+Anything above that can damage the chip permanently.
+
+**The numbers:**
+| Parameter | Value |
+|-----------|-------|
+| Absolute max input | **3.6 V** |
+| Supply (VDD) | 3.0–3.6 V (3.3 V typical) |
+| Logic HIGH in (VIH) | 0.75 × VDD ≈ **2.48 V** and up |
+| Logic LOW in (VIL) | up to 0.25 × VDD ≈ **0.83 V** |
+| Internal pull-up | ≈ 45 kΩ |
+
+**Reading a 5 V output safely** — a resistor divider is enough for slow signals:
+\`\`\`
+5V signal ---[ 10k ]---+--- ESP32 GPIO (3.3V)
+                       |
+                     [ 20k ]
+                       |
+                      GND
+
+Vout = 5V × 20k / (10k + 20k) = 3.33V
+\`\`\`
+For I2C or anything fast, use a proper **bidirectional level shifter** (for example a
+BSS138-based board) instead of a divider.
+
+**Driving a 5 V input from the ESP32:** often it just works, because the ESP32's 3.3 V
+HIGH is above most 5 V parts' VIH of 2.0 V (TTL). Check the receiving part's datasheet —
+CMOS inputs needing 0.7 × VCC = 3.5 V will **not** see it.
+
+⚠️ The 5 V (VIN) pin on a dev board is only for power. It is not a 5 V tolerant I/O.
+
+_Values from the Espressif ESP32 Series Datasheet, "Absolute Maximum Ratings" and
+"DC Characteristics"._`,
   };
 
   /* ── Public API ─────────────────────────────────────────────── */

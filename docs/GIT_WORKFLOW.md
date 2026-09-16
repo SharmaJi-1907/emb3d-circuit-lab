@@ -130,7 +130,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 10 | `fix/database-library` | C3, B8 (part), D10: show the Component Library in the Database screen | ✅ |
 | 11 | `fix/ai-chat-wiring` | B1–B3, F6, F7 (AI chat layout, found here) | ✅ |
 | 12 | `fix/ai-answer-matching` | D1 | ✅ |
-| 12b | `feat/ai-chip-answers` | D17: the suggestion chips get real answers (write 3 answers, or change the chips) | ⏳ |
+| 12b | `feat/ai-chip-answers` | D17: the suggestion chips get real answers (write 3 answers, or change the chips); D27 (Board Explorer resize measured 1 px short, found here and blocking the merge gate) | ✅ |
 | 13 | `fix/chat-html-escaping` | D6, D7 | ✅ |
 | 13b | `fix/chat-lists-tables` | D18: show "- " lists and tables in AI replies | ⏳ |
 | 14 | `fix/simulator-layout-controls` | F3, C2, B9 (D12 moved to 14b) | ✅ |

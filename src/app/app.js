@@ -980,7 +980,9 @@ window.CircuitApp = (function () {
 
       // Redraw at the new size when the window changes size (D22)
       window.addEventListener('resize', () => {
-        if (state.currentView === 'boards') sizeBoardCanvas();
+        // Wait one frame: during the resize event the box can still be its old
+        // size, which left the drawing 1 px short of the board (D27).
+        if (state.currentView === 'boards') requestAnimationFrame(sizeBoardCanvas);
       });
 
       // Bind canvas mouse & click interactions
@@ -1103,8 +1105,9 @@ window.CircuitApp = (function () {
   function sizeBoardCanvas() {
     if (!boardCanvas) return;
     const rect = boardCanvas.getBoundingClientRect();
-    boardCanvas.width = rect.width;
-    boardCanvas.height = rect.height || 480;
+    // Canvas sizes are whole pixels; round so a fractional box doesn't lose one.
+    boardCanvas.width = Math.round(rect.width);
+    boardCanvas.height = Math.round(rect.height) || 480;
     drawBoard();
   }
 
@@ -1613,14 +1616,45 @@ window.CircuitApp = (function () {
     { answer: 'Explain how an ESP32 works',                 keys: ['esp32', 'wifi', 'bluetooth'] },
     { answer: 'What resistor do I need for an LED at 5V?', keys: ['resistor', 'resistance', 'ohm', 'led'] },
     { answer: 'Generate Arduino blink code',                keys: ['blink', 'led', 'arduino', 'sketch'] },
+    { answer: 'How do I connect the RESET pin?',            keys: ['reset', 'rst', 'rstdisbl', 'autoreset'] },
+    // `specific: true` topics are about one question, not one part, so they are
+    // checked before the part card — otherwise "NE555" and "ESP32" in the question
+    // would always return the part's spec card instead (D17). They need 2 keyword
+    // hits, so a passing mention ("an LED at 5V") does not trigger them.
+    { answer: 'What is the timing equation for NE555 Astable Mode?', specific: true,
+      keys: ['astable', 'monostable', 'ne555', '555', 'timing', 'equation', 'formula'] },
+    { answer: 'Can ESP32 pins tolerate 5V signals?', specific: true,
+      keys: ['tolerate', 'tolerant', '5v', 'levelshifter', 'shifter', 'divider'] },
   ];
+
+  // How many of a topic's keywords appear in the question's words.
+  function topicHits(topic, words) {
+    return topic.keys.filter(k => words.some(w => w === k || (k.length >= 5 && w.startsWith(k)))).length;
+  }
+
+  // The best-scoring topic from `list`, or null when nothing matches.
+  function bestTopic(list, words, minHits = 1) {
+    let best = null;
+    let bestHits = minHits - 1;
+    for (const topic of list) {
+      const hits = topicHits(topic, words);
+      if (hits > bestHits) { best = topic; bestHits = hits; }
+    }
+    return best;
+  }
 
   function getAIResponse(query) {
     const q = query.toLowerCase();
     const words = (q.match(/[a-z0-9]+/g) || []).map(w => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w));
     const compact = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    // A named part comes first: "MPU-6050", "mpu6050" and "mpu 6050" all match
+    // A question clearly about one topic comes first, even when it names a part:
+    // "the timing equation for NE555 Astable Mode" wants the equation, not the
+    // NE555 spec card (D17).
+    const specific = bestTopic(AI_TOPICS.filter(t => t.specific), words, 2);
+    if (specific) return CircuitLabData.aiResponses[specific.answer];
+
+    // Then a named part: "MPU-6050", "mpu6050" and "mpu 6050" all match
     const comp = CircuitLabData.components.find(c =>
       compact(q).includes(compact(c.name)) || compact(q).includes(compact(c.id))
     );
@@ -1642,12 +1676,7 @@ Would you like to see the pinout, datasheet, or a wiring example?`;
     }
 
     // Then the stored answer whose keywords appear most often
-    let best = null;
-    let bestHits = 0;
-    for (const topic of AI_TOPICS) {
-      const hits = topic.keys.filter(k => words.some(w => w === k || (k.length >= 5 && w.startsWith(k)))).length;
-      if (hits > bestHits) { best = topic; bestHits = hits; }
-    }
+    const best = bestTopic(AI_TOPICS, words);
     if (best) return CircuitLabData.aiResponses[best.answer];
 
     return `I can help with that! Here are some related topics:
