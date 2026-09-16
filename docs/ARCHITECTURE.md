@@ -50,6 +50,7 @@ emmb3d/
 │   │   ├── boards.spec.js     Board Explorer layout, board size, styles, behaviour and board data
 │   │   ├── datasheet.spec.js  Datasheet sidebar and section-bar styles, list clicks, layout fit (F5)
 │   │   ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
+│   │   ├── theme.spec.js      Light/dark theme: both toggles, persistence, readability (C5)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
