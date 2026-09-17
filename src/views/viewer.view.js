@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — 3D Viewer screen: sidebar, pin table, pin details, tooltip
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { PIN_TYPE_CONFIG } from '../app/pin-types.js';
@@ -8,6 +7,7 @@ import { navigateTo, registerScreen } from '../app/router.js';
 import { state } from '../app/state.js';
 import { hideSearchModal } from '../ui/search.js';
 import { showToast } from '../ui/toast.js';
+import { cssColor } from '../utils/css.js';
 
 function initViewerPanel() {
   const panel = document.getElementById('view-viewer');
@@ -19,16 +19,43 @@ function initViewerPanel() {
 
   renderViewerSidebar();
   renderPinTable();
-
-  // The window may have changed size while the Viewer was hidden.
-  if (window.ThreeViewer && ThreeViewer.isReady()) ThreeViewer.onResize();
+  startViewerEngine();
   showSelectedModel();
+}
+
+/* ── The 3D engine ────────────────────────────────────────────────
+   Three.js is about 530 kB, and only this screen uses it, so the engine
+   is downloaded the first time the Viewer opens (E18). It sets
+   window.ThreeViewer when it arrives.
+──────────────────────────────────────────────────────────────── */
+let engineLoading = null;
+
+function startViewerEngine() {
+  engineLoading ||= import('../engines/three-viewer/index.js').then(() => {
+    const canvas = document.getElementById('viewer-canvas');
+    ThreeViewer.init(canvas);
+    canvas.addEventListener('mousemove', ThreeViewer.onMouseMove);
+    canvas.addEventListener('click', ThreeViewer.onMouseClick);
+    document.addEventListener('pin-hover', onPinHover);
+    document.addEventListener('pin-select', onPinSelect);
+    showSelectedModel();
+  }, (err) => {
+    engineLoading = null; // try again on the next visit
+    const loading = document.getElementById('viewer-loading');
+    if (loading) loading.textContent = 'The 3D engine could not be loaded. Check the connection and open the Viewer again.';
+    throw err;
+  });
+  return engineLoading;
 }
 
 // Draw the selected component in the 3D viewer, once the engine is ready.
 export function showSelectedModel() {
   if (!state.selectedComponent || !window.ThreeViewer || !ThreeViewer.isReady()) return;
+  // Loading a new model hides the tooltip of the old one's pins.
+  document.getElementById('pin-tooltip')?.style.setProperty('display', 'none');
   ThreeViewer.loadComponent(state.selectedComponent.id);
+  if (state.selectedPin !== null) ThreeViewer.highlightPinByNumber(state.selectedPin);
+  syncViewerControls();
   document.getElementById('viewer-loading')?.classList.add('hidden');
 }
 
@@ -72,24 +99,24 @@ function renderViewerSidebar() {
       <div class="viewer-ctrl-group">
         <label>View Mode</label>
         <div class="btn-group">
-          <button class="btn-ctrl active" id="btn-solid" onclick="CircuitApp.setViewMode('solid')">Solid</button>
-          <button class="btn-ctrl" id="btn-wire" onclick="CircuitApp.setViewMode('wireframe')">Wire</button>
-          <button class="btn-ctrl" id="btn-explode" onclick="CircuitApp.setViewMode('explode')">Explode</button>
+          <button class="btn-ctrl" id="btn-solid" data-mode="solid" onclick="CircuitApp.setViewMode('solid')">Solid</button>
+          <button class="btn-ctrl" id="btn-wire" data-mode="wireframe" onclick="CircuitApp.setViewMode('wireframe')">Wire</button>
+          <button class="btn-ctrl" id="btn-explode" data-mode="explode" onclick="CircuitApp.setViewMode('explode')">Explode</button>
         </div>
       </div>
       <div class="viewer-ctrl-group">
         <label>Auto Rotate</label>
         <label class="toggle-switch">
-          <input type="checkbox" checked onchange="ThreeViewer.setAutoRotate(this.checked)">
+          <input type="checkbox" id="viewer-auto-rotate" onchange="window.ThreeViewer?.setAutoRotate(this.checked)">
           <span class="toggle-slider"></span>
         </label>
       </div>
       <div class="viewer-ctrl-group">
         <label>Camera</label>
         <div class="btn-group">
-          <button class="btn-ctrl" onclick="ThreeViewer.zoomIn()">+</button>
-          <button class="btn-ctrl" onclick="ThreeViewer.resetView()">⌂</button>
-          <button class="btn-ctrl" onclick="ThreeViewer.zoomOut()">−</button>
+          <button class="btn-ctrl" onclick="window.ThreeViewer?.zoomIn()">+</button>
+          <button class="btn-ctrl" onclick="window.ThreeViewer?.resetView()">⌂</button>
+          <button class="btn-ctrl" onclick="window.ThreeViewer?.zoomOut()">−</button>
         </div>
       </div>
     </div>
@@ -103,6 +130,20 @@ function renderViewerSidebar() {
       </select>
     </div>
   `;
+  syncViewerControls();
+}
+
+// Mark the view mode and Auto Rotate the engine is really in. The sidebar is
+// drawn again on every visit and part switch, and W / E change the mode
+// from the keyboard, so the buttons follow the engine, not the other way (D32).
+export function syncViewerControls() {
+  const engine = window.ThreeViewer?.isReady() ? ThreeViewer : null;
+  const mode = engine?.isExploded() ? 'explode' : engine?.isWireframe() ? 'wireframe' : 'solid';
+  document.querySelectorAll('#viewer-sidebar [data-mode]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  const rotate = document.getElementById('viewer-auto-rotate');
+  if (rotate) rotate.checked = engine ? engine.isAutoRotating() : true;
 }
 
 function renderPinTable() {
@@ -111,7 +152,7 @@ function renderPinTable() {
   const comp = state.selectedComponent;
 
   if (!comp.pinout || comp.pinout.length === 0) {
-    table.innerHTML = '<tr><td colspan="6" class="no-pinout">Pinout data not available for this component</td></tr>';
+    table.innerHTML = '<tr><td colspan="7" class="no-pinout">Pinout data not available for this component</td></tr>';
     return;
   }
 
@@ -120,7 +161,7 @@ function renderPinTable() {
     return `
       <tr class="pin-row ${state.selectedPin === pin.num ? 'selected' : ''}"
         onclick="CircuitApp.selectPin(${pin.num})"
-        onmouseenter="ThreeViewer.highlightPinByNumber && ThreeViewer.highlightPinByNumber(${pin.num})">
+        onmouseenter="window.ThreeViewer?.highlightPinByNumber(${pin.num})">
         <td class="pin-num">${pin.num}</td>
         <td class="pin-name">${pin.name}</td>
         <td class="pin-alt">${pin.altName}</td>
@@ -184,7 +225,7 @@ function drawSignalWaveform(type) {
   const w = canvas.width, h = canvas.height;
 
   ctx.clearRect(0, 0, w, h);
-  ctx.strokeStyle = PIN_TYPE_CONFIG[type]?.color || '#00d4ff';
+  ctx.strokeStyle = cssColor((PIN_TYPE_CONFIG[type] || PIN_TYPE_CONFIG.digital).color);
   ctx.lineWidth = 1.5;
   ctx.shadowColor = ctx.strokeStyle;
   ctx.shadowBlur = 3;
@@ -285,6 +326,12 @@ export function selectComponent(id) {
   const comp = CircuitLabData.components.find(c => c.id === id);
   if (!comp) return;
 
+  if (comp !== state.selectedComponent) {
+    // A pin number means nothing on another part: clear the old details (D33)
+    state.selectedPin = null;
+    const detail = document.getElementById('pin-detail-panel');
+    if (detail) detail.innerHTML = '';
+  }
   state.selectedComponent = comp;
 
   // Add to recent
@@ -303,14 +350,11 @@ export function selectPin(pinNum) {
   state.selectedPin = pinNum;
   renderPinTable();
   renderPinDetail(pinNum);
-  if (window.ThreeViewer) ThreeViewer.highlightPinByNumber(pinNum);
+  window.ThreeViewer?.highlightPinByNumber(pinNum);
 }
 
 export function setViewMode(mode) {
-  document.querySelectorAll('.btn-ctrl').forEach(b => b.classList.remove('active'));
-  document.getElementById(`btn-${mode}`)?.classList.add('active');
-
-  if (!window.ThreeViewer) return;
+  if (!window.ThreeViewer?.isReady()) return;
   switch (mode) {
     case 'solid':
       ThreeViewer.setWireframe(false);
@@ -325,6 +369,7 @@ export function setViewMode(mode) {
       ThreeViewer.setExplode(true);
       break;
   }
+  syncViewerControls();
 }
 
 registerScreen('viewer', initViewerPanel);

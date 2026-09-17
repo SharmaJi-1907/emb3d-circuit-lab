@@ -159,3 +159,16 @@ test('Space starts and stops the simulation, only on the simulator screen', asyn
   expect(await running()).toBe(false);
   expectNoErrors(errors);
 });
+
+test('W and E also update the view mode buttons (D32)', async ({ page, errors }) => {
+  await openViewer(page);
+  const marked = () => page.locator('#viewer-sidebar .btn-ctrl[id^="btn-"].active').evaluateAll((b) => b.map((x) => x.id));
+  await page.locator('body').press('w');
+  expect(await marked()).toEqual(['btn-wire']);
+  await page.locator('body').press('e');
+  expect(await marked(), 'explode takes over from wireframe').toEqual(['btn-explode']);
+  expect(await page.evaluate(() => window.ThreeViewer.isWireframe())).toBe(false);
+  await page.locator('body').press('e');
+  expect(await marked()).toEqual(['btn-solid']);
+  expectNoErrors(errors);
+});
