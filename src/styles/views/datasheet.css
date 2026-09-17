@@ -293,3 +293,30 @@
 @media (max-width: 900px) {
   .datasheet-layout { grid-template-rows: 200px minmax(0, 1fr); }
 }
+
+/* ── Electrical table and code examples (F9) ──────────────────────
+   These were inline styles in views/datasheet.view.js, with hard-coded
+   #333 / #222 / #07070a that stayed dark in the light theme. Same sizes
+   and spacing; the colours are design tokens now. The double class
+   keeps them ahead of the general .ds-table and .ds-code rules above.
+──────────────────────────────────────────────────────────────── */
+.ds-table.ds-electrical { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.ds-table.ds-electrical thead tr { border-bottom: 1px solid var(--border-hover); text-align: left; }
+.ds-table.ds-electrical tbody tr { border-bottom: 1px solid var(--border); }
+.ds-table.ds-electrical th,
+.ds-table.ds-electrical td { padding: 10px; }
+.ds-table.ds-electrical .ds-el-param { color: var(--text-bright); }
+.ds-table.ds-electrical .ds-el-num { font-family: var(--font-mono); }
+.ds-table.ds-electrical .ds-el-typ { color: var(--cyan); }
+.ds-table.ds-electrical .ds-el-unit { color: var(--text-muted); }
+
+.ds-example { margin-top: 20px; }
+.ds-example h4 { color: var(--purple); margin-bottom: 8px; }
+.ds-example .ds-code {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  padding: 15px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.ds-example .ds-code code { font-family: var(--font-mono); font-size: 13px; color: var(--cyan); }

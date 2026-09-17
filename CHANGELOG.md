@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Docs brought up to date for the end of the plan: README (status, Node 20.19+, structure, tech), CONTRIBUTING (modules, tokens, 0 lint warnings, the repeat-run rule), LEARNING_GUIDE (tools), FIX_PLAN (summary; E9 closed), GIT_WORKFLOW (#30 done, #31 E18 open).
 - The Simulator's scope dials and multimeter are styled in `views/simulator.css` with design tokens instead of inline hard-coded colours (F10). They look the same, and stay dark in the light theme on purpose.
 - Lint warnings 7 → **0**, and the cap is 0 (E11): unused variables and the never-used Arduino Uno 3D model are removed.
 - `src/app/app.js` is split into ES modules (#27c): `app/` (startup and `window.CircuitApp`, router, state, pin types), one `views/<screen>.view.js` per screen, `ui/` (toast, search, shortcuts, notifications, theme, top bar), `services/` (AI matching, your projects) and `utils/` (HTML escaping, markdown, canvas). The router's switch became a registry each screen fills in. The 3D model builders moved to `engines/three-viewer/models/` and get a `kit` from the engine. Checked unchanged with snapshots: the public API and 49 screens and actions (0 differences, whitespace aside) and all 15 3D models (identical).
@@ -25,6 +26,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- A test that the Datasheet's generated HTML has no hard-coded colours (177 tests in total).
 - A test that the Simulator's dials and multimeter have no inline styles and stay dark in the light theme (176 tests in total).
 - Tests: the IC filter (D30) and a single font request (E19) (175 tests in total).
 - `tests/smoke/assets.spec.js`: a test that the E16 leftovers stay gone (173 tests in total).
@@ -89,6 +91,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
+- The Datasheet's electrical table and code examples use design tokens instead of hard-coded `#333`, `#222` and `#07070a`, so their borders follow the light theme (F9).
 - NE555 and LM358 are listed as ICs, with their own IC filter, instead of passive parts (D30).
 - The background dots move at the same speed however fast the page draws (D29 follow-up).
 - The web fonts are requested once instead of twice (E19); the one `<link>` now includes the 700 weights.

@@ -183,3 +183,19 @@ test('the Package section shows the package sizes (D26)', async ({ page, errors 
   await expect(page.locator('#ds-content .ds-table')).toContainText(packs[0].name);
   expectNoErrors(errors);
 });
+
+test('the electrical table and code examples have no hard-coded colours (F9)', async ({ page, errors }) => {
+  await openApp(page);
+  await goToView(page, 'datasheet');
+  for (const section of ['electrical', 'examples']) {
+    await page.locator(`.toc-btn[data-section="${section}"]`).click();
+    const inline = await page.locator('#ds-content [style]').evaluateAll((els) => els.map((e) => e.getAttribute('style')));
+    expect(inline.filter((s) => /#[0-9a-f]{3,6}\b|rgba?\(/i.test(s)), `${section}: colours come from datasheet.css`).toEqual([]);
+  }
+  // The code block border follows the theme now (it was #222 in both).
+  const darkBorder = (await styleOf(page, '#ds-content .ds-code', ['borderTopColor'])).borderTopColor;
+  await page.locator('#theme-toggle').click();
+  const lightBorder = (await styleOf(page, '#ds-content .ds-code', ['borderTopColor'])).borderTopColor;
+  expect(lightBorder, 'the border uses the theme tokens').not.toBe(darkBorder);
+  expectNoErrors(errors);
+});

@@ -178,24 +178,24 @@ function renderDatasheetContent() {
         <div class="ds-section">
           <h3 class="ds-section-title">${sec.title}</h3>
           <div class="ds-table-wrapper">
-            <table class="ds-table" style="width:100%; border-collapse:collapse; margin-top:15px;">
+            <table class="ds-table ds-electrical">
               <thead>
-                <tr style="border-bottom:1px solid #333; text-align:left;">
-                  <th style="padding:10px;">Parameter</th>
-                  <th style="padding:10px;">Min</th>
-                  <th style="padding:10px;">Typ</th>
-                  <th style="padding:10px;">Max</th>
-                  <th style="padding:10px;">Unit</th>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Min</th>
+                  <th>Typ</th>
+                  <th>Max</th>
+                  <th>Unit</th>
                 </tr>
               </thead>
               <tbody>
                 ${sec.specs.map(s => `
-                  <tr style="border-bottom:1px solid #222;">
-                    <td style="padding:10px; color:var(--text-bright);">${s.param}</td>
-                    <td style="padding:10px; font-family:var(--font-mono);">${s.min}</td>
-                    <td style="padding:10px; font-family:var(--font-mono); color:var(--cyan);">${s.typ}</td>
-                    <td style="padding:10px; font-family:var(--font-mono);">${s.max}</td>
-                    <td style="padding:10px; color:var(--text-muted);">${s.unit}</td>
+                  <tr>
+                    <td class="ds-el-param">${s.param}</td>
+                    <td class="ds-el-num">${s.min}</td>
+                    <td class="ds-el-num ds-el-typ">${s.typ}</td>
+                    <td class="ds-el-num">${s.max}</td>
+                    <td class="ds-el-unit">${s.unit}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -235,9 +235,9 @@ function renderDatasheetContent() {
         <div class="ds-section">
           <h3 class="ds-section-title">${sec.title}</h3>
           ${sec.examples.map(ex => `
-            <div class="ds-example" style="margin-top:20px;">
-              <h4 style="color:var(--purple); margin-bottom:8px;">${ex.title}</h4>
-              <pre class="ds-code" style="background:#07070a; border:1px solid #222; padding:15px; border-radius:6px; overflow-x:auto;"><code style="font-family:var(--font-mono); font-size:13px; color:var(--cyan);">${escapeHtml(ex.code)}</code></pre>
+            <div class="ds-example">
+              <h4>${ex.title}</h4>
+              <pre class="ds-code"><code>${escapeHtml(ex.code)}</code></pre>
             </div>
           `).join('')}
         </div>
