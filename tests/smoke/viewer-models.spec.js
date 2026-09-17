@@ -57,6 +57,9 @@ test('the chip has its name printed on it (D11)', async ({ page, errors }) => {
 });
 
 test('visiting the Viewer again does not leak graphics memory (D16)', async ({ page, errors }) => {
+  // It rebuilds the 3D model 5 times in software WebGL: ~17 s alone, and it
+  // passed the 30 s limit once in 676 runs under full --repeat-each=4 load (E17).
+  test.slow();
   await openViewer(page);
   const first = await memory(page);
   expect(first.geometries, 'a model was built').toBeGreaterThan(10);

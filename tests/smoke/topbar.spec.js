@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    Top bar: the notifications drawer and "Clear All" (C6), and the
-   search pop-up's ↑↓ / ↵ keys (D14).
+   search pop-up's ↑↓ / ↵ keys (D14), and the New Project and Share
+   buttons (C9).
    The top bar keeps the index.html markup (ADR 0002).
 ═══════════════════════════════════════════════════════════════════ */
 
@@ -131,5 +132,29 @@ test('typing again starts the selection at the top (D14)', async ({ page, errors
   await page.locator('#modal-search-input').fill('atmega');
   await expect(results(page).first()).toBeVisible();
   await expect(results(page).nth(0), 'a new search selects the first result').toHaveClass(/selected/);
+  expectNoErrors(errors);
+});
+
+/* ── New Project and Share (C9) ───────────────────────────────── */
+test('the top bar\'s New Project button opens the new-project form (C9)', async ({ page, errors }) => {
+  await openApp(page);
+  await goToView(page, 'boards');
+
+  await page.locator('#new-project-btn').click();
+  await expect(page.locator('#view-projects'), 'it goes to the Projects screen').toBeVisible();
+  await expect(page.locator('#new-project-name'), 'with the name box ready to type in').toBeFocused();
+  expectNoErrors(errors);
+});
+
+test('Share copies a link to the current screen (C9)', async ({ page, errors }) => {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await openApp(page);
+  await goToView(page, 'simulator');
+
+  await page.locator('#export-btn').click();
+  await expect(page.locator('.toast', { hasText: 'Link copied' }), 'it says what it did').toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied, 'the link opens the same screen').toBe(await page.evaluate(() => location.href));
+  expect(copied).toMatch(/#simulator$/);
   expectNoErrors(errors);
 });

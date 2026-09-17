@@ -52,7 +52,7 @@ emmb3d/
 │   │   ├── datasheet.spec.js  Datasheet sidebar and section-bar styles, list clicks, layout fit (F5)
 │   │   ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
 │   │   ├── theme.spec.js      Light/dark theme: both toggles, persistence, readability (C5)
-│   │   ├── topbar.spec.js     Notifications drawer and the search pop-up's arrow keys (C6, D14)
+│   │   ├── topbar.spec.js     Notifications drawer, the search pop-up's arrow keys, New Project and Share (C6, D14, C9)
 │   │   ├── routing.spec.js    Hash routing: address, links, refresh, Back/Forward (D9)
 │   │   ├── background.spec.js  Animated background: one animation, theme colours, dots after a resize (D4, D28, D29)
 │   │   ├── assets.spec.js     What the page loads: manifest, favicon, no GSAP/FontAwesome, dead CSS (E2–E14)
