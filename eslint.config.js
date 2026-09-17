@@ -29,9 +29,9 @@ export default [
 
   /* ── Cross-file globals ───────────────────────────────────────── */
   // Each module assigns itself to window (see docs/ARCHITECTURE.md → Load order).
-  // Only app.js reads them by bare name.
+  // The app code split out of app.js (#27c) still reads them by bare name (ADR 0003).
   {
-    files: ['src/app/app.js'],
+    files: ['src/app/**/*.js', 'src/ui/**/*.js', 'src/views/**/*.js', 'src/services/**/*.js', 'src/utils/**/*.js'],
     languageOptions: {
       globals: {
         CircuitApp: 'readonly',
