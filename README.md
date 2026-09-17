@@ -2,7 +2,7 @@
 
 An electronics learning web app: a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant — all in the browser.
 
-> **Status:** work in progress. Several screens are currently broken — see [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
+> **Status:** work in progress. All 9 screens work; the remaining known bugs and clean-up are listed in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ## Quick start
 
@@ -56,4 +56,4 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Tech
 
-Vanilla JavaScript · [Vite](https://vitejs.dev) · [Three.js](https://threejs.org) · GSAP · Canvas 2D
+Vanilla JavaScript · [Vite](https://vitejs.dev) · [Three.js](https://threejs.org) · Canvas 2D

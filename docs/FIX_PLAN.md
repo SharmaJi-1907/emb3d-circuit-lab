@@ -229,10 +229,10 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 4. ✅ **Hook up the simulator toolbar** (once, see Phase 4.3; done in #14):
    `sim-run → CircuitSimulator.startSim`, `sim-pause/sim-stop → stopSim`, `sim-clear → resetSim`, `sim-export → exportCircuit`, `sim-speed → setSimSpeed(value)`, `ws-add-resistor/led/capacitor/ic/wire → addComponentToCanvas(type)`.
 5. **Database screen:** write `renderDatabase()` that fills `#db-components-grid` using the existing `renderComponentCard()`. Connect `#compare-mode-btn` / `#close-matrix-btn` to the existing `toggleCompare` / `clearCompare`, and fill `#comparison-table-body`.
-6. **Projects:** point `renderProjects` at `#projects-grid` and `#create-project-btn → newProject()`.
-7. **Settings:** `theme-btn-toggle` and `theme-toggle` toggle a `light` class on `<body>`. Save the choice in `localStorage`.
-8. **Top bar:** the notification bell opens and closes `#notif-drawer`, `#clear-notifs` empties it, and `?` opens `#shortcuts-modal`.
-9. **Delete the dead code paths** for `dashboard` and `components` in `navigateTo`, or add those screens to the HTML (decide one).
+6. ✅ **Projects (C4, #18):** point `renderProjects` at `#projects-grid` and `#create-project-btn → newProject()`.
+7. ✅ **Settings (C5, #19; a `data-theme` attribute on `<html>` instead of a class):** `theme-btn-toggle` and `theme-toggle` toggle a `light` class on `<body>`. Save the choice in `localStorage`.
+8. ✅ **Top bar (C6, #20):** the notification bell opens and closes `#notif-drawer`, `#clear-notifs` empties it, and `?` opens `#shortcuts-modal`.
+9. ✅ **Delete the dead code paths** (#8 added the Dashboard, #10 removed `components`) for `dashboard` and `components` in `navigateTo`, or add those screens to the HTML (decide one).
 
 ✅ **Check:** click every button on every screen. Each one should visibly do something, and there should be no console errors.
 
@@ -248,20 +248,20 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
    ```
    Check specific part names **before** generic topics.
 2. ✅ **Safe chat HTML (D6, D7, #13):** run `escapeHtml(text)` first, then `formatMarkdown`. Move the ```` ``` ```` block rule **above** the single-backtick rule.
-3. **Initialize once (D3):** add an `initialized` flag in `CircuitSimulator.init` (and the toolbar wiring) so it only runs the first time.
+3. ✅ **Initialize once (D3, #15):** add an `initialized` flag in `CircuitSimulator.init` (and the toolbar wiring) so it only runs the first time.
 4. ✅ **One background (D4, #21):** keep either `circuit-bg.js` or `initBackground()` in `app.js`, not both.
-5. **Pause hidden loops (D5):** in `navigateTo`, pause the 3D/simulator loops when leaving their screen, and resume when you come back.
-6. **3D model cases (D8):** make the `switch` in `loadComponent` match the real IDs in `data.js`.
+5. ✅ **Pause hidden loops (D5, #9 and #15):** in `navigateTo`, pause the 3D/simulator loops when leaving their screen, and resume when you come back.
+6. ✅ **3D model cases (D8, #23):** make the `switch` in `loadComponent` match the real IDs in `data.js`.
 7. ✅ **Hash routing (D9, #22):** add a `hashchange` listener that calls `navigateTo(location.hash.slice(1))`, and set the hash inside `navigateTo`. Page refresh and the back button then work too.
 
 ✅ **Check:** ask the AI "how does an esp32 work" and get the ESP32 answer. Visit the simulator 5 times, then click once and get exactly 1 part.
 
 ### Phase 5 — Cleanup & dependencies (1 hour) → fixes E2–E7, E9
 
-1. Remove the `<link rel="stylesheet" href="/src/styles/main.css">` from `index.html` (Vite already loads it through `main.js`).
-2. Either add a real `manifest.json` + `favicon` or remove the `<link rel="manifest">` line.
-3. Delete the empty `assets/` folders, or put the real fonts and icons there.
-4. Replace the fake notifications with real ones pushed from `showToast()`.
+1. ✅ (E3, #25) Remove the `<link rel="stylesheet" href="/src/styles/main.css">` from `index.html` (Vite already loads it through `main.js`).
+2. ✅ (E2, #25) Either add a real `manifest.json` + `favicon` or remove the `<link rel="manifest">` line.
+3. ✅ (E4, #25) Delete the empty `assets/` folders, or put the real fonts and icons there.
+4. ✅ (E5, #25) Replace the fake notifications with real ones pushed from `showToast()`.
 5. Run `npm audit fix` (safe, fixes `nanoid` + `postcss`). Plan a separate upgrade to Vite 6+ later, since it's a breaking change.
 6. Optional: install Three.js with `npm i three` and `import * as THREE from 'three'` instead of the r128 CDN script, so the app works offline.
 7. Run `npm run build` to regenerate `dist/`.
@@ -270,10 +270,10 @@ Keep the **new** code (`app.js` + `data.js`). It is bigger and has the 3D models
 
 ### Phase 6 — Make it professional (half a day) → fixes E8
 
-1. **README.md**: what the app is, how to run it, the folder map, screenshots.
+1. ✅ **README.md**: what the app is, how to run it, the folder map, screenshots.
 2. ✅ **Linter**: ESLint 10 with the recommended rules (`npm run lint`). New mistakes are errors; the 27 known leftovers are capped warnings (E11). _Correction:_ ESLint **can't** catch A1-type bugs while files share names through `window`, because it can't tell a loaded file from a forgotten one. The smoke tests catch them at runtime, and moving to real `import`/`export` (the `refactor/split-*` branches) will make them build errors. Prettier is postponed until after the refactor, so it doesn't cause merge conflicts in every fix branch.
 3. ✅ **Smoke test**: Playwright tests that open every screen, search, send an AI message and press shortcuts, and **fail if any error appears**. Run with `npm run test:smoke`. Known bugs are tracked as expected failures.
-4. **Version control:** one branch per issue, merged through Pull Requests. See [GIT_WORKFLOW.md](GIT_WORKFLOW.md) for the full branch plan.
+4. ✅ **Version control:** one branch per issue, merged through Pull Requests. See [GIT_WORKFLOW.md](GIT_WORKFLOW.md) for the full branch plan.
 
 ### Phase 7 — Optional upgrades
 

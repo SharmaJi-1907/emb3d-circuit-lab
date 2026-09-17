@@ -29,9 +29,8 @@ A single-page website for learning electronics. It has one HTML page with 9 "scr
 |---|---|---|
 | **Vite** | A dev server + bundler. `npm run dev` serves the files with live reload. `npm run build` packs everything into `dist/`. | [package.json](../package.json), [vite.config.js](../vite.config.js) |
 | **Three.js** (r128) | A library for 3D graphics in the browser (WebGL) | Loaded from a CDN in [index.html](../index.html) |
-| **GSAP** | An animation library | CDN in [index.html](../index.html) |
 | **Canvas 2D** | The browser's built-in drawing surface, used for the background, simulator, oscilloscope and board drawing | Plain JS |
-| **Font Awesome, Google Fonts** | Icons and fonts | CDN |
+| **Google Fonts** | Fonts | CDN |
 
 There is **no framework** (no React or Vue). Everything is plain JavaScript that changes the page directly.
 
@@ -40,7 +39,7 @@ There is **no framework** (no React or Vue). Everything is plain JavaScript that
 ## 3. How the files connect
 
 ```
-index.html  ── the page: all 8 screens, buttons, panels (each with an id="...")
+index.html  ── the page: all 9 screens, buttons, panels (each with an id="...")
    │
    └─ <script type="module" src="src/main.js">
                      │
@@ -83,13 +82,14 @@ If the names don't match, you get `null` and nothing happens. **Most of the "dea
 ```js
 button.addEventListener('click', () => { /* do something */ });
 ```
-A button with no listener does nothing when clicked. Also, **adding the same listener twice makes it run twice**. That's bug D3 in the simulator.
+A button with no listener does nothing when clicked. Also, **adding a new function as a listener on every visit makes it run once per visit**. That's why every screen wires its buttons once, on the first visit (bugs D3 and D22).
 
 ### 4.4 Screen switching ("routing")
-`navigateTo('simulator')` in [app.js](../src/app/app.js#L200):
-1. hides every `<section class="view">`
-2. shows `<section id="view-simulator">`
-3. runs that screen's setup function (`initSimulatorPanel`)
+`navigateTo('simulator')` in [app.js](../src/app/app.js#L124):
+1. puts `#simulator` in the address, so refresh, Back/Forward and links work (a `hashchange` listener does the reverse)
+2. hides every `<section class="view">`
+3. shows `<section id="view-simulator">`
+4. runs that screen's setup function (`initSimulatorPanel`)
 
 ### 4.5 The animation loop
 ```js
@@ -104,19 +104,19 @@ It's used by the background, the 3D viewer and the simulator. Every loop you sta
 Every Three.js app has the same 4 parts. See [three-viewer/index.js](../src/engines/three-viewer/index.js):
 - **Scene**: the 3D world that holds objects
 - **Camera**: where you look from
-- **Renderer**: draws the scene onto the `<canvas id="three-canvas">`
+- **Renderer**: draws the scene onto the `<canvas id="viewer-canvas">`
 - **Meshes**: shape (geometry) + surface look (material)
 
 The chips aren't loaded from model files. They're **built from boxes and cylinders in code** (`buildDIP`, `buildQFP`, `buildESP32`…). Clicking a pin uses a **Raycaster**, which shoots an invisible line from the mouse into the scene to see what it hits.
 
-### 4.7 The simulator (fake physics)
-[simulator/index.js](../src/engines/simulator/index.js) draws parts on a 2D canvas. When running, `propagateVoltage()` walks along the wires from a battery and "pushes" a voltage into each connected part. If an LED gets enough voltage, it lights up. It's a teaching simplification, not a real circuit solver like SPICE.
+### 4.7 The simulator (a small DC solver)
+[simulator/index.js](../src/engines/simulator/index.js) draws parts on a 2D canvas. `runSimulation()` joins wired pins into nets and works out every net's voltage with nodal analysis, so currents follow Ohm's law and an LED lights only in a closed loop, the right way round. It's a teaching simplification (DC only, simple part models), not a full circuit simulator like SPICE.
 
 ### 4.8 The "AI"
-`getAIResponse()` in [app.js](../src/app/app.js#L1425) looks for words in your question and returns a pre-written answer from `data.js`. It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
+`getAIResponse()` in [app.js](../src/app/app.js#L1601) looks for words in your question and returns a pre-written answer from `data.js`. It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
 
 ### 4.9 localStorage
-`localStorage.getItem('circuitlab-projects')` reads saved data from the browser. It stays after a page refresh, but only on that one browser. This project reads from it but never writes to it.
+`localStorage` keeps data in the browser. It stays after a page refresh, but only on that one browser. This project saves the theme under `circuitlab.theme` and your own projects under `circuitlab.my-projects`.
 
 ---
 
