@@ -37,7 +37,6 @@ emmb3d/
 │   ├── utils/                 html.js (escapeHtml), markdown.js (AI replies), canvas.js (roundRect)
 │   ├── styles/
 │   │   ├── base/
-│   │   │   ├── fonts.css      Web fonts
 │   │   │   ├── tokens.css     Design tokens (dark default) and the light theme (C5)
 │   │   │   ├── reset.css      Reset and base element styles
 │   │   │   └── animations.css Shared keyframes
@@ -90,7 +89,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 `index.html` → `src/main.js` imports, in order:
 
-1. **Styles, in cascade order** (a later file wins over an earlier one when selectors tie, so the order in `src/main.js` matters): `base/` fonts and tokens, reset, `layout/`, the shared `components/`, `views/` dashboard, library and viewer, `base/animations.css`, `components/search-modal.css`, `components/panels.css` and `notifications.css`, then `views/` simulator, boards, datasheet, ai and projects. Split out of `main.css` in #27b with every computed style checked identical.
+1. **Styles, in cascade order** (a later file wins over an earlier one when selectors tie, so the order in `src/main.js` matters): `base/` tokens, reset, `layout/`, the shared `components/`, `views/` dashboard, library and viewer, `base/animations.css`, `components/search-modal.css`, `components/panels.css` and `notifications.css`, then `views/` simulator, boards, datasheet, ai and projects. Split out of `main.css` in #27b with every computed style checked identical.
 2. `engines/background/circuit-bg.js`
 3. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the 3D viewer and the app).
 4. `engines/three-viewer/index.js` → `window.ThreeViewer`

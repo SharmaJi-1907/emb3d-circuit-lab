@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Lint warnings 7 → **0**, and the cap is 0 (E11): unused variables and the never-used Arduino Uno 3D model are removed.
 - `src/app/app.js` is split into ES modules (#27c): `app/` (startup and `window.CircuitApp`, router, state, pin types), one `views/<screen>.view.js` per screen, `ui/` (toast, search, shortcuts, notifications, theme, top bar), `services/` (AI matching, your projects) and `utils/` (HTML escaping, markdown, canvas). The router's switch became a registry each screen fills in. The 3D model builders moved to `engines/three-viewer/models/` and get a `kit` from the engine. Checked unchanged with snapshots: the public API and 49 screens and actions (0 differences, whitespace aside) and all 15 3D models (identical).
 - `src/styles/main.css` is split into `base/`, `layout/`, `components/` and `views/` (#27b), imported in cascade order from `src/main.js`. Each screen's narrow-window rules now sit in that screen's file. Checked with a computed-style snapshot of every element on all 9 screens, in both themes and at 1280, 1100 and 800 px wide: 0 differences. The snapshot first caught one: the Datasheet's narrow-window rule lost to its base rule when they were in separate files, so it now sits right after it.
 - `src/data/data.js` is split into ES modules (#27a): `components.js`, `boards.js`, `datasheets.js`, `projects.js` and `ai-responses.js`, joined by `data/index.js` into the same `window.CircuitLabData`. Checked byte-identical (same SHA-256 of the whole data). Decision recorded in [ADR 0003](docs/decisions/0003-es-modules.md).
@@ -23,6 +24,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- Tests: the IC filter (D30) and a single font request (E19) (175 tests in total).
 - `tests/smoke/assets.spec.js`: a test that the E16 leftovers stay gone (173 tests in total).
 - `tests/smoke/assets.spec.js`: 2 tests — nothing is fetched from a Three.js CDN, and the 3D Viewer shows a model with the internet blocked (172 tests in total).
 - Three passive parts with their own 3D models: the YAGEO **CFR-25** carbon film resistor, the Panasonic **ECA-1EM101** 100 µF electrolytic capacitor and the Kingbright **WP7113ID** red LED. Every value comes from the manufacturer's datasheet or product page (listed in `data.js`). Their leads are clickable pins, and the LED model is red like the real part. Part numbers are used as names, so the AI keeps giving the LED-resistor answer to "what resistor do I need for an LED". New test in `tests/smoke/viewer-models.spec.js` (170 tests in total).
@@ -85,6 +87,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
+- NE555 and LM358 are listed as ICs, with their own IC filter, instead of passive parts (D30).
+- The background dots move at the same speed however fast the page draws (D29 follow-up).
+- The web fonts are requested once instead of twice (E19); the one `<link>` now includes the 700 weights.
 - A slow 3D smoke test no longer runs out of time under load (E17). The D16 memory test rebuilds the model 5 times in software WebGL (~17 s) and timed out once in 676 runs; it now has 3× the time limit, and the other tests keep 30 s.
 - The top bar's New Project and Share buttons work (C9). Both did nothing. New Project opens the Projects screen with the name box ready to type in, and Share copies a link to the current screen and says so (if the browser blocks the clipboard, the link is shown instead).
 - The background follows the theme (D28). It looked for a `dark-theme` class nothing sets, so dark mode drew light-grey grid lines; it now reads the theme the app really uses, and switching the theme changes the background at once. After a window resize the moving dots follow the new grid (D29); before, 92% of them kept running along the old, no longer drawn grid.

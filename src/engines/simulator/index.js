@@ -10,7 +10,6 @@ window.CircuitSimulator = (function () {
   let canvas, ctx, oscCanvas, oscCtx;
   let components = [];
   let wires = [];
-  let selectedComponent = null;
   let draggingComponent = null;
   let drawingWire = false;
   let wireStart = null;
@@ -244,7 +243,7 @@ window.CircuitSimulator = (function () {
       unit: 'V',
       color: '#888888',
       draw(ctx, comp) {
-        const { x, y, w, h } = comp.bounds;
+        const { x, y, w } = comp.bounds;
         const cx = x + w / 2;
         ctx.strokeStyle = comp.selected ? '#00d4ff' : '#888888';
         ctx.lineWidth = comp.selected ? 2 : 1.5;
@@ -686,11 +685,8 @@ window.CircuitSimulator = (function () {
 
     if (hit) {
       hit.selected = true;
-      selectedComponent = hit;
       draggingComponent = hit;
       dragOffset = { x: mx - hit.x, y: my - hit.y };
-    } else {
-      selectedComponent = null;
     }
   }
 
@@ -1008,7 +1004,6 @@ window.CircuitSimulator = (function () {
 
       // Route wire with right angles
       const dx = wire.x2 - wire.x1;
-      const dy = wire.y2 - wire.y1;
       const midX = wire.x1 + dx / 2;
 
       ctx.beginPath();
@@ -1204,7 +1199,6 @@ window.CircuitSimulator = (function () {
     simRunning = false;
     simTime = 0;
     scopeSamples = [];
-    selectedComponent = null;
     runSimulation();
     showToast('Circuit cleared', 'info');
   }

@@ -1,6 +1,5 @@
 // EMB3D Entry Point
 // Styles, in cascade order: later files may override earlier ones (#27b)
-import './styles/base/fonts.css';
 import './styles/base/tokens.css';
 import './styles/base/reset.css';
 import './styles/layout/shell.css';

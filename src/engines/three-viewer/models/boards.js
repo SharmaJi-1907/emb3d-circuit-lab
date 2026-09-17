@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   CIRCUITLAB — 3D models: Modules and boards: ESP32, HC-SR04 and the (unused) Arduino Uno, with pin headers
+   CIRCUITLAB — 3D models: Modules: ESP32 and HC-SR04, with pin headers
    Moved out of three-viewer/index.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
@@ -109,78 +109,6 @@ export function buildHCSR04(kit) {
   return group;
 }
 
-function buildArduinoUno(kit) {
-  const group = new THREE.Group();
-
-  // PCB
-  const pcbGeo = new THREE.BoxGeometry(2.7, 0.08, 2.1);
-  const pcb = new THREE.Mesh(pcbGeo, kit.MAT.pcb.clone());
-  pcb.castShadow = true;
-  pcb.receiveShadow = true;
-  group.add(pcb);
-
-  // USB connector
-  const usbGeo = new THREE.BoxGeometry(0.5, 0.2, 0.35);
-  const usbMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.2, metalness: 0.8 });
-  const usb = new THREE.Mesh(usbGeo, usbMat);
-  usb.position.set(-1.35, 0.14, -0.5);
-  group.add(usb);
-
-  // Power jack
-  const jackGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.35, 16);
-  const jackMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.5 });
-  const jack = new THREE.Mesh(jackGeo, jackMat);
-  jack.rotation.z = Math.PI / 2;
-  jack.position.set(-1.35, 0.1, 0.5);
-  group.add(jack);
-
-  // ATmega chip
-  const chipGeo = new THREE.BoxGeometry(0.5, 0.12, 0.7);
-  const chip = new THREE.Mesh(chipGeo, kit.MAT.chip.clone());
-  chip.position.set(0.2, 0.1, 0.1);
-  group.add(chip);
-
-  // Crystal
-  const xtalGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.2, 8);
-  const xtalMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, roughness: 0.1, metalness: 0.9 });
-  const xtal = new THREE.Mesh(xtalGeo, xtalMat);
-  xtal.rotation.z = Math.PI / 2;
-  xtal.position.set(0.6, 0.1, 0.1);
-  group.add(xtal);
-
-  // Voltage regulator
-  const regGeo = new THREE.BoxGeometry(0.15, 0.2, 0.25);
-  const regMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.3, metalness: 0.4 });
-  const reg = new THREE.Mesh(regGeo, regMat);
-  reg.position.set(-0.8, 0.14, 0.7);
-  group.add(reg);
-
-  // LED (power)
-  const ledGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.05, 8);
-  const ledMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.0 });
-  const led = new THREE.Mesh(ledGeo, ledMat);
-  led.position.set(-0.5, 0.1, 0.7);
-  group.add(led);
-
-  // LED glow
-  const ledLight = new THREE.PointLight(0x00ff00, 0.3 * kit.LEGACY_LIGHT, 0.5, 1);
-  ledLight.position.copy(led.position);
-  group.add(ledLight);
-
-  // Pin headers (digital)
-  addPinHeader(kit, group, 14, 0.1, 0.12, 0.9, 'vertical');
-  // Pin headers (analog)
-  addPinHeader(kit, group, 6, 0.1, 0.12, -0.7, 'vertical');
-  // Power header
-  addPinHeader(kit, group, 6, 0.1, 0.12, -0.3, 'vertical');
-
-  // Silkscreen traces (decorative lines)
-  addTraces(group);
-
-  kit.pins.length = 0;
-  return group;
-}
-
 function addPinHeader(kit, group, count, pitch, height, zOffset, orientation, firstPin = 1) {
   const headerGeo = new THREE.BoxGeometry(count * pitch, height, 0.1);
   const headerMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
@@ -218,18 +146,4 @@ function addPinHeader(kit, group, count, pitch, height, zOffset, orientation, fi
     }
     group.add(pin);
   }
-}
-
-function addTraces(group) {
-  // Decorative PCB traces
-  const traceMat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.3 });
-  const positions = [
-    [-0.5, 0.05, 0.3], [0.3, 0.05, -0.5], [-0.8, 0.05, -0.2], [0.6, 0.05, 0.4]
-  ];
-  positions.forEach(pos => {
-    const traceGeo = new THREE.BoxGeometry(0.4, 0.01, 0.02);
-    const trace = new THREE.Mesh(traceGeo, traceMat);
-    trace.position.set(...pos);
-    group.add(trace);
-  });
 }

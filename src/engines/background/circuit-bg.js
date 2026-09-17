@@ -97,7 +97,10 @@ class CircuitBackground {
         });
     }
     
-    animate() {
+    animate(now = performance.now()) {
+        // Time-based (D29): `speed` is progress per 60 Hz frame, scaled by the real time since the last frame
+        const frames = this.lastFrame ? Math.min((now - this.lastFrame) / (1000 / 60), 4) : 1;
+        this.lastFrame = now;
         this.ctx.clearRect(0, 0, this.width, this.height);
         
         // Check theme colors dynamically. Dark is the default; light sets data-theme on <html> (D28)
@@ -147,7 +150,7 @@ class CircuitBackground {
             const p = this.particles[i];
             
             // Advance particle progress along path
-            p.progress += p.speed;
+            p.progress += p.speed * frames;
             
             // Calculate current coordinates via linear interpolation
             p.x = p.currentNode.x + (p.targetNode.x - p.currentNode.x) * p.progress;
@@ -181,7 +184,7 @@ class CircuitBackground {
             }
         }
         
-        requestAnimationFrame(() => this.animate());
+        requestAnimationFrame((t) => this.animate(t));
     }
 }
 

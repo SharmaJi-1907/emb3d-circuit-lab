@@ -115,7 +115,7 @@ export const components = [
     id: 'ne555',
     name: 'NE555',
     manufacturer: 'Texas Instruments',
-    category: 'passive',
+    category: 'ic', // an IC, not a passive part (D30)
     icon: '⏱',
     package: 'DIP-8 / SOIC-8',
     voltage: '4.5–16V',
@@ -181,7 +181,7 @@ export const components = [
     id: 'lm358',
     name: 'LM358',
     manufacturer: 'Texas Instruments',
-    category: 'passive',
+    category: 'ic', // an IC, not a passive part (D30)
     icon: '〜',
     package: 'DIP-8 / SOIC-8',
     voltage: '3–32V',

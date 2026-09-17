@@ -12,10 +12,9 @@ import { buildCapacitor, buildLED, buildResistor } from './models/passives.js';
 window.ThreeViewer = (function () {
   'use strict';
 
-  let scene, camera, renderer, controls;
+  let scene, camera, renderer;
   let currentModel = null;
   const pinMeshes = []; // emptied, never replaced: the model builders fill it through kit.pins
-  let animationId = null;
   let isInitialized = false;
   let explodeMode = false;
   let wireframeMode = false;
@@ -558,7 +557,7 @@ window.ThreeViewer = (function () {
   let time = 0;
 
   function animate() {
-    animationId = requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
     // Don't draw while the Viewer screen is hidden (D5): offsetParent is null under display:none.
     if (canvas.offsetParent === null) return;
     time += 0.01;
