@@ -16,6 +16,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- `tests/smoke/routing.spec.js`: 7 tests for hash routing — the address, links, refresh, Back/Forward and unknown screens (165 tests in total).
 - `tests/smoke/background.spec.js`: checks only one animation draws the background (158 tests in total).
 - `tests/smoke/viewer-models.spec.js`: 6 tests for the 3D models — pin counts, chip labels and freeing old models (157 tests in total). 3D viewer: read-only `getMemoryInfo()` and `getModelInfo()` hooks.
 - `public/manifest.json` and `public/favicon.svg` (E2), so the page no longer 404s for either. New `tests/smoke/assets.spec.js` with 8 tests (151 tests in total).
@@ -71,6 +72,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
+- The address follows the screen (D9). Opening a screen sets `#<screen>`, so a refresh keeps you there, Back and Forward move between screens, and a link such as `/#simulator` opens that screen. Before, the address never changed and a refresh always went back to the Dashboard. An unknown screen in the address shows the Dashboard instead of a blank page.
 - The 3D Viewer no longer leaks graphics memory (D16). Every model that leaves the scene now has its geometries, materials and textures freed. Measured: 61 → 61 geometries after 5 visits (was 61 → 297), and 48 after switching through 6 parts (was 449).
 - Every part gets a model with its real pin count (D8). The L298N is drawn as a Multiwatt-15 and the AMS1117 as a SOT-223 through a new single-row builder; the nRF24L01+ as a DIP-8 module. Cases for `nrf52840` and `bme280`, which are not in the data, are gone, and the fallback follows the part's own pin count instead of always drawing 8 pins. The **ESP32 and HC-SR04 had no interactive pins at all** — their headers were built but never tagged — so hover, click and pin-table highlighting now work on them too.
 - The part's name is printed on the 3D chip (D11). `buildDIP` and `buildQFP` took a label and threw it away; it is now drawn onto the chip, shrunk to fit if long.
@@ -114,6 +116,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Exploding the 3D model no longer makes it vanish, and quick toggling no longer makes the parts bounce (D13).
 - The 3D Viewer shows the part as soon as the app opens (it used to stay empty until you reopened it), and the "Rendering 3D Model..." text now hides once the part is drawn (D15).
 ### Found
+- C9: the top bar's New Project and Share buttons have no code. E16: an empty `#particle-field` div and `state.projects` are unused. D9's "Open Workspace" button is never visible, because the Projects screen replaces it.
 - New issues from linting: D8 (4 unused 3D models), D10 (sort ignores its option), D11 (chip labels never drawn), D12 (unused simulator values), E10 (GSAP loaded but unused), E11 (lint warning cap).
 - F1: most of `index.html` has no matching CSS. The CSS and `app.js` were written for a different page layout. Decided in ADR 0002.
 - F2–F6: per-screen styling gaps (shared panels, simulator layout, board explorer, datasheet sidebar, AI message classes).
