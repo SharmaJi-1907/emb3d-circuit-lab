@@ -133,3 +133,14 @@ test('AI assistant replies to a question', async ({ page, errors }) => {
   await expect(chat.locator('.ai-message.assistant').first()).toBeVisible();
   expectNoErrors(errors);
 });
+
+test('the dashboard Protocols stat counts the protocols it lists, not a fixed 12 (E20)', async ({ page, errors }) => {
+  await openApp(page);
+  const listed = await page.locator('#view-dashboard .protocol-card').count();
+  expect(listed, 'the Protocol Quick Reference lists some').toBeGreaterThan(0);
+  await expect(page.locator('#view-dashboard .stat-card', { hasText: 'Protocols' }).locator('.stat-value')).toHaveText(String(listed));
+  await expect(page.locator('#breadcrumb-current')).toHaveText('Dashboard');
+  const state = await page.evaluate(() => window.CircuitApp.getState());
+  expect('searchQuery' in state, 'nothing ever set state.searchQuery').toBe(false);
+  expectNoErrors(errors);
+});

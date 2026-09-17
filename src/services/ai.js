@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — AI answer matching (D1, D17)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 // Keywords for each stored answer in CircuitLabData.aiResponses (D1).

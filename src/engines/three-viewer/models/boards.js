@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — 3D models: Modules: ESP32 and HC-SR04, with pin headers
-   Moved out of three-viewer/index.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import * as THREE from 'three';

@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Canvas drawing helpers
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 export function roundRect(ctx, x, y, width, height, radius) {

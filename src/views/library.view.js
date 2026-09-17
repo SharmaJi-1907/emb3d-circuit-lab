@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Component Library in the Database screen (C3, D10)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { registerScreen } from '../app/router.js';
@@ -16,13 +15,6 @@ function renderComponentLibrary() {
 
   if (state.filterCategory !== 'all') {
     filtered = filtered.filter(c => c.category === state.filterCategory);
-  }
-  if (state.searchQuery) {
-    filtered = filtered.filter(c =>
-      c.name.toLowerCase().includes(state.searchQuery) ||
-      c.manufacturer.toLowerCase().includes(state.searchQuery) ||
-      c.tags.some(t => t.includes(state.searchQuery))
-    );
   }
   filtered = sortList(filtered, state.sortBy);
 
@@ -56,7 +48,7 @@ function renderComponentLibrary() {
 
       <!-- Component Grid -->
       <div class="components-grid">
-        ${filtered.length === 0 ? '<div class="no-results">No components match your search</div>' :
+        ${filtered.length === 0 ? '<div class="no-results">No components in this category</div>' :
           filtered.map(c => renderComponentCard(c)).join('')}
       </div>
 

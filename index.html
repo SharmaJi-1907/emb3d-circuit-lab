@@ -150,7 +150,7 @@
           <div class="breadcrumb">
             <span class="breadcrumb-root">CircuitLab</span>
             <span class="breadcrumb-sep">/</span>
-            <span class="breadcrumb-current" id="breadcrumb-current">3D Viewer</span>
+            <span class="breadcrumb-current" id="breadcrumb-current">Dashboard</span>
           </div>
         </div>
 
@@ -194,10 +194,13 @@
       <main class="view-container" id="view-container" role="main">
 
         <!-- ═══════════════════════════════════════════════════════ -->
-        <!-- VIEW: 3D COMPONENT VIEWER                              -->
+        <!-- VIEW: DASHBOARD (drawn by views/dashboard.view.js)      -->
         <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view active" id="view-dashboard" aria-label="Dashboard"></section>
 
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: 3D COMPONENT VIEWER                              -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view" id="view-viewer" aria-label="3D Component Viewer">
           <aside id="viewer-sidebar"></aside>
           <div id="viewer-canvas-area">
@@ -217,6 +220,9 @@
         </section>
         <div id="pin-tooltip"></div>
 
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: CIRCUIT SIMULATOR                                -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view" id="view-simulator" aria-label="Circuit Simulator">
           <div class="simulator-layout">
 
@@ -244,12 +250,6 @@
               <div class="sim-toolbar-right" style="display:flex; align-items:center; gap:8px;">
                 <button class="sim-btn" id="sim-clear" title="Clear Circuit">Clear</button>
                 <button class="sim-btn" id="sim-export" title="Export Circuit">Export</button>
-                <button class="sim-btn" id="sim-upload-code" title="Upload Code">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                  Upload Code
-                </button>
               </div>
             </div>
 
@@ -279,15 +279,6 @@
                     <button class="palette-item ws-btn" id="ws-add-wire" data-component="wire" title="Wire">
                       <div class="palette-icon switch-icon"></div>
                       <span>Wire</span>
-                    </button>
-                  </div>
-                </div>
-                <div class="palette-section">
-                  <h3 class="palette-cat">Active</h3>
-                  <div class="palette-grid">
-                    <button class="palette-item ws-btn" id="ws-add-ic" data-component="ic" title="Add 555 IC">
-                      <div class="palette-icon npn-icon"></div>
-                      <span>NE555 IC</span>
                     </button>
                   </div>
                 </div>
@@ -356,6 +347,9 @@
         <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view" id="view-database" aria-label="Component Database"></section>
 
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- VIEW: BOARD EXPLORER                                   -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="view" id="view-boards" aria-label="Board Explorer">
           <div class="boards-layout">
             <div class="boards-header">
@@ -532,11 +526,7 @@
               </button>
             </div>
             <div class="projects-grid" id="projects-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
-              <div class="database-card glass-panel" style="padding:20px; border-radius:8px;">
-                <h3>Astable Multivibrator</h3>
-                <p style="opacity:0.7; font-size:13px; margin:8px 0 15px 0;">NE555 Timer simulated oscillator circuit with LED feedback visual display.</p>
-                <button class="btn btn-primary" onclick="window.location.hash='#simulator'">Open Workspace</button>
-              </div>
+              <!-- Drawn by views/projects.view.js -->
             </div>
           </div>
         </section>
@@ -598,11 +588,11 @@
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
   <!-- Keyboard Shortcuts Overlay Panel -->
-  <div class="modal-overlay hidden" id="shortcuts-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:9999;">
-      <div class="modal-card glass-panel" style="width:90%; max-width:500px; padding:30px; border-radius:12px;">
+  <div class="modal-overlay hidden" id="shortcuts-modal">
+      <div class="modal-card glass-panel">
           <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
               <h3>Keyboard Shortcuts</h3>
-              <button class="icon-btn" id="close-shortcuts-btn" style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;">&times;</button>
+              <button class="icon-btn modal-close" id="close-shortcuts-btn" aria-label="Close">&times;</button>
           </div>
           <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
               <div class="shortcut-item" style="display:flex; justify-content:space-between;"><kbd>1–9</kbd> <span>Switch screen (sidebar order)</span></div>
