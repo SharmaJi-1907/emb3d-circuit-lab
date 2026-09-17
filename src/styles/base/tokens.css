@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Design tokens (dark default) and the light theme (C5)
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── CSS Variables ────────────────────────────────────────────── */
@@ -27,6 +26,28 @@
   --orange:        #ff9500;
   --red:           #ff4444;
   --gold:          #ffd700;
+  --pink:          #ff2d78;
+  --blue:          #4488ff;
+  --coral:         #ff6b2b;
+  --grey:          #888888;
+
+  /* Pin types: the badges, dots and pin details on every screen (F12) */
+  --pin-power:     var(--red);
+  --pin-ground:    var(--grey);
+  --pin-digital:   var(--cyan);
+  --pin-analog:    var(--orange);
+  --pin-pwm:       var(--purple);
+  --pin-uart:      var(--green);
+  --pin-spi:       var(--gold);
+  --pin-i2c:       var(--pink);
+  --pin-can:       var(--coral);
+  --pin-usb:       var(--blue);
+
+  /* The simulator board draws its parts with these (F11) */
+  --sim-part:      #c0c0c0;
+  --sim-label:     var(--text-secondary);
+  --sim-accent:    var(--cyan);
+  --sim-live:      var(--green);
 
   --text-primary:  #e8e8f0;
   --text-secondary:#8888aa;
@@ -37,11 +58,15 @@
   --bg-panel:      rgba(10,10,20,0.95);
   --bg-panel-soft: rgba(10,10,20,0.8);
   --bg-overlay:    rgba(5,5,10,0.98);
+  --bg-scrim:      rgba(5,5,10,0.75);   /* behind a pop-up */
+  --on-accent:     #05050a;             /* text on a cyan button */
   --glass:         rgba(17,17,40,0.85);
   --bg-code:       #000;
 
-  /* The simulated multimeter and scope dials look like real hardware, so they
-     stay dark in both themes: the light theme does not override these (F10). */
+  /* The simulated multimeter and scope dials look like real hardware, and the
+     3D viewport is a lit 3D scene, so they stay dark in both themes: the light
+     theme does not override these (F10, F12). */
+  --viewport-bg:   radial-gradient(ellipse at center, #0a0a1e 0%, #05050a 100%);
   --lcd-bg:        #050508;
   --lcd-border:    #222;
   --lcd-text:      #00ff88;
@@ -99,6 +124,12 @@
   --orange:        #a85c00;
   --red:           #c62828;
   --gold:          #9a7500;
+  --pink:          #b8175a;
+  --blue:          #2456c7;
+  --coral:         #b54414;
+  --grey:          #5f6673;
+
+  --sim-part:      #3a4254;
 
   --text-primary:  #15181f;
   --text-secondary:#4d586e;
@@ -108,6 +139,8 @@
   --bg-panel:      rgba(255,255,255,0.95);
   --bg-panel-soft: rgba(255,255,255,0.82);
   --bg-overlay:    rgba(255,255,255,0.98);
+  --bg-scrim:      rgba(20,30,60,0.35);
+  --on-accent:     #ffffff;
   --glass:         rgba(255,255,255,0.88);
 
   --shadow-sm:     0 2px 8px rgba(20,30,60,0.10);

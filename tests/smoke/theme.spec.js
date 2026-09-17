@@ -102,3 +102,47 @@ test('keyboard keys stay readable in both themes (C5)', async ({ page, errors })
   }
   expectNoErrors(errors);
 });
+
+/* ── Final clean-up (F11, F12) ────────────────────────────────── */
+test('light mode: the 3D pin details panel is light with dark text (F11)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.locator('#theme-toggle').click();
+  await goToView(page, 'viewer');
+  await page.locator('#pin-table-body .pin-row').first().click();
+  await expect(page.locator('#pin-detail-panel .pin-detail-name')).toBeVisible();
+  const panel = await styleOf(page, '#pin-detail-panel', ['backgroundColor']);
+  const name = await styleOf(page, '#pin-detail-panel .pin-detail-name', ['color']);
+  expect(brightness(panel.backgroundColor), `panel ${panel.backgroundColor}`).toBeGreaterThan(150);
+  expect(brightness(panel.backgroundColor) - brightness(name.color), 'the pin name stands out').toBeGreaterThan(100);
+  expectNoErrors(errors);
+});
+
+test('the shortcuts pop-up has no inline colours and its close button shows in both themes (F11)', async ({ page, errors }) => {
+  await openApp(page);
+  for (const sel of ['#shortcuts-modal', '#close-shortcuts-btn']) {
+    const style = (await page.locator(sel).getAttribute('style')) || '';
+    expect(style, `${sel}: colours come from the CSS`).not.toMatch(/#[0-9a-f]{3,6}\b|rgba?\(/i);
+  }
+  for (const theme of ['dark', 'light']) {
+    if (theme === 'light') await page.locator('#theme-toggle').click();
+    await page.locator('body').press('?');
+    const card = await styleOf(page, '#shortcuts-modal .modal-card', ['backgroundColor']);
+    const close = await styleOf(page, '#close-shortcuts-btn', ['color']);
+    expect(Math.abs(brightness(card.backgroundColor) - brightness(close.color)), `${theme}: × must stand out`).toBeGreaterThan(100);
+    await page.keyboard.press('Escape');
+  }
+  expectNoErrors(errors);
+});
+
+test('no screen writes hard-coded colours into its HTML (F12)', async ({ page, errors }) => {
+  await openApp(page);
+  const found = [];
+  for (const view of ['dashboard', 'viewer', 'simulator', 'database', 'boards', 'datasheet', 'ai', 'projects', 'settings']) {
+    await goToView(page, view);
+    if (view === 'viewer') await page.locator('#pin-table-body .pin-row').first().click();
+    const styles = await page.locator('#view-container [style]').evaluateAll((els) => els.map((e) => e.getAttribute('style')));
+    for (const s of styles) if (/#[0-9a-f]{3,6}\b|rgba?\(/i.test(s)) found.push(`${view}: ${s}`);
+  }
+  expect([...new Set(found)], 'colours come from the design tokens').toEqual([]);
+  expectNoErrors(errors);
+});

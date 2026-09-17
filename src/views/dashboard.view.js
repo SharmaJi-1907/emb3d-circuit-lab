@@ -1,10 +1,20 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Dashboard screen (home, ADR 0002)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { registerScreen } from '../app/router.js';
 import { state } from '../app/state.js';
+
+// The Protocol Quick Reference. The "Protocols" stat counts this list (E20).
+// Colours are the pin-type tokens, so a protocol looks the same everywhere.
+const PROTOCOLS = [
+  { name: 'I2C',  pins: 'SDA, SCL', speed: '100k–3.4M bps', addr: '7-bit', color: 'var(--pin-i2c)' },
+  { name: 'SPI',  pins: 'MOSI, MISO, SCK, CS', speed: 'Up to 80 MHz', addr: 'N/A', color: 'var(--pin-spi)' },
+  { name: 'UART', pins: 'TX, RX', speed: '300–4M bps', addr: 'N/A', color: 'var(--pin-uart)' },
+  { name: 'CAN',  pins: 'CANH, CANL', speed: '1 Mbps', addr: '11/29-bit', color: 'var(--pin-can)' },
+  { name: 'USB',  pins: 'D+, D-', speed: '1.5M–480M bps', addr: '7-bit', color: 'var(--pin-usb)' },
+  { name: 'PWM',  pins: 'Signal', speed: 'Freq + Duty', addr: 'N/A', color: 'var(--pin-pwm)' },
+];
 
 function renderDashboard() {
   const panel = document.getElementById('view-dashboard');
@@ -14,22 +24,26 @@ function renderDashboard() {
     CircuitLabData.components.find(c => c.id === id)
   ).filter(Boolean);
 
+  const stats = [
+    { label: 'Components', value: CircuitLabData.components.length, icon: '🔲', color: 'var(--cyan)' },
+    { label: 'Dev Boards', value: Object.keys(CircuitLabData.boards).length, icon: '📟', color: 'var(--purple)' },
+    { label: 'Protocols', value: PROTOCOLS.length, icon: '⚡', color: 'var(--green)' },
+    { label: 'Projects', value: CircuitLabData.projects.length, icon: '📁', color: 'var(--orange)' },
+  ];
+  // Each bar shows its number against the biggest of the four.
+  const most = Math.max(...stats.map(s => s.value));
+
   panel.innerHTML = `
     <div class="dashboard-grid">
 
       <!-- Hero Stats -->
       <div class="dash-stats-row">
-        ${[
-          { label: 'Components', value: CircuitLabData.components.length, icon: '🔲', color: '#00d4ff' },
-          { label: 'Dev Boards', value: Object.keys(CircuitLabData.boards).length, icon: '📟', color: '#7b2fff' },
-          { label: 'Protocols', value: '12', icon: '⚡', color: '#00ff88' },
-          { label: 'Projects', value: CircuitLabData.projects.length, icon: '📁', color: '#ff9500' },
-        ].map(s => `
+        ${stats.map(s => `
           <div class="stat-card" style="--accent:${s.color}">
             <div class="stat-icon">${s.icon}</div>
             <div class="stat-value">${s.value}</div>
             <div class="stat-label">${s.label}</div>
-            <div class="stat-bar"><div class="stat-bar-fill" style="width:${Math.min(100, s.value * 8)}%;background:${s.color}"></div></div>
+            <div class="stat-bar"><div class="stat-bar-fill" style="width:${Math.round(s.value / most * 100)}%"></div></div>
           </div>
         `).join('')}
       </div>
@@ -80,7 +94,7 @@ function renderDashboard() {
         <h3 class="dash-section-title">Sample Projects</h3>
         <div class="projects-grid">
           ${CircuitLabData.projects.slice(0, 4).map(p => `
-            <div class="project-card" style="--accent:${p.color}">
+            <div class="project-card" style="--accent:var(--${p.color})">
               <div class="project-card-icon">${p.icon}</div>
               <div class="project-card-body">
                 <div class="project-card-name">${p.name}</div>
@@ -99,16 +113,9 @@ function renderDashboard() {
       <div class="dash-section">
         <h3 class="dash-section-title">Protocol Quick Reference</h3>
         <div class="protocol-grid">
-          ${[
-            { name: 'I2C',  pins: 'SDA, SCL', speed: '100k–3.4M bps', addr: '7-bit', color: '#ff2d78' },
-            { name: 'SPI',  pins: 'MOSI, MISO, SCK, CS', speed: 'Up to 80 MHz', addr: 'N/A', color: '#ffd700' },
-            { name: 'UART', pins: 'TX, RX', speed: '300–4M bps', addr: 'N/A', color: '#00ff88' },
-            { name: 'CAN',  pins: 'CANH, CANL', speed: '1 Mbps', addr: '11/29-bit', color: '#ff6b2b' },
-            { name: 'USB',  pins: 'D+, D-', speed: '1.5M–480M bps', addr: '7-bit', color: '#4488ff' },
-            { name: 'PWM',  pins: 'Signal', speed: 'Freq + Duty', addr: 'N/A', color: '#7b2fff' },
-          ].map(p => `
+          ${PROTOCOLS.map(p => `
             <div class="protocol-card" style="--pc:${p.color}">
-              <div class="protocol-name" style="color:${p.color}">${p.name}</div>
+              <div class="protocol-name">${p.name}</div>
               <div class="protocol-detail"><span>Pins:</span> ${p.pins}</div>
               <div class="protocol-detail"><span>Speed:</span> ${p.speed}</div>
               <div class="protocol-detail"><span>Addr:</span> ${p.addr}</div>

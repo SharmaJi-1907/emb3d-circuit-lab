@@ -2,25 +2,6 @@
 
 /* Sim Toolbar */
 
-.sim-toolbar-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sim-toolbar-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--border);
-  margin: 0 4px;
-}
-
-.sim-speed-label {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-}
-
 #sim-speed {
   width: 80px;
   accent-color: var(--cyan);
@@ -61,8 +42,6 @@
   color: var(--text-primary);
 }
 .palette-item:active { cursor: grabbing; }
-.palette-item-icon { font-size: 14px; flex-shrink: 0; }
-.palette-item-name { font-size: 10px; font-family: var(--font-mono); }
 
 /* Sim Canvas */
 
@@ -92,14 +71,6 @@
   font-family: var(--font-mono);
   color: var(--text-muted);
   text-transform: uppercase;
-}
-
-.instrument-led {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 4px var(--green);
 }
 
 /* Oscilloscope */
@@ -136,57 +107,6 @@
   justify-content: center;
 }
 
-/* Signal Generator */
-.sig-gen-controls {
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.sig-gen-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 10px;
-  font-family: var(--font-mono);
-}
-.sig-gen-row label { color: var(--text-muted); }
-.sig-gen-row input[type="range"] { width: 80px; accent-color: var(--purple); }
-.sig-gen-row select {
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  outline: none;
-}
-
-.osc-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.osc-title {
-  font-size: 9px;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-.osc-ch {
-  font-size: 9px;
-  font-family: var(--font-mono);
-  padding: 1px 6px;
-  border-radius: 2px;
-}
-.osc-ch-1 { background: rgba(0,212,255,0.15); color: var(--cyan); }
-.osc-ch-2 { background: rgba(0,255,136,0.15); color: var(--green); }
-
-/* ── Rules added for this screen's own markup ──────────────── */
 
 /* ── Circuit Simulator (F3, ADR 0002) ───────────────────────────
    Styles the Simulator markup in index.html:

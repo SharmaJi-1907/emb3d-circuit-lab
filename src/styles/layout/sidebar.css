@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Sidebar navigation
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Sidebar ──────────────────────────────────────────────────── */
@@ -84,15 +83,6 @@
 }
 
 .nav-item:hover::after { opacity: 1; }
-
-.nav-spacer { flex: 1; }
-
-.nav-divider {
-  width: 32px;
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
-}
 
 /* ── Sidebar Text & Badge Hiding for Narrow Display ─────────── */
 .sidebar-logo .logo-text {

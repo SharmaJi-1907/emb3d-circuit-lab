@@ -41,7 +41,7 @@
 }
 .ai-message.user .ai-message-content {
   background: var(--cyan-dim);
-  border-color: rgba(0,212,255,0.2);
+  border-color: color-mix(in srgb, var(--cyan) 20%, transparent);
   color: var(--text-primary);
 }
 .ai-message-content strong { color: var(--text-primary); }
@@ -87,7 +87,6 @@
 }
 .ai-message.user .ai-message-time { text-align: right; }
 
-.ai-suggestion,
 .ai-suggestion-chip {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -100,7 +99,6 @@
   transition: all var(--t-fast);
   white-space: nowrap;
 }
-.ai-suggestion:hover,
 .ai-suggestion-chip:hover {
   border-color: var(--border-hover);
   color: var(--cyan);

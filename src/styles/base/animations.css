@@ -1,14 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Shared keyframe animations
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Animations ───────────────────────────────────────────────── */
-@media (prefers-reduced-motion: no-preference) {
-  .animate-in {
-    animation: fadeIn 0.3s var(--t-slow) forwards;
-  }
-}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

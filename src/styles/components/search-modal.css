@@ -1,46 +1,84 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Search pop-up and its backdrop
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Search Modal & Backdrop Overlay Styles ─────────────────── */
+/* ── Search Modal & Backdrop ─────────────────────────────────────
+   ui/search.js adds .shown (on screen) and then .open (faded in).
+   The colours used to be inline styles set from JS, which stayed dark
+   in the light theme (F11). */
 .search-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 999;
+  display: none;
+  background: var(--bg-scrim);
+  backdrop-filter: blur(12px);
+  z-index: 9999;
   opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--t-base);
-}
-
-.search-modal-backdrop.active {
-  opacity: 1;
-  pointer-events: auto;
+  transition: opacity 0.2s ease-out;
 }
 
 .search-modal-content {
   position: fixed;
-  top: 15%;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -20px);
+  display: none;
+  flex-direction: column;
   width: 90%;
-  max-width: 600px;
-  background: rgba(10, 10, 20, 0.95);
+  max-width: 640px;
+  max-height: 75%;
+  padding: 20px;
+  overflow: hidden;
+  background: var(--bg-panel);
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-glow);
-  z-index: 1000;
+  box-shadow: var(--shadow);
+  z-index: 10000;
   opacity: 0;
-  pointer-events: none;
-  transition: all var(--t-base);
-  display: flex;
-  flex-direction: column;
+  transform: translate(-50%, -46%) scale(0.96);
+  transition: opacity 0.2s ease-out, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.search-modal-content.active {
+.search-modal-backdrop.shown { display: block; }
+.search-modal-content.shown { display: flex; }
+.search-modal-backdrop.open { opacity: 1; }
+.search-modal-content.open {
   opacity: 1;
-  pointer-events: auto;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.search-modal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+#modal-search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+#modal-search-input::placeholder { color: var(--text-muted); }
+
+.search-results {
+  flex: 1;
+  min-height: 0;
+  margin: 8px 0;
+  overflow-y: auto;
+}
+
+.search-footer {
+  display: flex;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
 }
