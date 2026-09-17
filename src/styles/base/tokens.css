@@ -40,6 +40,14 @@
   --glass:         rgba(17,17,40,0.85);
   --bg-code:       #000;
 
+  /* The simulated multimeter and scope dials look like real hardware, so they
+     stay dark in both themes: the light theme does not override these (F10). */
+  --lcd-bg:        #050508;
+  --lcd-border:    #222;
+  --lcd-text:      #00ff88;
+  --lcd-dim:       #666;
+  --dial-ring:     #555;
+
   /* Typography */
   --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
   --font-sans:     'Inter', system-ui, sans-serif;
