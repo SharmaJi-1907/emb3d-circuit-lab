@@ -44,7 +44,7 @@ index.html  ── the page: all 9 screens, buttons, panels (each with an id="..
    └─ <script type="module" src="src/main.js">
                      │
       src/main.js ── the entry point: imports everything in order
-         ├─ styles/main.css                   how it looks
+         ├─ styles/**/*.css                   how it looks (base, layout, components, views)
          ├─ engines/background/circuit-bg.js  animated background
          ├─ data/index.js                     all the data   → window.CircuitLabData
          ├─ engines/three-viewer/index.js     3D engine      → window.ThreeViewer

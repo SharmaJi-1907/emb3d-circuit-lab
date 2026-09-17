@@ -83,7 +83,7 @@ npm run test:report   # open the HTML report
 ## Code rules
 
 - **Page markup follows [ADR 0002](docs/decisions/0002-screen-markup.md), per screen.**
-  - **Viewer, Database (→ Component Library) and Dashboard** use the markup that `app.js` and `main.css` expect. Change `index.html` to match them.
+  - **Viewer, Database (→ Component Library) and Dashboard** use the markup that `app.js` and the stylesheets expect. Change `index.html` to match them.
   - **All other screens** (Simulator, Boards, Datasheet, AI, Projects, Settings, sidebar, top bar) keep `index.html`. Change the JS or CSS to match the page.
 - **Modules follow [ADR 0003](docs/decisions/0003-es-modules.md):** files split out of the big ones use `import`/`export`. `CircuitApp`, `ThreeViewer`, `CircuitSimulator` and `CircuitLabData` stay on `window` as the public API (inline handlers and tests use them), each set in one place. Each part's entry file is imported in [src/main.js](src/main.js) in dependency order.
 - **Refactor branches change no behaviour:** take a snapshot before (data checksum, computed styles, public API, screen HTML) and prove it identical after, instead of a test that fails before.
@@ -91,7 +91,7 @@ npm run test:report   # open the HTML report
 - Escape user text before putting it into `innerHTML`.
 - No secrets or API keys in browser code.
 - Match the existing style: 2-space indent, IIFE modules, `/* ── Section ── */` comment headers.
-- **CSS:** use the design tokens in `main.css` (`--bg-card`, `--border`, `--radius-lg`…), never hard-coded colours. Shared building blocks go in `src/styles/components/`, and styles for one screen go in `src/styles/views/<screen>.css`. Import new CSS files in `src/main.js` after `main.css`.
+- **CSS:** use the design tokens in `src/styles/base/tokens.css` (`--bg-card`, `--border`, `--radius-lg`…), never hard-coded colours. Shared building blocks go in `src/styles/components/`, and styles for one screen go in `src/styles/views/<screen>.css`. Import new CSS files in `src/main.js` in cascade order (after `base/`), and keep a screen's `@media` rules right after the rules they override.
 - Don't edit `dist/` (generated) or `node_modules/`.
 - The old `legacy/` folder was deleted in branch #6. Old data worth restoring (resistor/capacitor entries, pin descriptions, datasheet tables) is listed under E1 in FIX_PLAN, with the `git show` command to get it back.
 

@@ -31,18 +31,27 @@ emmb3d/
 │   ├── services/              AI answers, localStorage          (empty)
 │   ├── utils/                 DOM / HTML / formatting helpers  (empty)
 │   ├── styles/
-│   │   ├── main.css           All styles (to be split into the folders below)
-│   │   ├── base/              variables, reset, typography
-│   │   ├── layout/            sidebar, topbar
+│   │   ├── base/
+│   │   │   ├── fonts.css      Web fonts
+│   │   │   ├── tokens.css     Design tokens (dark default) and the light theme (C5)
+│   │   │   ├── reset.css      Reset and base element styles
+│   │   │   └── animations.css Shared keyframes
+│   │   ├── layout/
+│   │   │   ├── shell.css      App shell, background canvas, main content area
+│   │   │   ├── sidebar.css    Sidebar navigation
+│   │   │   ├── header.css     Top header, global search box, header buttons
+│   │   │   └── views.css      Screen panels (.view): showing and hiding
 │   │   ├── components/
+│   │   │   ├── buttons.css, badges.css, toggle.css, toast.css, tooltip.css, search-modal.css
 │   │   │   ├── panels.css     Shared cards, panels, titles, keyboard keys, sidebar/top-bar buttons (F2, C5)
 │   │   │   └── notifications.css  Notifications drawer, unread dot, selected search result (C6, D14)
-│   │   └── views/             per-screen styles
+│   │   └── views/             One file per screen, with its narrow-window rules
+│   │       ├── dashboard.css, library.css, viewer.css
 │   │       ├── simulator.css  Circuit Simulator layout, toolbar, palette, board, instruments (F3)
 │   │       ├── boards.css     Board Explorer layout, tabs, filters, specs, pin list (F4)
 │   │       ├── datasheet.css  Datasheet sidebar, search box, list, section bar, layout fit (F5)
 │   │       ├── ai.css         AI screen layout, chat box, chips row, input row (F8)
-│   │       └── projects.css   Projects screen: the new-project form and your own cards (C4)
+│   │       └── projects.css   Projects screen: cards, the new-project form, your own cards (C4)
 │   └── assets/                fonts, models, images imported by code
 ├── eslint.config.js           Lint rules, allowed globals, ignored folders
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
@@ -70,20 +79,18 @@ emmb3d/
 └── docs/                      Documentation
 ```
 
-Folders marked _(empty)_ are part of the target layout. They get filled while the big files (`app.js` and `main.css`; `data.js` was split in #27a) are split during the fixes.
+Folders marked _(empty)_ are part of the target layout. They get filled while the big files (`app.js`; `data.js` was split in #27a and `main.css` in #27b) are split during the fixes.
 
 ## Load order
 
 `index.html` → `src/main.js` imports, in order:
 
-1. `styles/main.css`
-2. `styles/components/panels.css` and `styles/components/notifications.css`: shared page styles. Must come after `main.css` so they can build on its design tokens.
-3. `styles/views/simulator.css`, `styles/views/boards.css`, `styles/views/datasheet.css`, `styles/views/ai.css` and `styles/views/projects.css`: per-screen styles. After the shared styles, so they can build on them.
-4. `engines/background/circuit-bg.js`
-5. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the 3D viewer and the app).
-6. `engines/three-viewer/index.js` → `window.ThreeViewer`
-7. `engines/simulator/index.js` → `window.CircuitSimulator`
-8. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
+1. **Styles, in cascade order** (a later file wins over an earlier one when selectors tie, so the order in `src/main.js` matters): `base/` fonts and tokens, reset, `layout/`, the shared `components/`, `views/` dashboard, library and viewer, `base/animations.css`, `components/search-modal.css`, `components/panels.css` and `notifications.css`, then `views/` simulator, boards, datasheet, ai and projects. Split out of `main.css` in #27b with every computed style checked identical.
+2. `engines/background/circuit-bg.js`
+3. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the 3D viewer and the app).
+4. `engines/three-viewer/index.js` → `window.ThreeViewer`
+5. `engines/simulator/index.js` → `window.CircuitSimulator`
+6. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
 
 The smoke test "component data is loaded" fails if `data/index.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
