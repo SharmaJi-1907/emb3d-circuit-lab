@@ -64,7 +64,6 @@ window.ThreeViewer = (function () {
       antialias: true,
       alpha: true,
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h, false); // false: leave the display size to CSS, so the canvas can follow its container
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap; // soft since r181, which deprecated PCFSoftShadowMap
@@ -83,8 +82,10 @@ window.ThreeViewer = (function () {
     // Grid
     addGrid();
 
-    // Resize handler
-    window.addEventListener('resize', onResize);
+    // Follow the size of the area the canvas sits in: a window resize, and
+    // also the sidebar being hidden, which the window never hears about (D35).
+    new ResizeObserver(onResize).observe(canvas.parentElement || canvas);
+    onResize();
 
     isInitialized = true;
     animate();
@@ -187,8 +188,9 @@ window.ThreeViewer = (function () {
       metalness: 0.0,
     });
 
-    // Highlight
+    // Highlight (named, so a highlighted pin can be told apart from its own material)
     MAT.highlight = new THREE.MeshStandardMaterial({
+      name: 'pin-highlight',
       color: 0x00d4ff,
       roughness: 0.1,
       metalness: 0.5,
@@ -288,10 +290,13 @@ window.ThreeViewer = (function () {
     canvas.addEventListener('touchend', () => { isDragging = false; });
   }
 
-  function updateCamera() {
-    spherical.theta += (targetSpherical.theta - spherical.theta) * 0.08;
-    spherical.phi += (targetSpherical.phi - spherical.phi) * 0.08;
-    spherical.radius += (targetSpherical.radius - spherical.radius) * 0.08;
+  // Ease the camera towards its target: 8% of the way per 1/60 s, worked out
+  // from the real time since the last frame so it feels the same at any frame rate (D42).
+  function updateCamera(dt) {
+    const k = 1 - Math.pow(1 - 0.08, dt * 60);
+    spherical.theta += (targetSpherical.theta - spherical.theta) * k;
+    spherical.phi += (targetSpherical.phi - spherical.phi) * k;
+    spherical.radius += (targetSpherical.radius - spherical.radius) * k;
 
     camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
     camera.position.y = spherical.radius * Math.cos(spherical.phi);
@@ -350,6 +355,7 @@ window.ThreeViewer = (function () {
       currentModel = null;
       pinMeshes.length = 0;
     }
+    highlightedPin = null; // it belonged to the old model
     explodeMode = false; // a new model starts assembled
 
     // Build model based on component
@@ -404,6 +410,7 @@ window.ThreeViewer = (function () {
     model.scale.set(0.01, 0.01, 0.01);
     scene.add(model);
     currentModel = model;
+    if (wireframeMode) setWireframe(true); // the chosen view mode carries over to the new part (D32)
 
     // Scale up animation (time-based, so it lasts ~200 ms even when frames are slow)
     const start = performance.now();
@@ -473,16 +480,25 @@ window.ThreeViewer = (function () {
     }
   }
 
+  // A pin can be highlighted twice (hovering its table row, then clicking it).
+  // The second time must not save the highlight as the pin's own material,
+  // or the pin stays cyan for good (D34).
   function highlightPin(pin) {
-    pin.userData.originalMaterial = pin.material;
-    pin.material = MAT.highlight.clone();
-    pin.material.emissiveIntensity = 0.8;
+    if (!pin.userData.originalMaterial) {
+      pin.userData.originalMaterial = pin.material;
+      pin.material = MAT.highlight.clone();
+      pin.material.emissiveIntensity = 0.8;
+      pin.material.wireframe = wireframeMode;
+    }
     pin.scale.set(1.3, 1.3, 1.3);
   }
 
   function resetPinHighlight(pin) {
     if (pin.userData.originalMaterial) {
+      pin.material.dispose(); // the highlight copy
       pin.material = pin.userData.originalMaterial;
+      pin.userData.originalMaterial = null;
+      pin.material.wireframe = wireframeMode;
     }
     pin.scale.set(1, 1, 1);
   }
@@ -504,6 +520,7 @@ window.ThreeViewer = (function () {
     currentModel.traverse(obj => {
       if (obj.isMesh) {
         obj.material.wireframe = enabled;
+        if (obj.userData.originalMaterial) obj.userData.originalMaterial.wireframe = enabled;
       }
     });
   }
@@ -554,27 +571,32 @@ window.ThreeViewer = (function () {
   }
 
   /* ── Animate ──────────────────────────────────────────────── */
-  let time = 0;
+  // Everything moves by real time, not by frame, so the model turns at the
+  // same speed at 15 or 144 frames a second (D42).
+  const ROTATE_SPEED = 0.18; // radians per second
+  let lastFrame = 0;
 
-  function animate() {
+  function animate(now = performance.now()) {
     requestAnimationFrame(animate);
     // Don't draw while the Viewer screen is hidden (D5): offsetParent is null under display:none.
-    if (canvas.offsetParent === null) return;
-    time += 0.01;
+    if (canvas.offsetParent === null) { lastFrame = 0; return; }
+    const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.5) : 0; // at most 0.5 s, e.g. after a background tab
+    lastFrame = now;
+    const time = now / 1000;
 
     // Auto rotate
     if (rotateMode && !isDragging && currentModel) {
-      targetSpherical.theta += 0.003;
+      targetSpherical.theta += ROTATE_SPEED * dt;
     }
 
     // Pulse pin emissive
     pinMeshes.forEach(pin => {
-      if (pin !== highlightedPin && pin.material.emissiveIntensity !== undefined) {
-        pin.material.emissiveIntensity = 0.1 + Math.sin(time * 2 + pin.userData.pinNum) * 0.05;
+      if (pin !== highlightedPin && pin.material.emissiveIntensity !== undefined && !pin.userData.originalMaterial) {
+        pin.material.emissiveIntensity = 0.1 + Math.sin(time * 1.2 + pin.userData.pinNum) * 0.05;
       }
     });
 
-    updateCamera();
+    updateCamera(dt);
     renderer.render(scene, camera);
   }
 
@@ -589,6 +611,8 @@ window.ThreeViewer = (function () {
     const [w, h] = containerSize();
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    // Read each time: the window can move to a screen with another pixel density.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h, false);
   }
 
@@ -609,6 +633,8 @@ window.ThreeViewer = (function () {
     isReady: () => isInitialized,
     isWireframe: () => wireframeMode,
     isExploded: () => explodeMode,
+    isAutoRotating: () => rotateMode,
+    getCamera: () => ({ ...targetSpherical }),
     getModelBounds,
     getFrameCount: () => (renderer ? renderer.info.render.frame : 0),
     // What the GPU is still holding. Used to prove old models are freed (D16).
@@ -619,11 +645,17 @@ window.ThreeViewer = (function () {
       if (!currentModel) return null;
       let pins = 0;
       let hasLabel = false;
+      let wireframe = true;
+      const highlighted = [];
       currentModel.traverse((o) => {
-        if (o.userData && o.userData.pinNum !== undefined) pins++;
+        if (o.userData && o.userData.pinNum !== undefined) {
+          pins++;
+          if (o.material.name === 'pin-highlight') highlighted.push(o.userData.pinNum);
+        }
         if (o.name === 'chip-label') hasLabel = true;
+        if (o.isMesh && !o.material.wireframe && o.name !== 'chip-label') wireframe = false;
       });
-      return { component: currentComponentData ? currentComponentData.id : null, pins, hasLabel };
+      return { component: currentComponentData ? currentComponentData.id : null, pins, hasLabel, wireframe, highlighted };
     },
   };
 })();

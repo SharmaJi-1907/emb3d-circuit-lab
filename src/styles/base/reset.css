@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Reset and base element styles
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Reset & Base ─────────────────────────────────────────────── */
@@ -19,5 +18,5 @@ body {
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--cyan) 20%, transparent); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--cyan) 40%, transparent); }

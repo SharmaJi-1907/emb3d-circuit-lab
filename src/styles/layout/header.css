@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Top header, global search box and header buttons
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Header ───────────────────────────────────────────────────── */
@@ -32,22 +31,10 @@
   transition: all var(--t-base);
 }
 #sidebar-toggle:hover { border-color: var(--border-hover); color: var(--cyan); }
-
-.header-breadcrumb {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.header-breadcrumb::before { content: '~/'; color: var(--cyan); }
 #breadcrumb { color: var(--text-secondary); }
 
-.header-spacer { flex: 1; }
-
 /* Search */
-.search-wrapper, .global-search {
+.global-search {
   position: relative;
   width: 280px;
 }
@@ -81,20 +68,6 @@
   pointer-events: none;
 }
 
-.search-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  z-index: 300;
-  overflow: hidden;
-  display: none;
-}
-
 .search-result-item {
   display: flex;
   align-items: center;
@@ -119,43 +92,6 @@
 .search-no-results { padding: 12px; text-align: center; color: var(--text-muted); font-size: 12px; }
 
 /* Header buttons */
-.header-btn {
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all var(--t-base);
-  position: relative;
-}
-.header-btn:hover { border-color: var(--border-hover); color: var(--cyan); }
-
-.notif-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  background: var(--red);
-  border-radius: 50%;
-}
-
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: background var(--t-base);
-}
-.header-user:hover { background: var(--bg-hover); }
 
 .user-avatar {
   width: 28px;
@@ -167,10 +103,4 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-}
-
-.user-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
 }

@@ -74,7 +74,7 @@ async function clickBoardPin(page, index) {
     const box = canvas.getBoundingClientRect();
     const board = window.CircuitLabData.boards[window.CircuitApp.getState().selectedBoard];
     const p = board.pins[i];
-    return { x: box.left + canvas.width / 2 - 230 + p.x * 460, y: box.top + canvas.height / 2 - 140 + p.y * 280, num: p.num, name: p.name };
+    return { x: box.left + box.width / 2 - 230 + p.x * 460, y: box.top + box.height / 2 - 140 + p.y * 280, num: p.num, name: p.name };
   }, index);
   await page.mouse.move(pin.x, pin.y); // sets the hovered pin
   await page.mouse.click(pin.x, pin.y);
@@ -221,4 +221,30 @@ test('key pins match the official pinouts (D24)', async ({ page, errors }) => {
   expect(result.picoNamed, 'Pico pins 1, 30, 36, 40').toEqual(['GP0', 'RUN', '3V3(OUT)', 'VBUS']);
   expect(result.picoLeftSide, 'Pico: pins 1–20 on the left, 21–40 on the right').toBe(40);
   expectNoErrors(errors);
+});
+
+/* ── Final clean-up (D35, D45) ────────────────────────────────── */
+test('the board redraws at its new size when the sidebar is hidden (D35)', async ({ page, errors }) => {
+  await openBoards(page);
+  const first = await boardCanvas(page);
+  await page.locator('#sidebar-toggle').click();
+  await expect.poll(async () => {
+    const { box, buffer } = await boardCanvas(page);
+    return box[0] !== first.box[0] && Math.abs(buffer[0] - box[0]) < 1 && Math.abs(buffer[1] - box[1]) < 1;
+  }, { message: 'drawing size should follow the wider board' }).toBe(true);
+  expectNoErrors(errors);
+});
+
+test.describe('on a high-DPI screen', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  test('the board draws sharp, and a pin click still finds its pin (D45)', async ({ page, errors }) => {
+    await openBoards(page);
+    const { box, buffer } = await boardCanvas(page);
+    expect(Math.abs(buffer[0] - box[0] * 2), `drawing ${buffer} vs screen ${box}`).toBeLessThan(2);
+    expect(Math.abs(buffer[1] - box[1] * 2), `drawing ${buffer} vs screen ${box}`).toBeLessThan(2);
+    const pin = await clickBoardPin(page, 4);
+    await expect(page.locator(`.board-pin-item[data-pin="${pin.num}"]`)).toHaveClass(/selected/);
+    expectNoErrors(errors);
+  });
 });

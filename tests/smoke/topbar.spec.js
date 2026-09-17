@@ -158,3 +158,58 @@ test('Share copies a link to the current screen (C9)', async ({ page, errors }) 
   expect(copied).toMatch(/#simulator$/);
   expectNoErrors(errors);
 });
+
+/* ── Final clean-up (D37, D46, F11) ───────────────────────────── */
+test('search opened again straight after closing stays open (D37)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.keyboard.press('/');
+  await expect(page.locator('#modal-search-input')).toBeVisible();
+  // Close and reopen within the 200 ms close animation.
+  await page.evaluate(() => {
+    const key = (k) => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+    document.activeElement.blur();
+    key('Escape');
+    key('/');
+  });
+  await page.waitForTimeout(600);
+  await expect(page.locator('#modal-search-input'), 'the old close timer must not hide it').toBeVisible();
+  expectNoErrors(errors);
+});
+
+test('search finds boards and datasheets, as its placeholder says (D46)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.keyboard.press('/');
+  await page.locator('#modal-search-input').fill('mega');
+  const board = results(page).filter({ hasText: 'Arduino Mega' });
+  await expect(board).toHaveCount(1);
+  await board.click();
+  await expect(page.locator('#view-boards')).toBeVisible();
+  await expect(page.locator('#board-name')).toHaveText(/Mega/);
+  await expect(page.locator('.board-tab.active')).toHaveText('Arduino Mega');
+
+  await page.keyboard.press('/');
+  await page.locator('#modal-search-input').fill('esp32-wroom');
+  const sheet = results(page).filter({ has: page.locator('.search-result-type', { hasText: 'datasheet' }) });
+  await expect(sheet).toHaveCount(1);
+  await sheet.click();
+  await expect(page.locator('#view-datasheet')).toBeVisible();
+  await expect(page.locator('#ds-component-name')).toHaveText('ESP32-WROOM-32');
+  expectNoErrors(errors);
+});
+
+test('the search pop-up has no inline colours and follows the theme (F11)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.locator('#theme-toggle').click();
+  await page.keyboard.press('/');
+  await expect(page.locator('#modal-search-input')).toBeVisible();
+  for (const sel of ['#search-backdrop', '.search-modal-content']) {
+    const style = (await page.locator(sel).getAttribute('style')) || '';
+    expect(style, `${sel}: colours come from the CSS`).not.toMatch(/#[0-9a-f]{3,6}\b|rgba?\(/i);
+  }
+  const bg = (await styleOf(page, '.search-modal-content', ['backgroundColor'])).backgroundColor;
+  const bright = (bg.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
+  expect(bright, `a light pop-up in the light theme (${bg})`).toBeGreaterThan(150);
+  const input = await styleOf(page, '#modal-search-input', ['backgroundColor']);
+  expect(input.backgroundColor, 'the input sits on the pop-up, not in a browser-white box').toBe('rgba(0, 0, 0, 0)');
+  expectNoErrors(errors);
+});

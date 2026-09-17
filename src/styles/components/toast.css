@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Toast messages
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Toast ────────────────────────────────────────────────────── */
@@ -32,10 +31,10 @@
   pointer-events: auto;
 }
 .toast.show { opacity: 1; transform: translateX(0); }
-.toast-info    { border-color: rgba(0,212,255,0.3); }
-.toast-success { border-color: rgba(0,255,136,0.3); }
-.toast-warning { border-color: rgba(255,149,0,0.3); }
-.toast-error   { border-color: rgba(255,68,68,0.3); }
+.toast-info    { border-color: color-mix(in srgb, var(--cyan) 30%, transparent); }
+.toast-success { border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+.toast-warning { border-color: color-mix(in srgb, var(--orange) 30%, transparent); }
+.toast-error   { border-color: color-mix(in srgb, var(--red) 30%, transparent); }
 .toast-info    .toast-icon { color: var(--cyan); }
 .toast-success .toast-icon { color: var(--green); }
 .toast-warning .toast-icon { color: var(--orange); }

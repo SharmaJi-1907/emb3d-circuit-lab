@@ -199,3 +199,41 @@ test('the electrical table and code examples have no hard-coded colours (F9)', a
   expect(lightBorder, 'the border uses the theme tokens').not.toBe(darkBorder);
   expectNoErrors(errors);
 });
+
+/* ── Final clean-up (D36, D48, E20) ───────────────────────────── */
+test('the datasheet screen shows, marks and explains the same part (D36)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.evaluate(() => window.CircuitApp.selectComponent('ne555')); // a part with no datasheet
+  await goToView(page, 'datasheet');
+  const shown = (await page.locator('#ds-component-name').textContent()).trim();
+  await expect(page.locator('.ds-item.active'), 'the shown datasheet is marked in the list').toHaveCount(1);
+  await expect(page.locator('.ds-item.active .ds-item-name')).toHaveText(shown);
+
+  await page.locator('#ds-ai-explain').click();
+  await expect(page.locator('#view-ai')).toBeVisible();
+  const asked = await page.evaluate(() => window.CircuitApp.getState().aiMessages.find((m) => m.role === 'user').content);
+  expect(asked, 'the question is about the datasheet on screen').toContain(shown);
+  expect(asked, 'not about another part').not.toContain('NE555');
+  expectNoErrors(errors);
+});
+
+test('"Download PDF" opens the maker\'s datasheet (D48)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  await page.evaluate(() => { window.__opened = []; window.open = (url) => { window.__opened.push(url); return null; }; });
+  await page.locator('#ds-download').click();
+  await page.locator('.ds-item').nth(1).click();
+  await page.locator('#ds-download').click();
+  const opened = await page.evaluate(() => window.__opened);
+  expect(opened, 'one link per click').toHaveLength(2);
+  for (const url of opened) expect(url).toMatch(/^https:\/\/.+\.pdf$/);
+  expect(opened[0], 'each datasheet has its own PDF').not.toBe(opened[1]);
+  expectNoErrors(errors);
+});
+
+test('a missing section says so plainly (E20)', async ({ page, errors }) => {
+  await openDatasheet(page);
+  await page.evaluate(() => { delete window.CircuitLabData.datasheets[0].sections.timing; });
+  await page.locator('.toc-btn[data-section="timing"]').click();
+  await expect(page.locator('#ds-content')).toHaveText(/ATmega328P has no timing section/i);
+  expectNoErrors(errors);
+});

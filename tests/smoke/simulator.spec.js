@@ -82,12 +82,10 @@ test('palette buttons add a battery, resistor, capacitor and LED (C2)', async ({
   expectNoErrors(errors);
 });
 
-test('Wire and NE555 explain themselves and add nothing (C2)', async ({ page, errors }) => {
+test('Wire explains how to wire and adds nothing (C2)', async ({ page, errors }) => {
   await openSimulator(page);
   await page.locator('#ws-add-wire').click();
   await expect(lastToast(page)).toContainText('drag from one pin to another');
-  await page.locator('#ws-add-ic').click();
-  await expect(lastToast(page)).toContainText("isn't available in the simulator yet");
   expect(await parts(page)).toEqual([]);
   expectNoErrors(errors);
 });
@@ -135,7 +133,7 @@ test('the speed slider sets the simulation speed (C2)', async ({ page, errors })
   expectNoErrors(errors);
 });
 
-test('Clear, Export and Upload Code do something visible (C2)', async ({ page, errors }) => {
+test('Clear and Export do something visible (C2)', async ({ page, errors }) => {
   await openSimulator(page);
   await page.locator('#ws-add-resistor').click();
   expect(await parts(page)).toEqual(['resistor']);
@@ -143,9 +141,6 @@ test('Clear, Export and Upload Code do something visible (C2)', async ({ page, e
   const download = page.waitForEvent('download');
   await page.locator('#sim-export').click();
   expect((await download).suggestedFilename()).toBe('circuit.json');
-
-  await page.locator('#sim-upload-code').click();
-  await expect(lastToast(page)).toContainText("isn't available yet");
 
   await page.locator('#sim-clear').click();
   expect(await parts(page)).toEqual([]);
@@ -411,5 +406,107 @@ test('the dials and multimeter have no inline colours and stay dark in the light
   await page.locator('#theme-toggle').click();
   expect((await styleOf(page, '#multimeter .mm-display', ['backgroundColor'])).backgroundColor,
     'the meter looks like real hardware in both themes').toBe('rgb(5, 5, 8)');
+  expectNoErrors(errors);
+});
+
+/* ── Final clean-up (D35, D41, D44, D45, F11, E20) ────────────── */
+test('the board follows the sidebar being hidden (D35)', async ({ page, errors }) => {
+  await openSimulator(page);
+  const first = await boardSize(page);
+  await page.locator('#sidebar-toggle').click();
+  await expect.poll(async () => {
+    const now = await boardSize(page);
+    return now.box[0] !== first.box[0] && now.buffer.join('x') === now.box.join('x');
+  }, { message: 'the drawing size follows the wider board' }).toBe(true);
+  expectNoErrors(errors);
+});
+
+test('a drag released outside the board lets go of the part (D41)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, [['battery', 100, 100], ['resistor', 240, 100]], [[0, 0, 1, 0]]);
+  const board = await page.locator('#sim-canvas').boundingBox();
+  const state = () => page.evaluate(() => window.CircuitSimulator.getState());
+
+  // Grab the battery body (not a pin) and drag it: its wire follows while dragging.
+  await page.mouse.move(board.x + 125, board.y + 108);
+  await page.mouse.down();
+  await page.mouse.move(board.x + 125, board.y + 208, { steps: 5 });
+  const during = await state();
+  expect(during.positions[0], 'the battery moved').toEqual([100, 200]);
+  expect(during.wireEnds[0].slice(0, 2), 'its wire moved with it').toEqual([100, 215]);
+
+  // Let go over the palette, then come back without a button held.
+  await page.mouse.move(board.x - 60, board.y + 208, { steps: 5 });
+  await page.mouse.up();
+  const letGo = (await state()).positions[0];
+  await page.mouse.move(board.x + 400, board.y + 350, { steps: 5 });
+  expect((await state()).positions[0], 'the part no longer follows the mouse').toEqual(letGo);
+  expectNoErrors(errors);
+});
+
+test('an exported circuit keeps whether each switch is closed (D44)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await loadCircuit(page, [['battery', 100, 100], ['switch', 240, 100], ['led', 400, 100]], LOOP);
+  const board = await page.locator('#sim-canvas').boundingBox();
+  await page.mouse.dblclick(board.x + 265, board.y + 112); // close the switch
+  expect(await ledOn(page)).toBe(true);
+
+  const download = page.waitForEvent('download');
+  await page.locator('#sim-export').click();
+  const json = JSON.parse(await fs.readFile(await (await download).path(), 'utf8'));
+  await page.locator('#sim-clear').click();
+  await page.evaluate((data) => window.CircuitSimulator.loadCircuit(data), json);
+  expect(await ledOn(page), 'the switch is still closed').toBe(true);
+  expectNoErrors(errors);
+});
+
+test.describe('on a high-DPI screen', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  test('the board and scope draw sharp, and clicks still land on parts (D45)', async ({ page, errors }) => {
+    await openSimulator(page);
+    for (const sel of ['#sim-canvas', '#osc-canvas']) {
+      const s = await page.locator(sel).evaluate((c) => {
+        const r = c.getBoundingClientRect();
+        return { box: [Math.round(r.width), Math.round(r.height)], buffer: [c.width, c.height] };
+      });
+      for (const i of [0, 1]) {
+        expect(Math.abs(s.buffer[i] - s.box[i] * 2), `${sel}: drawing ${s.buffer} for ${s.box} on screen`).toBeLessThanOrEqual(1);
+      }
+    }
+    await loadCircuit(page, BATTERY_1K_LED, LOOP);
+    const board = await page.locator('#sim-canvas').boundingBox();
+    await page.mouse.click(board.x + 420, board.y + 110, { button: 'right' }); // middle of the LED
+    expect((await simState(page)).parts).toEqual(['battery', 'resistor']);
+    expectNoErrors(errors);
+  });
+});
+
+test('parts stand out from the board in the light theme (F11)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await page.locator('#theme-toggle').click();
+  await loadCircuit(page, [['resistor', 240, 100]]);
+  const { stroke, board } = await page.evaluate(async () => {
+    const seen = [];
+    const stroke = CanvasRenderingContext2D.prototype.stroke;
+    CanvasRenderingContext2D.prototype.stroke = function (...a) {
+      if (this.canvas.id === 'sim-canvas') seen.push(this.strokeStyle);
+      return stroke.apply(this, a);
+    };
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    CanvasRenderingContext2D.prototype.stroke = stroke;
+    return { stroke: seen[0], board: getComputedStyle(document.querySelector('.sim-canvas-area')).backgroundColor };
+  });
+  const rgb = (c) => (c.startsWith('#') ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) : c.match(/\d+/g).slice(0, 3).map(Number));
+  const bright = (c) => rgb(c).reduce((a, b) => a + b, 0) / 3;
+  expect(Math.abs(bright(stroke) - bright(board)), `part outline ${stroke} on board ${board}`).toBeGreaterThan(100);
+  expectNoErrors(errors);
+});
+
+test('the dead Upload Code and NE555 buttons are gone (E20)', async ({ page, errors }) => {
+  await openSimulator(page);
+  await expect(page.locator('#sim-upload-code'), 'it could only say "not available"').toHaveCount(0);
+  await expect(page.locator('#ws-add-ic'), 'the simulator has no NE555 part').toHaveCount(0);
   expectNoErrors(errors);
 });

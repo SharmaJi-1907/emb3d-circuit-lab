@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — 3D Viewer screen
-   Split out of main.css (#27b)
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
@@ -42,7 +41,7 @@
   font-size: 10px;
   font-family: var(--font-mono);
   padding: 3px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
 }
 .viewer-spec-key { color: var(--text-muted); }
 .viewer-spec-val { color: var(--text-secondary); }
@@ -71,7 +70,7 @@
   grid-column: 2;
   grid-row: 1;
   position: relative;
-  background: radial-gradient(ellipse at center, #0a0a1e 0%, #05050a 100%);
+  background: var(--viewport-bg); /* a lit 3D scene: dark in both themes, on purpose */
   overflow: hidden;
 }
 
@@ -79,26 +78,6 @@
   width: 100%;
   height: 100%;
   display: block;
-}
-
-.viewer-canvas-overlay {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.viewer-hint {
-  background: rgba(0,0,0,0.6);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
 }
 
 /* Pin Table */
@@ -145,7 +124,7 @@
   font-size: 9px;
   text-transform: uppercase;
 }
-.pin-table td { padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.pin-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); }
 .pin-row { cursor: pointer; transition: background var(--t-fast); }
 .pin-row:hover { background: var(--bg-hover); }
 .pin-row.selected { background: var(--cyan-dim); }
@@ -153,7 +132,6 @@
 .pin-name { color: var(--text-primary); font-weight: 500; }
 .pin-alt { color: var(--text-muted); }
 .pin-voltage { color: var(--orange); }
-.pin-protocol { }
 .pin-warning { color: var(--orange); cursor: help; }
 .pin-type-badge {
   display: inline-block;
@@ -168,7 +146,7 @@
 #pin-detail-panel {
   grid-column: 2;
   grid-row: 2;
-  background: rgba(8,8,18,0.95);
+  background: var(--bg-panel);
   border-top: 1px solid var(--border);
   padding: 12px 16px;
   overflow-y: auto;
@@ -204,8 +182,8 @@
 .pin-detail-row span:first-child { color: var(--text-muted); }
 
 .pin-warning-box {
-  background: rgba(255,149,0,0.1);
-  border: 1px solid rgba(255,149,0,0.3);
+  background: color-mix(in srgb, var(--orange) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
   font-size: 10px;

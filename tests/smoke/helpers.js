@@ -71,7 +71,8 @@ export async function openApp(page) {
   await appReady(page);
 }
 
-// Wait until the 3D engine has finished starting up.
+// Wait until the 3D engine has finished starting up. The engine is downloaded
+// the first time the 3D Viewer opens (E18), so open the Viewer before this.
 export async function waitForViewer(page) {
   await page.waitForFunction(() => window.ThreeViewer && window.ThreeViewer.isReady());
 }
@@ -79,8 +80,8 @@ export async function waitForViewer(page) {
 // Open the app, go to the 3D Viewer and wait until its model has finished loading.
 export async function openViewer(page) {
   await openApp(page);
-  await waitForViewer(page);
   await goToView(page, 'viewer');
+  await waitForViewer(page);
   await waitForStableModel(page);
 }
 

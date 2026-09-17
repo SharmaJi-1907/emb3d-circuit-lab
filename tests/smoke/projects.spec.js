@@ -116,3 +116,64 @@ test('the Projects screen is styled (C4)', async ({ page, errors }) => {
   expect(scrolls, 'the screen should fit without scrolling').toBe(false);
   expectNoErrors(errors);
 });
+
+/* ── Final clean-up (D31, D43, D47) ───────────────────────────── */
+test('the "Created" toast shows a typed name as text, never as HTML (D31)', async ({ page, errors }) => {
+  await openProjects(page);
+  await createProject(page, '<img src=x onerror="window.__xss = 1">');
+  const toast = page.locator('.toast', { hasText: 'Created' });
+  await expect(toast).toBeVisible();
+  await expect(toast.locator('img'), 'typed HTML must not become an element').toHaveCount(0);
+  await expect(toast).toContainText('<img src=x');
+  expect(await page.evaluate(() => window.__xss), 'the typed code must not run').toBeUndefined();
+  expectNoErrors(errors);
+});
+
+test('a project id from storage cannot run code when its card is deleted (D31)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.evaluate(() => localStorage.setItem('circuitlab.my-projects',
+    JSON.stringify([{ id: "x');window.__xss=1;('", name: 'Edited by hand', createdAt: Date.now() }])));
+  await page.reload();
+  await appReady(page);
+  await goToView(page, 'projects');
+  await mine(page).locator('.project-delete').click();
+  await expect(mine(page), 'the project is deleted').toHaveCount(0);
+  expect(await page.evaluate(() => window.__xss), 'the stored id must not run as code').toBeUndefined();
+  expectNoErrors(errors);
+});
+
+test('your project says when it was made, not "just now" forever (D43)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.evaluate(() => localStorage.setItem('circuitlab.my-projects',
+    JSON.stringify([{ id: 'mine-1', name: 'Three days old', createdAt: Date.now() - 3 * 24 * 3600 * 1000 }])));
+  await page.reload();
+  await appReady(page);
+  await goToView(page, 'projects');
+  await expect(mine(page).locator('.project-modified')).toHaveText('3 days ago');
+  expectNoErrors(errors);
+});
+
+test('your project keeps its circuit, and each project has its own (D47)', async ({ page, errors }) => {
+  const parts = () => page.evaluate(() => window.CircuitSimulator.getState().parts);
+  await openProjects(page);
+  await createProject(page, 'Battery only');
+  await createProject(page, 'Empty one');
+  const card = (name) => mine(page).filter({ hasText: name });
+
+  await card('Battery only').locator('.btn-primary').click();
+  await expect(page.locator('#view-simulator')).toBeVisible();
+  await expect.poll(parts, { message: 'a new project starts with an empty board' }).toEqual([]);
+  await page.locator('#ws-add-battery').click();
+  expect(await parts()).toEqual(['battery']);
+
+  await page.reload();
+  await appReady(page);
+  await goToView(page, 'projects');
+  await card('Empty one').locator('.btn-primary').click();
+  await expect.poll(parts, { message: 'the other project has its own, empty board' }).toEqual([]);
+
+  await goToView(page, 'projects');
+  await card('Battery only').locator('.btn-primary').click();
+  await expect.poll(parts, { message: 'the battery is still there after a reload' }).toEqual(['battery']);
+  expectNoErrors(errors);
+});

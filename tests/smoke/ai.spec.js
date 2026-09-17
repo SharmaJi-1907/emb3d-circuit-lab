@@ -187,7 +187,7 @@ test('a named part gets that part\'s card, however it is written (D1)', async ({
   await openApp(page);
   await expectAnswers(page, [
     ['tell me about the NE555', 'part:ne555'],
-    ['Explain datasheet specifications and alt functions for ATmega328P microcontroller.', 'part:atmega328p'], // Datasheet "Ask AI"
+    ['Explain datasheet specifications and alt functions for ATmega328P.', 'part:atmega328p'], // Datasheet "Ask AI"
     ['how do I use the MPU-6050', 'part:mpu6050'],
     ['how do I use the mpu6050', 'part:mpu6050'],
     ['how do I use the mpu 6050', 'part:mpu6050'],
@@ -488,5 +488,24 @@ test('lists and tables do not break code blocks or escaping (D18)', async ({ pag
   const typed = bubbles(page, 'user').last().locator('.ai-message-content');
   await expect(typed.locator('img')).toHaveCount(0);
   await expect(typed).toContainText('<img src=x onerror=alert(1)>');
+  expectNoErrors(errors);
+});
+
+/* ── Final clean-up (D38) ─────────────────────────────────────── */
+test('answers come back in the order the questions were asked (D38)', async ({ page, errors }) => {
+  await openApp(page);
+  await page.locator('.nav-item[data-view="ai"]').click();
+  const questions = ['how does an esp32 work', 'What is the timing equation for NE555 Astable Mode?'];
+  await page.evaluate((qs) => {
+    // The first reply takes the longest wait, the second the shortest.
+    const waits = [0.99, 0];
+    const random = Math.random;
+    Math.random = () => (waits.length ? waits.shift() : random());
+    qs.forEach((q) => window.CircuitApp.sendAIMessage(q));
+  }, questions);
+  const replies = () => page.evaluate(() => window.CircuitApp.getState().aiMessages.filter((m) => m.role === 'assistant').map((m) => m.content));
+  await expect.poll(async () => (await replies()).length, { timeout: 10_000 }).toBe(2);
+  const expected = await page.evaluate((qs) => qs.map((q) => window.CircuitApp.getAIResponse(q)), questions);
+  expect(await replies(), 'the first answer belongs to the first question').toEqual(expected);
   expectNoErrors(errors);
 });

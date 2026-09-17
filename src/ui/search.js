@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Search pop-up (Ctrl/⌘ K, /) and its ↑↓ ↵ keys (D14)
-   Split out of app/app.js (#27c)
+   It finds components, boards and datasheets (D46).
 ═══════════════════════════════════════════════════════════════════ */
 
 import { state } from '../app/state.js';
+import { escapeHtml } from '../utils/html.js';
 
 export function initSearch() {
   const searchInput = document.getElementById('global-search');
@@ -12,44 +13,6 @@ export function initSearch() {
   const modalSearchInput = document.getElementById('modal-search-input');
 
   if (backdrop && modal) {
-    // Style search backdrop dynamically
-    Object.assign(backdrop.style, {
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-      background: 'rgba(5, 5, 10, 0.75)',
-      backdropFilter: 'blur(12px)',
-      webkitBackdropFilter: 'blur(12px)',
-      zIndex: '9999',
-      opacity: '0',
-      display: 'none',
-      transition: 'opacity 0.2s ease-out'
-    });
-
-    // Style modal content dynamically
-    Object.assign(modal.style, {
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -46%) scale(0.96)',
-      width: '90%',
-      maxWidth: '640px',
-      maxHeight: '75%',
-      zIndex: '10000',
-      opacity: '0',
-      display: 'none',
-      flexDirection: 'column',
-      borderRadius: '12px',
-      border: '1px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(10, 10, 18, 0.9)',
-      boxShadow: '0 24px 64px rgba(0, 0, 0, 0.8)',
-      transition: 'opacity 0.2s ease-out, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-      padding: '20px',
-      overflow: 'hidden'
-    });
-
     // Show modal when global search header input is focused/clicked
     if (searchInput) {
       searchInput.addEventListener('focus', (e) => {
@@ -60,6 +23,12 @@ export function initSearch() {
     }
 
     backdrop.addEventListener('click', hideSearchModal);
+
+    // A result opens its component, board or datasheet (see openSearchResult)
+    document.getElementById('modal-search-results')?.addEventListener('click', (e) => {
+      const hit = e.target.closest('.search-result-item');
+      if (hit) openSearchResult(hit.dataset.kind, hit.dataset.id);
+    });
   }
 
   if (modalSearchInput) {
@@ -91,16 +60,20 @@ export function initSearch() {
   }
 }
 
+// The close animation hides the pop-up 200 ms after it fades. Opening it
+// again within those 200 ms must cancel that, or it vanishes while in use (D37).
+let hideTimer = null;
+
 export function showSearchModal() {
   const backdrop = document.getElementById('search-backdrop');
   const modal = document.querySelector('.search-modal-content');
   if (backdrop && modal) {
-    backdrop.style.display = 'block';
-    modal.style.display = 'flex';
+    clearTimeout(hideTimer);
+    backdrop.classList.add('shown');
+    modal.classList.add('shown');
     requestAnimationFrame(() => {
-      backdrop.style.opacity = '1';
-      modal.style.opacity = '1';
-      modal.style.transform = 'translate(-50%, -50%) scale(1)';
+      backdrop.classList.add('open');
+      modal.classList.add('open');
     });
     const input = document.getElementById('modal-search-input');
     if (input) {
@@ -115,12 +88,12 @@ export function hideSearchModal() {
   const backdrop = document.getElementById('search-backdrop');
   const modal = document.querySelector('.search-modal-content');
   if (backdrop && modal) {
-    backdrop.style.opacity = '0';
-    modal.style.opacity = '0';
-    modal.style.transform = 'translate(-50%, -46%) scale(0.96)';
-    setTimeout(() => {
-      backdrop.style.display = 'none';
-      modal.style.display = 'none';
+    backdrop.classList.remove('open');
+    modal.classList.remove('open');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      backdrop.classList.remove('shown');
+      modal.classList.remove('shown');
     }, 200);
   }
 }
@@ -142,25 +115,39 @@ function renderModalSearchResults(query) {
     return;
   }
 
-  const filtered = CircuitLabData.components.filter(c =>
-    c.name.toLowerCase().includes(query) ||
-    c.tags.some(t => t.includes(query)) ||
-    c.manufacturer.toLowerCase().includes(query)
-  ).slice(0, 6);
+  const has = (...fields) => fields.some(f => String(f || '').toLowerCase().includes(query));
+  const results = [
+    ...CircuitLabData.components
+      .filter(c => has(c.name, c.id, c.manufacturer) || c.tags.some(t => t.includes(query)))
+      .map(c => ({ kind: 'component', id: c.id, icon: c.icon, name: c.name, meta: `${c.manufacturer} · ${c.package}`, type: c.category })),
+    ...Object.entries(CircuitLabData.boards)
+      .filter(([id, b]) => has(b.name, id, b.mcu))
+      .map(([id, b]) => ({ kind: 'board', id, icon: '📟', name: b.name, meta: b.mcu, type: 'board' })),
+    ...CircuitLabData.datasheets
+      .filter(d => has(d.name, d.componentId, d.manufacturer))
+      .map(d => ({ kind: 'datasheet', id: d.componentId, icon: '📄', name: d.name, meta: `${d.manufacturer} · datasheet`, type: 'datasheet' })),
+  ].slice(0, 8);
 
-  if (filtered.length === 0) {
-    resultsContainer.innerHTML = '<div class="search-no-results">No components match your query</div>';
+  if (results.length === 0) {
+    resultsContainer.innerHTML = `<div class="search-no-results">Nothing matches "${escapeHtml(query)}"</div>`;
   } else {
-    resultsContainer.innerHTML = filtered.map(c => `
-      <div class="search-result-item" onclick="CircuitApp.selectComponent('${c.id}')">
-        <span class="search-result-icon">${c.icon}</span>
+    resultsContainer.innerHTML = results.map(r => `
+      <div class="search-result-item" data-kind="${r.kind}" data-id="${r.id}">
+        <span class="search-result-icon">${r.icon}</span>
         <div class="search-result-info">
-          <div class="search-result-name">${c.name}</div>
-          <div class="search-result-meta">${c.manufacturer} · ${c.package}</div>
+          <div class="search-result-name">${r.name}</div>
+          <div class="search-result-meta">${r.meta}</div>
         </div>
-        <span class="search-result-type type-${c.category}">${c.category}</span>
+        <span class="search-result-type type-${r.type}">${r.type}</span>
       </div>
     `).join('');
   }
   highlightSearchResult();
+}
+
+function openSearchResult(kind, id) {
+  hideSearchModal();
+  if (kind === 'component') window.CircuitApp.selectComponent(id);
+  if (kind === 'board') window.CircuitApp.openBoard(id);
+  if (kind === 'datasheet') window.CircuitApp.openDatasheet(id);
 }

@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Keyboard shortcuts (D2)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { navigateTo } from '../app/router.js';
@@ -8,6 +7,7 @@ import { state } from '../app/state.js';
 import { toggleNotifications } from './notifications.js';
 import { hideSearchModal, showSearchModal } from './search.js';
 import { updateSimToolbar } from '../views/simulator.view.js';
+import { setViewMode } from '../views/viewer.view.js';
 
 export function initKeyboardShortcuts() {
   const shortcutsModal = document.getElementById('shortcuts-modal');
@@ -40,7 +40,7 @@ export function initKeyboardShortcuts() {
     // Leave browser shortcuts (Ctrl+3, Alt+←, …) alone, and ignore auto-repeat from a held key.
     if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
 
-    // 1–8: screens in sidebar order
+    // 1–9: screens in sidebar order
     const views = [...document.querySelectorAll('.nav-item')].map(item => item.dataset.view);
     if (/^[1-9]$/.test(e.key) && views[Number(e.key) - 1]) {
       navigateTo(views[Number(e.key) - 1]);
@@ -59,8 +59,9 @@ export function initKeyboardShortcuts() {
     }
 
     if (state.currentView === 'viewer' && window.ThreeViewer && ThreeViewer.isReady()) {
-      if (key === 'w') ThreeViewer.setWireframe(!ThreeViewer.isWireframe());
-      if (key === 'e') ThreeViewer.setExplode(!ThreeViewer.isExploded());
+      // The same as the view mode buttons, so the buttons stay marked right (D32)
+      if (key === 'w') setViewMode(ThreeViewer.isWireframe() ? 'solid' : 'wireframe');
+      if (key === 'e') setViewMode(ThreeViewer.isExploded() ? 'solid' : 'explode');
       if (key === 'r') ThreeViewer.resetView();
       return;
     }

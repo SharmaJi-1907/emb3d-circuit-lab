@@ -1,16 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Board Explorer screen (F4, D22–D25)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { PIN_TYPE_CONFIG } from '../app/pin-types.js';
-import { registerScreen } from '../app/router.js';
+import { navigateTo, registerScreen } from '../app/router.js';
 import { state } from '../app/state.js';
 import { showToast } from '../ui/toast.js';
 import { roundRect } from '../utils/canvas.js';
+import { cssColor } from '../utils/css.js';
 
 let boardCanvas = null;
 let boardCtx = null;
+let boardW = 0; // the canvas size on screen, in CSS pixels
+let boardH = 0;
 let boardZoom = 1.0;
 let boardOffsetX = 0;
 let boardOffsetY = 0;
@@ -41,12 +43,12 @@ function initBoardExplorer() {
     boardCanvas._wired = true;
     boardCtx = boardCanvas.getContext('2d');
 
-    // Redraw at the new size when the window changes size (D22)
-    window.addEventListener('resize', () => {
-      // Wait one frame: during the resize event the box can still be its old
-      // size, which left the drawing 1 px short of the board (D27).
-      if (state.currentView === 'boards') requestAnimationFrame(sizeBoardCanvas);
-    });
+    // Redraw at the new size whenever the board's box changes: a window
+    // resize (D22), or the sidebar being hidden, which no window event
+    // reports (D35). The observer runs after layout, so the size is final (D27).
+    new ResizeObserver(() => {
+      if (state.currentView === 'boards') sizeBoardCanvas();
+    }).observe(boardCanvas);
 
     // Bind canvas mouse & click interactions
     boardCanvas.addEventListener('mousedown', (e) => {
@@ -81,7 +83,7 @@ function initBoardExplorer() {
 
     boardCanvas.addEventListener('click', () => {
       if (hoveredBoardPin) {
-        selectBoardPin(hoveredBoardPin.num, hoveredBoardPin.name, hoveredBoardPin.type);
+        selectBoardPin(hoveredBoardPin.num);
       }
     });
   }
@@ -128,7 +130,19 @@ function initBoardExplorer() {
 export function selectBoard(id) {
   if (id !== state.selectedBoard) state.selectedBoardPin = null; // a pin number means nothing on another board
   state.selectedBoard = id;
+  // Mark the tab of the board on show, however it was chosen (a tab, or search)
+  document.querySelectorAll('.board-tab').forEach(tab => {
+    tab.classList.toggle('active', BOARD_MAPPING[tab.dataset.board] === id);
+  });
   renderBoardExplorer();
+}
+
+// Open the Board Explorer on one board (a search result, D46).
+export function openBoard(id) {
+  if (!CircuitLabData.boards[id]) return;
+  if (id !== state.selectedBoard) state.selectedBoardPin = null;
+  state.selectedBoard = id;
+  navigateTo('boards'); // draws the board, and marks its tab
 }
 
 function renderBoardExplorer() {
@@ -164,13 +178,19 @@ function renderBoardExplorer() {
   sizeBoardCanvas();
 }
 
-// Size the canvas drawing to its own box on screen (F4), then draw
+// Size the canvas drawing to its own box on screen (F4), then draw. On a
+// high-DPI screen the drawing gets that many pixels per CSS pixel, so it is
+// sharp; everything is still drawn in CSS pixels (D45).
 function sizeBoardCanvas() {
   if (!boardCanvas) return;
   const rect = boardCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  boardW = rect.width;
+  boardH = rect.height || 480;
   // Canvas sizes are whole pixels; round so a fractional box doesn't lose one.
-  boardCanvas.width = Math.round(rect.width);
-  boardCanvas.height = Math.round(rect.height) || 480;
+  boardCanvas.width = Math.round(boardW * dpr);
+  boardCanvas.height = Math.round(boardH * dpr);
+  boardCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawBoard();
 }
 
@@ -188,7 +208,7 @@ function renderBoardPinList(board) {
     const cfg = PIN_TYPE_CONFIG[pin.type] || PIN_TYPE_CONFIG.digital;
     return `
       <div class="board-pin-item ${state.selectedBoardPin === pin.num ? 'selected' : ''}" data-pin="${pin.num}"
-        onclick="CircuitApp.selectBoardPin(${pin.num}, '${pin.name}', '${pin.type}')">
+        onclick="CircuitApp.selectBoardPin(${pin.num})">
         <span class="pin-dot" style="background:${cfg.color}"></span>
         <span class="pin-num">${pin.num}</span>
         <span class="pin-name">${pin.name}</span>
@@ -198,9 +218,11 @@ function renderBoardPinList(board) {
   }).join('');
 }
 
-export function selectBoardPin(num, name, type) {
+export function selectBoardPin(num) {
+  const pin = CircuitLabData.boards[state.selectedBoard]?.pins.find(p => p.num === num);
+  if (!pin) return;
   state.selectedBoardPin = num;
-  const cfg = PIN_TYPE_CONFIG[type] || PIN_TYPE_CONFIG.digital;
+  const cfg = PIN_TYPE_CONFIG[pin.type] || PIN_TYPE_CONFIG.digital;
 
   // Highlight the pin in the list (D23)
   document.querySelectorAll('.board-pin-item').forEach(item => {
@@ -208,7 +230,7 @@ export function selectBoardPin(num, name, type) {
   });
 
   // Dynamically show toast overlay for pin
-  showToast(`Inspecting Pin ${num}: ${name} (${cfg.label})`, 'info');
+  showToast(`Inspecting Pin ${num}: ${pin.name} (${cfg.label})`, 'info');
   drawBoard();
 }
 
@@ -217,9 +239,11 @@ function drawBoard() {
   const board = CircuitLabData.boards[state.selectedBoard];
   if (!board) return;
 
+  // The board is drawn as a real PCB: its own colour, a black chip and gold
+  // pads, in both themes. Only a selected or hovered pin uses a theme colour.
   const ctx = boardCtx;
-  const cw = boardCanvas.width;
-  const ch = boardCanvas.height;
+  const cw = boardW;
+  const ch = boardH;
 
   ctx.clearRect(0, 0, cw, ch);
 
@@ -285,14 +309,15 @@ function drawBoard() {
     const isSelected = state.selectedBoardPin === pin.num;
     const isHovered = hoveredBoardPin && hoveredBoardPin.num === pin.num;
 
-    ctx.fillStyle = isSelected ? cfg.color : '#0a0a0f';
+    const pinColour = isSelected || isHovered ? cssColor(cfg.color) : null;
+    ctx.fillStyle = isSelected ? pinColour : '#0a0a0f';
     ctx.beginPath();
     ctx.arc(px, py, 2.5 * boardZoom, 0, Math.PI * 2);
     ctx.fill();
 
     // Halo overlay for hover or select
     if (isSelected || isHovered) {
-      ctx.strokeStyle = cfg.color;
+      ctx.strokeStyle = pinColour;
       ctx.lineWidth = 1.5 * boardZoom;
       ctx.beginPath();
       const pulse = 8 + Math.sin(Date.now() / 150) * 1.5;
@@ -307,8 +332,8 @@ function checkHoverPin(clientX, clientY) {
   const board = CircuitLabData.boards[state.selectedBoard];
   if (!board) return;
 
-  const cx = boardCanvas.width / 2 + boardOffsetX;
-  const cy = boardCanvas.height / 2 + boardOffsetY;
+  const cx = boardW / 2 + boardOffsetX;
+  const cy = boardH / 2 + boardOffsetY;
   const bw = 460 * boardZoom;
   const bh = 280 * boardZoom;
 
@@ -317,7 +342,6 @@ function checkHoverPin(clientX, clientY) {
     const px = cx - bw/2 + pin.x * bw;
     const py = cy - bh/2 + pin.y * bh;
     const dist = Math.hypot(clientX - px, clientY - py);
-    
     if (dist < 10 * boardZoom) {
       found = pin;
       break;

@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   CIRCUITLAB — Datasheet Viewer screen (C8, D26)
-   Split out of app/app.js (#27c)
+   CIRCUITLAB — Datasheet Viewer screen (C8, D26, D36, D48)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { PIN_TYPE_CONFIG } from '../app/pin-types.js';
@@ -34,19 +33,24 @@ function initDatasheetViewer() {
     };
   });
 
-  // Bind download actions & AI explains
+  // Both buttons act on the datasheet on screen (D36): the maker's PDF (D48),
+  // and a question to the AI about it.
   const downloadBtn = document.getElementById('ds-download');
   if (downloadBtn) {
     downloadBtn.onclick = () => {
-      showToast('Initiating secure technical PDF assembly boundary...', 'success');
+      const ds = shownDatasheet();
+      if (ds?.pdf) window.open(ds.pdf, '_blank', 'noopener');
+      else showToast(`No PDF link is stored for ${ds?.name || 'this datasheet'}`, 'warning');
     };
   }
 
   const explainBtn = document.getElementById('ds-ai-explain');
   if (explainBtn) {
     explainBtn.onclick = () => {
+      const ds = shownDatasheet();
+      if (!ds) return;
       navigateTo('ai');
-      sendAIMessage(`Explain datasheet specifications and alt functions for ${state.selectedComponent?.name || 'ATmega328P'} microcontroller.`);
+      sendAIMessage(`Explain datasheet specifications and alt functions for ${ds.name}.`);
     };
   }
 
@@ -69,13 +73,30 @@ function renderDatasheetList() {
     return;
   }
 
+  const open = shownDatasheet();
   dsList.innerHTML = shown.map(ds => `
-    <div class="ds-item ${state.selectedComponent?.id === ds.componentId ? 'active' : ''}"
+    <div class="ds-item ${ds === open ? 'active' : ''}"
       onclick="CircuitApp.selectDatasheetByComponent('${ds.componentId}')">
       <div class="ds-item-name">${ds.name}</div>
       <div class="ds-item-mfr">${ds.manufacturer}</div>
     </div>
   `).join('');
+}
+
+// The datasheet on screen: the selected part's, or the first one when that
+// part has none. The header, the marked row and both buttons all use this,
+// so they never disagree (D36).
+function shownDatasheet() {
+  return CircuitLabData.datasheets.find(d => d.componentId === state.selectedComponent?.id)
+    || CircuitLabData.datasheets[0];
+}
+
+// Open the Datasheet Viewer on one datasheet (a search result, D46).
+export function openDatasheet(componentId) {
+  const comp = CircuitLabData.components.find(c => c.id === componentId);
+  if (!comp) return;
+  state.selectedComponent = comp;
+  navigateTo('datasheet');
 }
 
 export function selectDatasheetByComponent(id) {
@@ -128,10 +149,7 @@ function renderDatasheetContent() {
 
   if (!contentBox) return;
 
-  const ds = CircuitLabData.datasheets.find(d =>
-    d.componentId === (state.selectedComponent?.id || 'atmega328p')
-  ) || CircuitLabData.datasheets[0];
-
+  const ds = shownDatasheet();
   if (!ds) return;
 
   if (compNameEl) compNameEl.textContent = ds.name;
@@ -150,7 +168,7 @@ function renderDatasheetContent() {
   const sec = ds.sections[sectionKey];
 
   if (!sec) {
-    contentBox.innerHTML = `<div class="placeholder-msg">Section content under catalog index division.</div>`;
+    contentBox.innerHTML = `<div class="placeholder-msg">${ds.name} has no ${sectionKey} section.</div>`;
     return;
   }
 
@@ -248,7 +266,7 @@ function renderDatasheetContent() {
       contentBox.innerHTML = `
         <div class="ds-section">
           <h3 class="ds-section-title">${sec.title || sectionKey}</h3>
-          <p class="ds-body-text">${sec.description || 'Full technical boundaries described inside catalog indexes. Direct datasheet files mapping.'}</p>
+          <p class="ds-body-text">${sec.description || ''}</p>
         </div>
       `;
   }
