@@ -20,6 +20,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- `tests/smoke/assets.spec.js`: a test that the E16 leftovers stay gone (173 tests in total).
 - `tests/smoke/assets.spec.js`: 2 tests — nothing is fetched from a Three.js CDN, and the 3D Viewer shows a model with the internet blocked (172 tests in total).
 - Three passive parts with their own 3D models: the YAGEO **CFR-25** carbon film resistor, the Panasonic **ECA-1EM101** 100 µF electrolytic capacitor and the Kingbright **WP7113ID** red LED. Every value comes from the manufacturer's datasheet or product page (listed in `data.js`). Their leads are clickable pins, and the LED model is red like the real part. Part numbers are used as names, so the AI keeps giving the LED-resistor answer to "what resistor do I need for an LED". New test in `tests/smoke/viewer-models.spec.js` (170 tests in total).
 - `tests/smoke/topbar.spec.js`: 2 tests for the top bar's New Project and Share buttons (169 tests in total).
@@ -67,6 +68,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/simulator.spec.js`: 4 tests for the Simulator's setup and drawing loop (91 tests in total). Simulator: read-only `getFrameCount()`.
 
 ### Removed
+- Unused leftovers (E16): the empty `#particle-field` div, `state.projects` and `loadProjects()`, which read a `circuitlab-projects` key nothing ever wrote. The lint warning cap drops from 9 to 7.
 - GSAP and ScrollTrigger, downloaded on every page load and used by nothing (E10). FontAwesome went too — a whole CDN stylesheet for one glyph, the robot in the AI header, now a 🤖 character. Three CDN requests gone from every page load.
 - 29 dead CSS rules from `main.css` (E12): 2267 → 2072 lines, built CSS 54.76 kB → 52.97 kB. Every selector was checked against the live app first; all 22 matched nothing on any of the 9 screens.
 - The duplicate `<link rel="stylesheet">` for `main.css` (E3) — `src/main.js` already imports it.

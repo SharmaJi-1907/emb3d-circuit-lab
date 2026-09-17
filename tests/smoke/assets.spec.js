@@ -2,7 +2,7 @@
    Project hygiene: what the page loads and what it no longer loads.
    E2 (missing manifest/favicon), E3 (CSS loaded twice), E10 (GSAP
    loaded but unused), E12 (dead CSS), E14 (font CDN fails tests),
-   E7 (Three.js from a CDN, so no 3D without the internet).
+   E7 (Three.js from a CDN, so no 3D without the internet), E16 (unused leftovers).
 ═══════════════════════════════════════════════════════════════════ */
 
 import { readFile } from 'node:fs/promises';
@@ -128,5 +128,17 @@ test('the 3D Viewer works with no internet (E7)', async ({ page, errors }) => {
   await goToView(page, 'viewer');
   await waitForStableModel(page);
   expect(warnings, 'no Three.js deprecation warnings').toEqual([]);
+  expectNoErrors(errors);
+});
+
+test('unused leftovers are gone (E16)', async ({ page, errors }) => {
+  await openApp(page);
+  await expect(page.locator('#particle-field'), 'an empty div nothing drew into').toHaveCount(0);
+
+  // Your projects live under circuitlab.my-projects (C4); the old key was only ever read.
+  const state = await page.evaluate(() => window.CircuitApp.getState());
+  expect('projects' in state, 'state.projects was never read').toBe(false);
+  const src = await (await page.request.get('/src/app/app.js')).text();
+  expect(src, 'nothing writes circuitlab-projects, so nothing should read it').not.toContain('circuitlab-projects');
   expectNoErrors(errors);
 });
