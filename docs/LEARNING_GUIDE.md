@@ -50,6 +50,7 @@ index.html  ── the page: all 9 screens, buttons, panels (each with an id="..
          ├─ engines/three-viewer/index.js     3D engine      → window.ThreeViewer
          ├─ engines/simulator/index.js        circuit engine → window.CircuitSimulator
          └─ app/app.js                        the "brain"    → window.CircuitApp
+               (imports app/router.js, ui/, services/, utils/ and one views/*.view.js per screen)
 ```
 
 An older version of the app (`script.js` + `database.js`) used to sit in a `legacy/` folder. It was never loaded, and it was deleted in branch #6. See [decisions/0002-screen-markup.md](decisions/0002-screen-markup.md) for why the project had two versions.
@@ -85,11 +86,11 @@ button.addEventListener('click', () => { /* do something */ });
 A button with no listener does nothing when clicked. Also, **adding a new function as a listener on every visit makes it run once per visit**. That's why every screen wires its buttons once, on the first visit (bugs D3 and D22).
 
 ### 4.4 Screen switching ("routing")
-`navigateTo('simulator')` in [app.js](../src/app/app.js#L124):
+`navigateTo('simulator')` in [router.js](../src/app/router.js):
 1. puts `#simulator` in the address, so refresh, Back/Forward and links work (a `hashchange` listener does the reverse)
 2. hides every `<section class="view">`
 3. shows `<section id="view-simulator">`
-4. runs that screen's setup function (`initSimulatorPanel`)
+4. runs what that screen registered (`initSimulatorPanel` in `views/simulator.view.js`)
 
 ### 4.5 The animation loop
 ```js
@@ -113,7 +114,7 @@ The chips aren't loaded from model files. They're **built from boxes and cylinde
 [simulator/index.js](../src/engines/simulator/index.js) draws parts on a 2D canvas. `runSimulation()` joins wired pins into nets and works out every net's voltage with nodal analysis, so currents follow Ohm's law and an LED lights only in a closed loop, the right way round. It's a teaching simplification (DC only, simple part models), not a full circuit simulator like SPICE.
 
 ### 4.8 The "AI"
-`getAIResponse()` in [app.js](../src/app/app.js#L1601) looks for words in your question and returns a pre-written answer from `data.js`. It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
+`getAIResponse()` in [services/ai.js](../src/services/ai.js) looks for words in your question and returns a pre-written answer from `data.js`. It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
 
 ### 4.9 localStorage
 `localStorage` keeps data in the browser. It stays after a page refresh, but only on that one browser. This project saves the theme under `circuitlab.theme` and your own projects under `circuitlab.my-projects`.

@@ -65,7 +65,7 @@ npm run test:report   # open the HTML report
 **Lint**
 - New mistakes (undefined names, duplicate keys, unreachable code…) are **errors**.
 - Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 7, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
-- Cross-file `window` globals are declared only for `src/app/app.js` in [eslint.config.js](eslint.config.js). If another file starts using one by bare name, declare it there for that file.
+- Cross-file `window` globals (`CircuitLabData`, `ThreeViewer`, `CircuitSimulator`, `CircuitApp`) are declared in [eslint.config.js](eslint.config.js) for `src/app`, `ui`, `views`, `services` and `utils`. Everything else is shared with `import`/`export` (ADR 0003).
 - `dist/` and test output are ignored.
 
 **Smoke tests**
@@ -83,11 +83,12 @@ npm run test:report   # open the HTML report
 ## Code rules
 
 - **Page markup follows [ADR 0002](docs/decisions/0002-screen-markup.md), per screen.**
-  - **Viewer, Database (→ Component Library) and Dashboard** use the markup that `app.js` and the stylesheets expect. Change `index.html` to match them.
+  - **Viewer, Database (→ Component Library) and Dashboard** use the markup that their `views/*.view.js` file and the stylesheets expect. Change `index.html` to match them.
   - **All other screens** (Simulator, Boards, Datasheet, AI, Projects, Settings, sidebar, top bar) keep `index.html`. Change the JS or CSS to match the page.
 - **Modules follow [ADR 0003](docs/decisions/0003-es-modules.md):** files split out of the big ones use `import`/`export`. `CircuitApp`, `ThreeViewer`, `CircuitSimulator` and `CircuitLabData` stay on `window` as the public API (inline handlers and tests use them), each set in one place. Each part's entry file is imported in [src/main.js](src/main.js) in dependency order.
 - **Refactor branches change no behaviour:** take a snapshot before (data checksum, computed styles, public API, screen HTML) and prove it identical after, instead of a test that fails before.
 - Wire each button once, on the first visit to a screen, never on every visit.
+- A new screen gets `src/views/<name>.view.js`, which calls `registerScreen('<name>', onOpen)` from `app/router.js`, and is imported in `app/app.js`.
 - Escape user text before putting it into `innerHTML`.
 - No secrets or API keys in browser code.
 - Match the existing style: 2-space indent, IIFE modules, `/* ── Section ── */` comment headers.
