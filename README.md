@@ -2,12 +2,12 @@
 
 An electronics learning web app: a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant — all in the browser.
 
-> **Status:** work in progress. All 9 screens work; the remaining known bugs and clean-up are listed in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
+> **Status:** all 9 screens work, with 177 browser smoke tests, 0 lint warnings and 0 `npm audit` issues. One improvement is still open (E18, loading Three.js only when the 3D Viewer opens); see [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
 
 ## Quick start
 
 ```bash
-npm install
+npm install       # needs Node 20.19+ or 22.12+ (Vite 8)
 npm run dev       # http://localhost:3000
 ```
 
@@ -30,14 +30,14 @@ The smoke tests use the Google Chrome installed on your machine. Without Chrome,
 ├── public/             Static files copied to dist/ as-is (favicon, manifest)
 ├── src/
 │   ├── main.js         Entry point — loads styles and all modules
-│   ├── app/            App shell: startup, routing, state, shortcuts
-│   ├── views/          One file per screen
+│   ├── app/            App shell: startup, router, state, window.CircuitApp
+│   ├── views/          One <screen>.view.js per screen
 │   ├── engines/        3D viewer, circuit simulator, animated background
-│   ├── ui/             Reusable UI pieces (toast, modal, search)
+│   ├── ui/             Page-wide UI: toast, search, shortcuts, notifications, theme, top bar
 │   ├── data/           Component, board, datasheet and project data
 │   ├── services/       AI answers, local storage
 │   ├── utils/          Small helpers (DOM, HTML escaping, formatting)
-│   ├── styles/         CSS
+│   ├── styles/         CSS: base/, layout/, components/, views/
 │   └── assets/         Fonts, models, images imported by code
 ├── tests/              Smoke and unit tests
 ├── scripts/            Developer helper scripts
@@ -53,7 +53,9 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/LEARNING_GUIDE.md](docs/LEARNING_GUIDE.md) — how the code works, in plain English
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — code style rules
 - [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) — branches, commits, pull requests and the branch plan
+- [docs/decisions/](docs/decisions/) — why things are the way they are (folder structure, screen markup, ES modules)
+- [CHANGELOG.md](CHANGELOG.md) — everything that changed
 
 ## Tech
 
-Vanilla JavaScript · [Vite](https://vitejs.dev) · [Three.js](https://threejs.org) · Canvas 2D
+Vanilla JavaScript (ES modules) · [Vite 8](https://vitejs.dev) · [Three.js r186](https://threejs.org) · Canvas 2D · [Playwright](https://playwright.dev) smoke tests · ESLint 10
