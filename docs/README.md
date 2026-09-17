@@ -20,3 +20,4 @@
 |---|---|
 | [0001](decisions/0001-folder-structure.md) | Folder structure (`src/`, `docs/`, `tests/`…) |
 | [0002](decisions/0002-screen-markup.md) | Which page markup each screen uses: new layout for Viewer, Database and Dashboard; current page for the rest |
+| [0003](decisions/0003-es-modules.md) | ES modules inside the split files; `window.CircuitApp`, `CircuitLabData`, `ThreeViewer` and `CircuitSimulator` stay as the public API |
