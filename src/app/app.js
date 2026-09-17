@@ -23,7 +23,6 @@ window.CircuitApp = (function () {
     searchIndex: 0,
     sidebarCollapsed: false,
     notifications: [],
-    projects: [],
     recentComponents: ['atmega328p', 'esp32-wroom', 'ne555'],
     boardPinFilter: 'all',
   };
@@ -61,7 +60,6 @@ window.CircuitApp = (function () {
     initKeyboardShortcuts();
     initNotifications();
     initTopbarButtons();
-    loadProjects();
 
     // Set default selected component
     if (!state.selectedComponent && window.CircuitLabData && CircuitLabData.components.length > 0) {
@@ -2046,13 +2044,6 @@ Could you be more specific about what you're trying to build? For example:
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
-
-  function loadProjects() {
-    try {
-      const saved = localStorage.getItem('circuitlab-projects');
-      if (saved) state.projects = JSON.parse(saved);
-    } catch (e) {}
   }
 
   /* ── Public API ─────────────────────────────────────────────── */
