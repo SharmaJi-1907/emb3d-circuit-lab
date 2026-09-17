@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Only one animation draws the page background (D4). `initBackground()` is removed from `app.js`, and `circuit-bg.js` (the circuit grid) is kept, so the background now shows the grid instead of floating dots. The lint warning cap drops from 13 to 12.
 - The lint warning cap drops from 15 to 13: the two unused `label` parameters are used now that chips are labelled.
 - Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
 - Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
@@ -15,6 +16,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- `tests/smoke/background.spec.js`: checks only one animation draws the background (158 tests in total).
 - `tests/smoke/viewer-models.spec.js`: 6 tests for the 3D models — pin counts, chip labels and freeing old models (157 tests in total). 3D viewer: read-only `getMemoryInfo()` and `getModelInfo()` hooks.
 - `public/manifest.json` and `public/favicon.svg` (E2), so the page no longer 404s for either. New `tests/smoke/assets.spec.js` with 8 tests (151 tests in total).
 - `README.md`, `CHANGELOG.md`, `.editorconfig`, expanded `.gitignore`.
