@@ -1,7 +1,7 @@
 /* ── Shared page building blocks (F2, ADR 0002) ─────────────────
    Used by the screens that keep index.html markup: Simulator, Boards,
    Datasheet, AI, Projects, Settings and the pop-ups. Values come from
-   the design tokens in main.css, matching the Dashboard cards.
+   the design tokens in base/tokens.css, matching the Dashboard cards.
 ──────────────────────────────────────────────────────────────── */
 
 /* Screen titles */

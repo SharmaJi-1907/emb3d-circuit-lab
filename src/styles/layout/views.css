@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — Screen panels (.view) and how they show and hide
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── View Panels ──────────────────────────────────────────────── */
+#content-area, .view-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  display: none;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--t-slow), transform var(--t-slow);
+}
+
+.view.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hide grid-views when inactive */
+#view-viewer:not(.active),
+#view-simulator:not(.active),
+#view-ai:not(.active) {
+  display: none !important;
+}
+
+/* Simulator and viewer panels need no padding */
+#view-simulator,
+#view-viewer,
+#view-boards {
+  padding: 0;
+}

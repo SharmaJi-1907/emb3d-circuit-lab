@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — Buttons
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan), #0099bb);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-base);
+  white-space: nowrap;
+}
+.btn-primary:hover { filter: brightness(1.15); box-shadow: 0 0 12px var(--cyan-glow); }
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+.btn-secondary:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+.btn-ghost:hover { color: var(--text-primary); }
+
+.btn-danger {
+  background: rgba(255,68,68,0.15);
+  color: var(--red);
+  border: 1px solid rgba(255,68,68,0.3);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+.btn-danger:hover { background: rgba(255,68,68,0.25); }
+
+.btn-sm { padding: 4px 10px; font-size: 10px; }
+.btn-xs { padding: 2px 8px; font-size: 10px; }
+
+.btn-group {
+  display: flex;
+  gap: 2px;
+}
+
+.btn-ctrl {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+.btn-ctrl:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.btn-ctrl.active {
+  background: var(--cyan-dim);
+  color: var(--cyan);
+  border-color: var(--border-active);
+}

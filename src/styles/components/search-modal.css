@@ -1,0 +1,46 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — Search pop-up and its backdrop
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Search Modal & Backdrop Overlay Styles ─────────────────── */
+.search-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-base);
+}
+
+.search-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-modal-content {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%, -20px);
+  width: 90%;
+  max-width: 600px;
+  background: rgba(10, 10, 20, 0.95);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glow);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--t-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.search-modal-content.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}

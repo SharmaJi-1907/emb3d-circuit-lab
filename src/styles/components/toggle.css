@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — Toggle switch
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Toggle Switch ────────────────────────────────────────────── */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  cursor: pointer;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all var(--t-base);
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: all var(--t-base);
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--cyan-dim);
+  border-color: var(--border-active);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+  background: var(--cyan);
+}

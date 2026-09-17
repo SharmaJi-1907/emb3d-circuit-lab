@@ -1,0 +1,111 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — Design tokens (dark default) and the light theme (C5)
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── CSS Variables ────────────────────────────────────────────── */
+:root {
+  /* Colors */
+  --bg-base:       #05050a;
+  --bg-surface:    #0a0a14;
+  --bg-elevated:   #0f0f1e;
+  --bg-card:       #111128;
+  --bg-hover:      #161630;
+  --bg-active:     #1a1a38;
+
+  --border:        rgba(0,212,255,0.08);
+  --border-hover:  rgba(0,212,255,0.2);
+  --border-active: rgba(0,212,255,0.4);
+
+  --cyan:          #00d4ff;
+  --cyan-dim:      rgba(0,212,255,0.15);
+  --cyan-glow:     rgba(0,212,255,0.3);
+  --purple:        #7b2fff;
+  --purple-dim:    rgba(123,47,255,0.15);
+  --green:         #00ff88;
+  --green-dim:     rgba(0,255,136,0.15);
+  --orange:        #ff9500;
+  --red:           #ff4444;
+  --gold:          #ffd700;
+
+  --text-primary:  #e8e8f0;
+  --text-secondary:#8888aa;
+  --text-muted:    #444466;
+  --text-accent:   #00d4ff;
+
+  /* Surfaces that were hard-coded before the light theme (C5) */
+  --bg-panel:      rgba(10,10,20,0.95);
+  --bg-panel-soft: rgba(10,10,20,0.8);
+  --bg-overlay:    rgba(5,5,10,0.98);
+  --glass:         rgba(17,17,40,0.85);
+  --bg-code:       #000;
+
+  /* Typography */
+  --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans:     'Inter', system-ui, sans-serif;
+
+  /* Spacing */
+  --sidebar-w:     64px;
+  --header-h:      52px;
+  --radius-sm:     4px;
+  --radius:        8px;
+  --radius-lg:     12px;
+  --radius-xl:     16px;
+
+  /* Shadows */
+  --shadow-sm:     0 2px 8px rgba(0,0,0,0.4);
+  --shadow:        0 4px 20px rgba(0,0,0,0.6);
+  --shadow-glow:   0 0 20px rgba(0,212,255,0.15);
+  --shadow-purple: 0 0 20px rgba(123,47,255,0.2);
+
+  /* Transitions */
+  --t-fast:        0.12s ease;
+  --t-base:        0.2s ease;
+  --t-slow:        0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Light theme (C5) ───────────────────────────────────────────
+   Only the palette changes; every rule keeps using the same tokens.
+   The 3D viewport and code blocks stay dark on purpose — a dark 3D
+   scene is intentional, and dark code on a light page is normal.
+──────────────────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --bg-base:       #f2f4f8;
+  --bg-surface:    #ffffff;
+  --bg-elevated:   #ffffff;
+  --bg-card:       #ffffff;
+  --bg-hover:      #e9edf5;
+  --bg-active:     #dde4f0;
+
+  --border:        rgba(10,40,70,0.14);
+  --border-hover:  rgba(10,90,140,0.32);
+  --border-active: rgba(0,120,170,0.55);
+
+  --cyan:          #0077a8;
+  --cyan-dim:      rgba(0,119,168,0.12);
+  --cyan-glow:     rgba(0,119,168,0.25);
+  --purple:        #6423c8;
+  --purple-dim:    rgba(100,35,200,0.12);
+  --green:         #0a7f4f;
+  --green-dim:     rgba(10,127,79,0.14);
+  --orange:        #a85c00;
+  --red:           #c62828;
+  --gold:          #9a7500;
+
+  --text-primary:  #15181f;
+  --text-secondary:#4d586e;
+  --text-muted:    #7a849a;
+  --text-accent:   #0077a8;
+
+  --bg-panel:      rgba(255,255,255,0.95);
+  --bg-panel-soft: rgba(255,255,255,0.82);
+  --bg-overlay:    rgba(255,255,255,0.98);
+  --glass:         rgba(255,255,255,0.88);
+
+  --shadow-sm:     0 2px 8px rgba(20,30,60,0.10);
+  --shadow:        0 4px 20px rgba(20,30,60,0.14);
+  --shadow-glow:   0 0 20px rgba(0,119,168,0.12);
+  --shadow-purple: 0 0 20px rgba(100,35,200,0.12);
+}
+
+.hidden { display: none !important; }
