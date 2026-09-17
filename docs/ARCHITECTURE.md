@@ -4,7 +4,7 @@
 
 ```
 emmb3d/
-├── index.html                 Page markup — all 8 screens. Vite entry, stays at root.
+├── index.html                 Page markup — all 9 screens. Vite entry, stays at root.
 ├── public/                    Copied to dist/ unchanged, served from "/"
 │   └── icons/
 ├── src/
@@ -82,7 +82,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 The smoke test "component data is loaded" fails if `data.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
-Three.js and GSAP are currently loaded from a CDN in `index.html` as globals (`window.THREE`, `window.gsap`). GSAP isn't used by any code (E10).
+Three.js is loaded from a CDN in `index.html` as the global `window.THREE` (E7). GSAP and FontAwesome were removed in #25 (E10).
 
 The cross-file globals are declared for ESLint in [eslint.config.js](../eslint.config.js). Only `app/app.js` reads them by bare name.
 
