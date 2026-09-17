@@ -67,8 +67,8 @@ window.CircuitApp = (function () {
       state.selectedComponent = CircuitLabData.components[0];
     }
 
-    // Load default view (the Dashboard is the home screen, ADR 0002)
-    navigateTo('dashboard');
+    // Open the screen in the address (D9), else the Dashboard, the home screen (ADR 0002)
+    navigateTo(location.hash.slice(1) || 'dashboard', { replace: true });
 
     // Init Three.js viewer after a tick
     setTimeout(() => {
@@ -108,10 +108,34 @@ window.CircuitApp = (function () {
         document.querySelector('.main-area')?.classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
       });
     }
+
+    // Back/Forward, a #link or an address typed by hand switches the screen (D9)
+    window.addEventListener('hashchange', () => {
+      const view = location.hash.slice(1);
+      if (view !== state.currentView) navigateTo(view, { replace: true });
+    });
   }
 
-  function navigateTo(view) {
+  // The screens that exist, in sidebar order.
+  function knownView(view) {
+    return [...document.querySelectorAll('.nav-item')].some(item => item.dataset.view === view);
+  }
+
+  function navigateTo(view, { replace = false } = {}) {
+    // An unknown screen would hide every screen and leave a blank page (D9)
+    if (!knownView(view)) {
+      view = 'dashboard';
+      replace = true;
+    }
     state.currentView = view;
+
+    // Keep the address in step, so refresh, Back/Forward and links work (D9).
+    // Each switch is a Back step; a correction (start-up, unknown screen)
+    // replaces the entry instead, so Back never lands on a bad address again.
+    if (location.hash !== `#${view}`) {
+      if (replace) history.replaceState(null, '', `#${view}`);
+      else location.hash = view;
+    }
 
     // Update nav items
     document.querySelectorAll('.nav-item').forEach(item => {
