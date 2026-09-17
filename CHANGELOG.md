@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- The lint warning cap drops from 12 to 9: `buildResistor`, `buildCapacitor` and `buildLED` are used now.
 - The lint warning cap drops from 13 to 12: the unused `t` in the removed background animation is gone (D4).
 - Docs brought up to date: the README, LEARNING_GUIDE, ARCHITECTURE and CLAUDE.md no longer mention GSAP or FontAwesome (removed in #25), the guide describes the DC solver, localStorage and hash routing as they are now, and the fix plan's finished steps are ticked. The D4 entry moved from Changed to Fixed.
 - The lint warning cap drops from 15 to 13: the two unused `label` parameters are used now that chips are labelled.
@@ -17,6 +18,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- Three passive parts with their own 3D models: the YAGEO **CFR-25** carbon film resistor, the Panasonic **ECA-1EM101** 100 µF electrolytic capacitor and the Kingbright **WP7113ID** red LED. Every value comes from the manufacturer's datasheet or product page (listed in `data.js`). Their leads are clickable pins, and the LED model is red like the real part. Part numbers are used as names, so the AI keeps giving the LED-resistor answer to "what resistor do I need for an LED". New test in `tests/smoke/viewer-models.spec.js` (170 tests in total).
 - `tests/smoke/topbar.spec.js`: 2 tests for the top bar's New Project and Share buttons (169 tests in total).
 - `tests/smoke/background.spec.js`: 2 tests for the background's theme colours and its dots after a window resize (167 tests in total).
 - `tests/smoke/routing.spec.js`: 7 tests for hash routing — the address, links, refresh, Back/Forward and unknown screens (165 tests in total).
@@ -123,6 +125,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Exploding the 3D model no longer makes it vanish, and quick toggling no longer makes the parts bounce (D13).
 - The 3D Viewer shows the part as soon as the app opens (it used to stay empty until you reopened it), and the "Rendering 3D Model..." text now hides once the part is drawn (D15).
 ### Found
+- D30: the NE555 and LM358 are filed as passive parts, so the PASSIVE filter lists them next to the resistor, capacitor and LED.
 - D28: the background ignores the theme (it looks for a `dark-theme` class nothing sets, so dark mode gets light grey lines). D29: background electrons keep running on the old grid after a window resize.
 - C9: the top bar's New Project and Share buttons have no code. E16: an empty `#particle-field` div and `state.projects` are unused. D9's "Open Workspace" button is never visible, because the Projects screen replaces it.
 - New issues from linting: D8 (4 unused 3D models), D10 (sort ignores its option), D11 (chip labels never drawn), D12 (unused simulator values), E10 (GSAP loaded but unused), E11 (lint warning cap).
