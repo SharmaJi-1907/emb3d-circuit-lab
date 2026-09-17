@@ -377,3 +377,36 @@
   .sim-palette,
   .instruments-panel { display: none; }
 }
+
+/* ── Scope dials and multimeter display (F10) ─────────────────────
+   These were inline styles with hard-coded colours in index.html. The
+   #view-simulator selectors keep them ahead of older rules for the same
+   classes, as the inline styles were. Tokens in base/tokens.css.
+──────────────────────────────────────────────────────────────── */
+#view-simulator .dial {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--dial-ring);
+  cursor: pointer;
+}
+
+#view-simulator .mm-display {
+  background: var(--lcd-bg);
+  border: 1px solid var(--lcd-border);
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+#view-simulator #multimeter-val {
+  font-size: 24px;
+  color: var(--lcd-text);
+  font-weight: 700;
+}
+
+#view-simulator #multimeter-unit {
+  font-size: 12px;
+  color: var(--lcd-dim);
+}

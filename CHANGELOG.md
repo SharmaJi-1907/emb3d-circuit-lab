@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- The Simulator's scope dials and multimeter are styled in `views/simulator.css` with design tokens instead of inline hard-coded colours (F10). They look the same, and stay dark in the light theme on purpose.
 - Lint warnings 7 → **0**, and the cap is 0 (E11): unused variables and the never-used Arduino Uno 3D model are removed.
 - `src/app/app.js` is split into ES modules (#27c): `app/` (startup and `window.CircuitApp`, router, state, pin types), one `views/<screen>.view.js` per screen, `ui/` (toast, search, shortcuts, notifications, theme, top bar), `services/` (AI matching, your projects) and `utils/` (HTML escaping, markdown, canvas). The router's switch became a registry each screen fills in. The 3D model builders moved to `engines/three-viewer/models/` and get a `kit` from the engine. Checked unchanged with snapshots: the public API and 49 screens and actions (0 differences, whitespace aside) and all 15 3D models (identical).
 - `src/styles/main.css` is split into `base/`, `layout/`, `components/` and `views/` (#27b), imported in cascade order from `src/main.js`. Each screen's narrow-window rules now sit in that screen's file. Checked with a computed-style snapshot of every element on all 9 screens, in both themes and at 1280, 1100 and 800 px wide: 0 differences. The snapshot first caught one: the Datasheet's narrow-window rule lost to its base rule when they were in separate files, so it now sits right after it.
@@ -24,6 +25,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
 
 ### Added
+- A test that the Simulator's dials and multimeter have no inline styles and stay dark in the light theme (176 tests in total).
 - Tests: the IC filter (D30) and a single font request (E19) (175 tests in total).
 - `tests/smoke/assets.spec.js`: a test that the E16 leftovers stay gone (173 tests in total).
 - `tests/smoke/assets.spec.js`: 2 tests — nothing is fetched from a Three.js CDN, and the 3D Viewer shows a model with the internet blocked (172 tests in total).
