@@ -692,7 +692,7 @@ window.ThreeViewer = (function () {
     lead2.position.x = 0.45;
     group.add(lead2);
 
-    pinMeshes = [];
+    tagLeads(lead1, lead2);
     return group;
   }
 
@@ -730,22 +730,22 @@ window.ThreeViewer = (function () {
     lead2.position.set(-0.06, -0.4, 0);
     group.add(lead2);
 
-    pinMeshes = [];
+    tagLeads(lead1, lead2);
     return group;
   }
 
   function buildLED() {
     const group = new THREE.Group();
 
-    // Dome
+    // Dome. Red, like the only LED in the data: the WP7113ID has a red diffused lens (#23b)
     const domeGeo = new THREE.SphereGeometry(0.12, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
     const domeMat = new THREE.MeshStandardMaterial({
-      color: 0x00ff00,
+      color: 0xff2a1a,
       roughness: 0.1,
       metalness: 0.0,
       transparent: true,
       opacity: 0.8,
-      emissive: 0x00ff00,
+      emissive: 0xff2a1a,
       emissiveIntensity: 0.5,
     });
     const dome = new THREE.Mesh(domeGeo, domeMat);
@@ -754,12 +754,12 @@ window.ThreeViewer = (function () {
 
     // Base
     const baseGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.2, 16);
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0x00cc00, roughness: 0.3 });
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0xcc1a10, roughness: 0.3 });
     const base = new THREE.Mesh(baseGeo, baseMat);
     group.add(base);
 
     // Glow
-    const light = new THREE.PointLight(0x00ff00, 0.5, 1.5);
+    const light = new THREE.PointLight(0xff2a1a, 0.5, 1.5);
     light.position.y = 0.2;
     group.add(light);
 
@@ -773,8 +773,19 @@ window.ThreeViewer = (function () {
     lead2.position.set(-0.04, -0.3, 0);
     group.add(lead2);
 
-    pinMeshes = [];
+    tagLeads(lead1, lead2);
     return group;
+  }
+
+  // A two-lead part's leads are its pins 1 and 2, so they can be hovered and
+  // highlighted like a chip's pins (#23b). They used to be left out of pinMeshes.
+  function tagLeads(...leads) {
+    pinMeshes = [];
+    leads.forEach((lead, i) => {
+      const pinData = getPinData(i + 1);
+      lead.userData = { pinNum: i + 1, type: pinData ? pinData.type : 'analog' };
+      pinMeshes.push(lead);
+    });
   }
 
   function addPinHeader(group, count, pitch, height, zOffset, orientation, firstPin = 1) {
@@ -887,6 +898,15 @@ window.ThreeViewer = (function () {
         break;
       case 'hc-sr04':
         model = buildHCSR04();
+        break;
+      case 'cfr-25':
+        model = buildResistor();
+        break;
+      case 'eca-1em101':
+        model = buildCapacitor();
+        break;
+      case 'wp7113id':
+        model = buildLED();
         break;
       default:
         // Follow the part's real pin count instead of always drawing an 8-pin

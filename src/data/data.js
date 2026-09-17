@@ -348,6 +348,70 @@ window.CircuitLabData = (function () {
         { num: 8, name: 'IRQ',  altName: 'IRQ',  type: 'digital', voltage: '3.3V', protocol: 'GPIO', altFunctions: 'Interrupt, active LOW' },
       ]
     },
+    // Passive parts (#23b), so the resistor, capacitor and LED 3D models have parts to draw.
+    // IDs and names are part numbers on purpose: the AI checks part names first, so a part
+    // called just "Resistor" or "LED" would take over answers like "what resistor do I need
+    // for an LED". Every value below comes from the manufacturer:
+    //   CFR-25     YAGEO CFR series datasheet, V.3, 2024-04-03 (Table 1 and Table 2)
+    //   ECA1EM101  Panasonic Industry product page for ECA1EM101 (M-A series)
+    //   WP7113ID   Kingbright WP7113ID datasheet, V.14A, 2026-01-08
+    {
+      id: 'cfr-25',
+      name: 'CFR-25 Carbon Film Resistor',
+      manufacturer: 'YAGEO',
+      category: 'passive',
+      icon: '〰️',
+      package: 'Axial through-hole',
+      voltage: '250V max working',
+      pins: 2,
+      temperature: '-55°C to +155°C',
+      power: '1/4 W at 70°C',
+      protocols: ['Passive'],
+      tags: ['resistor', 'carbon film', 'axial', 'through-hole', 'yageo', 'cfr'],
+      description: 'The CFR-25 is a 1/4 W through-hole carbon film resistor: a film of carbon on a ceramic rod, with tinned copper leads. It is made in values from 1 Ω to 10 MΩ (E24 series) with ±2% (G) or ±5% (J) tolerance. Maximum working voltage is 250 V and maximum overload voltage 500 V. Below 100 kΩ the value changes by −500 to +350 ppm per °C.',
+      pinout: [
+        { num: 1, name: 'Lead 1', altName: 'A', type: 'analog', voltage: '≤250V across', protocol: 'Passive', altFunctions: 'Not polarised: either lead can go either way' },
+        { num: 2, name: 'Lead 2', altName: 'B', type: 'analog', voltage: '≤250V across', protocol: 'Passive', altFunctions: 'Not polarised: either lead can go either way' },
+      ]
+    },
+    {
+      id: 'eca-1em101',
+      name: 'ECA-1EM101 Electrolytic Capacitor',
+      manufacturer: 'Panasonic',
+      category: 'passive',
+      icon: '🔘',
+      package: 'Radial, 6.3 × 11.2 mm, 2.5 mm lead spacing',
+      voltage: '25V rated',
+      pins: 2,
+      temperature: '-40°C to +85°C',
+      power: '180 mA ripple (120 Hz)',
+      protocols: ['Passive', 'Polarised'],
+      tags: ['capacitor', 'electrolytic', 'aluminum', 'radial', '100uf', 'panasonic'],
+      description: 'The ECA-1EM101 is a 100 µF, 25 V aluminium electrolytic capacitor from the Panasonic M-A series, with ±20% tolerance. It is rated for 2000 hours at 85 °C, 180 mA ripple current at 120 Hz, at most 25 µA leakage and a dissipation factor (tan δ) of at most 0.16. It is polarised: the + lead must stay at the higher voltage.',
+      pinout: [
+        { num: 1, name: '+', altName: 'Anode', type: 'analog', voltage: '0–25V', protocol: 'Passive', altFunctions: 'Positive lead', warning: 'Polarised: never reverse it or exceed 25 V' },
+        { num: 2, name: '−', altName: 'Cathode', type: 'ground', voltage: '0V (lower side)', protocol: 'Passive', altFunctions: 'Negative lead' },
+      ]
+    },
+    {
+      id: 'wp7113id',
+      name: 'WP7113ID Red LED',
+      manufacturer: 'Kingbright',
+      category: 'passive',
+      icon: '💡',
+      package: 'T-1 3/4 (5 mm), red diffused lens',
+      voltage: '1.9V typ (2.3V max) at 10 mA',
+      pins: 2,
+      temperature: '-40°C to +85°C',
+      power: '75 mW max',
+      protocols: ['Optoelectronic'],
+      tags: ['led', 'red', '5mm', 'indicator', 'kingbright'],
+      description: 'The WP7113ID is a 5 mm High Efficiency Red LED (GaAsP/GaP) with a red diffused lens. At 10 mA it has a 617 nm dominant wavelength, 50 mcd typical brightness, a 30° viewing angle and a forward voltage of 1.9 V typical (2.3 V max). Absolute maximums: 30 mA DC forward current, 5 V reverse voltage and 75 mW.',
+      pinout: [
+        { num: 1, name: 'A', altName: 'Anode', type: 'analog', voltage: '1.9–2.3V above K at 10 mA', current: '30mA', protocol: 'Passive', altFunctions: 'Positive lead', warning: 'Always use a series resistor: 30 mA DC maximum' },
+        { num: 2, name: 'K', altName: 'Cathode', type: 'ground', voltage: '0V', protocol: 'Passive', altFunctions: 'Negative lead', warning: 'At most 5 V in reverse' },
+      ]
+    },
   ];
 
   /* ── Development Boards ─────────────────────────────────────── */

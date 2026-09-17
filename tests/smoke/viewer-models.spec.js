@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    3D models: the right shape per part (D8), the part's name printed on
-   the chip (D11), and old models freed instead of leaking (D16).
+   the chip (D11), old models freed instead of leaking (D16), and the
+   resistor, capacitor and LED with their own models (#23b).
 ═══════════════════════════════════════════════════════════════════ */
 
 import { test, expect, openApp, openViewer, waitForViewer, goToView, waitForStableModel, expectNoErrors } from './helpers.js';
@@ -10,7 +11,7 @@ const modelInfo = (page) => page.evaluate(() => window.ThreeViewer.getModelInfo(
 
 // Load a part straight through the engine and wait until the engine reports it.
 // The model is built in one go, so there is no need to wait for the grow-in
-// animation here — waiting for it on all 10 parts ran the test out of time.
+// animation here — waiting for it on every part ran the test out of time.
 async function loadPart(page, id) {
   await page.evaluate((c) => window.ThreeViewer.loadComponent(c), id);
   await expect
@@ -20,7 +21,7 @@ async function loadPart(page, id) {
 
 test('every part gets a model with its own pin count (D8)', async ({ page, errors }) => {
   // Deliberately NOT on the Viewer screen: the engine still builds models, but
-  // the scene is not drawn while hidden (D5), so loading 10 of them stays cheap.
+  // the scene is not drawn while hidden (D5), so loading all of them stays cheap.
   await openApp(page);
   await waitForViewer(page);
   const parts = await page.evaluate(() =>
@@ -34,6 +35,20 @@ test('every part gets a model with its own pin count (D8)', async ({ page, error
     if (info.pins !== part.pins) wrong.push(`${part.id} (${part.name}): model drew ${info.pins} pins, the part has ${part.pins}`);
   }
   expect(wrong, 'each model should have as many pins as the real part').toEqual([]);
+  expectNoErrors(errors);
+});
+
+test('the resistor, capacitor and LED use their own models with 2 pins (#23b)', async ({ page, errors }) => {
+  await openApp(page);
+  await waitForViewer(page);
+  // Real parts, each checked against its datasheet (sources in data.js).
+  for (const id of ['cfr-25', 'eca-1em101', 'wp7113id']) {
+    await loadPart(page, id);
+    const info = await modelInfo(page);
+    expect(info.pins, `${id}: both leads can be hovered and highlighted`).toBe(2);
+    // The generic fallback is a labelled chip; the real passive models carry no label.
+    expect(info.hasLabel, `${id}: drawn by its own model, not the generic chip`).toBe(false);
+  }
   expectNoErrors(errors);
 });
 
