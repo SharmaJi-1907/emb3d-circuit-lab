@@ -1,11 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Top bar New Project and Share buttons (C9)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { navigateTo } from '../app/router.js';
 import { showToast } from './toast.js';
-import { escapeHtml } from '../utils/html.js';
 import { newProject } from '../views/projects.view.js';
 
 /* ── New Project and Share (C9) ─────────────────────────────────
@@ -31,7 +29,7 @@ export function initTopbarButtons() {
 // Copy the page link. Since hash routing (D9) it opens the same screen.
 function shareLink() {
   const link = location.href;
-  const showLink = () => showToast(`Copy this link: ${escapeHtml(link)}`, 'info');
+  const showLink = () => showToast(`Copy this link: ${link}`, 'info');
   if (!navigator.clipboard) return showLink(); // e.g. not a secure page
   navigator.clipboard.writeText(link).then(
     () => showToast('Link copied — it opens this screen', 'success'),
