@@ -64,7 +64,7 @@ npm run test:report   # open the HTML report
 
 **Lint**
 - New mistakes (undefined names, duplicate keys, unreachable code…) are **errors**.
-- Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 7, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
+- Known leftovers are **warnings**, capped by `--max-warnings` in `package.json` (currently 0, issue E11). When a fix removes warnings, lower the cap to the new count. Never raise it.
 - Cross-file `window` globals (`CircuitLabData`, `ThreeViewer`, `CircuitSimulator`, `CircuitApp`) are declared in [eslint.config.js](eslint.config.js) for `src/app`, `ui`, `views`, `services` and `utils`. Everything else is shared with `import`/`export` (ADR 0003).
 - `dist/` and test output are ignored.
 
