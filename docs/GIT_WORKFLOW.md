@@ -162,5 +162,6 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 27b | `refactor/split-styles` | All of `main.css` → `base/`, `layout/`, `components/`, `views/`, same cascade order (every computed style identical) | ✅ |
 | 27c | `refactor/split-app` | All of `app.js`: `utils/`, `ui/`, `services/`, state and a router; one `views/<screen>.view.js` per screen; 3D model builders → `engines/three-viewer/models/`; docs wrap-up | ✅ |
 | 28 | `fix/remaining-issues` | D30 (ICs filed as passive), D29 follow-up (time-based background speed), E11 (last 7 lint warnings, cap 0), E19 (fonts loaded twice). F9, F10 and E18 left open | ✅ |
+| 29 | `style/simulator-inline-colours` | F10: the Simulator dials and multimeter move from inline colours to CSS tokens | ✅ |
 
 Status: ⏳ not started · 🔄 in progress · ✅ merged
