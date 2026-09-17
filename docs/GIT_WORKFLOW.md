@@ -148,7 +148,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 19 | `fix/settings-theme` | C5; F10 logged | ✅ |
 | 20 | `fix/topbar-panels` | C6, D14 (search ↑↓/↵) | ✅ |
 | 21 | `fix/single-background` | D4; D28, D29 logged | ✅ |
-| 22 | `feat/hash-routing` | D9 | ⏳ |
+| 22 | `feat/hash-routing` | D9; C9, E16 logged | ✅ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models) | ✅ |
 | 23b | `feat/passive-components` | Restore the resistor and capacitor entries from `legacy/` history (`git show 3cd518a:legacy/database.js`), so `buildResistor`, `buildCapacitor` and `buildLED` have parts to draw (E9) | ⏳ |
 | 24 | `chore/upgrade-threejs` | E7 | ⏳ |
