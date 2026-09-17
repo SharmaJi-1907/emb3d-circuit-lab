@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- `src/data/data.js` is split into ES modules (#27a): `components.js`, `boards.js`, `datasheets.js`, `projects.js` and `ai-responses.js`, joined by `data/index.js` into the same `window.CircuitLabData`. Checked byte-identical (same SHA-256 of the whole data). Decision recorded in [ADR 0003](docs/decisions/0003-es-modules.md).
 - **Vite 5.4.21 → 8.3.0** and `npm audit fix` (E6): `npm audit` goes from 4 vulnerabilities (1 moderate, 3 high, all in dev tools) to 0. Needs Node 20.19+ or 22.12+; run `npm install` after pulling. `vite.config.js` no longer sets `minify: 'esbuild'`, since Vite 8 does not include esbuild. Builds take 0.25 s instead of 1.35 s.
 - **Three.js r128 → r186**, installed from npm and bundled instead of loaded from a CDN (E7). The 3D Viewer now works with no internet. Light intensities are scaled as the Three.js migration guide advises, so the models look the same as before; shadows use `PCFShadowMap` (the soft one was deprecated). Run `npm install` after pulling. The bundle is 688 kB (179 kB gzipped), about the same total download as before.
 - The lint warning cap drops from 12 to 9: `buildResistor`, `buildCapacitor` and `buildLED` are used now.
