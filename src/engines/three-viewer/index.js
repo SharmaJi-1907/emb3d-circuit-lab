@@ -3,6 +3,9 @@
    Procedural component models, orbit controls, pin highlighting
 ═══════════════════════════════════════════════════════════════════ */
 
+// Bundled from npm instead of the old r128 CDN script, so 3D works offline (E7).
+import * as THREE from 'three';
+
 window.ThreeViewer = (function () {
   'use strict';
 
@@ -19,6 +22,10 @@ window.ThreeViewer = (function () {
 
   // Materials
   const MAT = {};
+
+  // Lights have been physically correct since r155. The migration guide's way to
+  // keep the r128 look: intensities × π, and point lights with decay 1 (E7).
+  const LEGACY_LIGHT = Math.PI;
 
   // Pin color map
   const PIN_COLORS = {
@@ -58,7 +65,7 @@ window.ThreeViewer = (function () {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h, false); // false: leave the display size to CSS, so the canvas can follow its container
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap; // soft since r181, which deprecated PCFSoftShadowMap
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
 
@@ -83,11 +90,11 @@ window.ThreeViewer = (function () {
 
   function setupLights() {
     // Ambient
-    const ambient = new THREE.AmbientLight(0x1a1a2e, 2);
+    const ambient = new THREE.AmbientLight(0x1a1a2e, 2 * LEGACY_LIGHT);
     scene.add(ambient);
 
     // Key light (cyan tint)
-    const keyLight = new THREE.DirectionalLight(0x00d4ff, 1.5);
+    const keyLight = new THREE.DirectionalLight(0x00d4ff, 1.5 * LEGACY_LIGHT);
     keyLight.position.set(5, 8, 5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
@@ -101,21 +108,21 @@ window.ThreeViewer = (function () {
     scene.add(keyLight);
 
     // Fill light (purple tint)
-    const fillLight = new THREE.DirectionalLight(0x7b2fff, 0.8);
+    const fillLight = new THREE.DirectionalLight(0x7b2fff, 0.8 * LEGACY_LIGHT);
     fillLight.position.set(-5, 3, -5);
     scene.add(fillLight);
 
     // Rim light
-    const rimLight = new THREE.DirectionalLight(0x00ff88, 0.4);
+    const rimLight = new THREE.DirectionalLight(0x00ff88, 0.4 * LEGACY_LIGHT);
     rimLight.position.set(0, -5, 5);
     scene.add(rimLight);
 
     // Point lights for glow effect
-    const glow1 = new THREE.PointLight(0x00d4ff, 0.5, 8);
+    const glow1 = new THREE.PointLight(0x00d4ff, 0.5 * LEGACY_LIGHT, 8, 1);
     glow1.position.set(3, 2, 3);
     scene.add(glow1);
 
-    const glow2 = new THREE.PointLight(0x7b2fff, 0.3, 8);
+    const glow2 = new THREE.PointLight(0x7b2fff, 0.3 * LEGACY_LIGHT, 8, 1);
     glow2.position.set(-3, 2, -3);
     scene.add(glow2);
   }
@@ -339,6 +346,7 @@ window.ThreeViewer = (function () {
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace; // canvas pixels are sRGB, as colour management expects since r152
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(width, height),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
@@ -582,7 +590,7 @@ window.ThreeViewer = (function () {
     group.add(led);
 
     // LED glow
-    const ledLight = new THREE.PointLight(0x00ff00, 0.3, 0.5);
+    const ledLight = new THREE.PointLight(0x00ff00, 0.3 * LEGACY_LIGHT, 0.5, 1);
     ledLight.position.copy(led.position);
     group.add(ledLight);
 
@@ -759,7 +767,7 @@ window.ThreeViewer = (function () {
     group.add(base);
 
     // Glow
-    const light = new THREE.PointLight(0xff2a1a, 0.5, 1.5);
+    const light = new THREE.PointLight(0xff2a1a, 0.5 * LEGACY_LIGHT, 1.5, 1);
     light.position.y = 0.2;
     group.add(light);
 
