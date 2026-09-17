@@ -40,5 +40,6 @@
 .type-sensor  { background: rgba(0,255,136,0.15); color: var(--green); }
 .type-power   { background: rgba(255,149,0,0.15); color: var(--orange); }
 .type-passive { background: rgba(136,136,136,0.15); color: #888; }
+.type-ic { background: var(--purple-dim); color: var(--purple); } /* timers, op-amps (D30) */
 .type-wireless{ background: rgba(123,47,255,0.15); color: var(--purple); }
 .type-display { background: rgba(255,45,120,0.15); color: #ff2d78; }

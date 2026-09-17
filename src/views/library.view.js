@@ -11,7 +11,7 @@ function renderComponentLibrary() {
   const panel = document.getElementById('view-database');
   if (!panel) return;
 
-  const categories = ['all', 'mcu', 'sensor', 'power', 'passive'];
+  const categories = ['all', 'mcu', 'ic', 'sensor', 'power', 'passive'];
   let filtered = CircuitLabData.components;
 
   if (state.filterCategory !== 'all') {

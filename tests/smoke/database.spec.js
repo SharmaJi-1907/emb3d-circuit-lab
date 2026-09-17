@@ -80,3 +80,14 @@ test('dashboard "Components" card opens the library (B8)', async ({ page, errors
   await expect(cards(page).first()).toBeVisible();
   expectNoErrors(errors);
 });
+
+test('timers and op-amps are ICs, not passive parts (D30)', async ({ page, errors }) => {
+  await openApp(page);
+  await goToView(page, 'database');
+  await page.locator('.filter-chip', { hasText: /^IC$/ }).click();
+  await expect(page.locator('.comp-card-name')).toHaveText(['LM358', 'NE555']);
+
+  await page.locator('.filter-chip', { hasText: 'PASSIVE' }).click();
+  await expect(page.locator('.comp-card-name', { hasText: /NE555|LM358/ }), 'no IC under PASSIVE').toHaveCount(0);
+  expectNoErrors(errors);
+});
