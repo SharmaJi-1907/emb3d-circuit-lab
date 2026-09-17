@@ -56,7 +56,6 @@ window.CircuitApp = (function () {
   /* ── Init ───────────────────────────────────────────────────── */
   function init() {
     initTheme();
-    initBackground();
     initNavigation();
     initSearch();
     initKeyboardShortcuts();
@@ -86,100 +85,6 @@ window.CircuitApp = (function () {
 
     // Welcome toast
     setTimeout(() => showToast('Welcome to CircuitLab Pro', 'info'), 800);
-  }
-
-  /* ── Background Particle System ────────────────────────────── */
-  function initBackground() {
-    const canvas = document.getElementById('circuit-bg');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Nodes
-    const nodes = Array.from({ length: 60 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 2 + 1,
-      pulse: Math.random() * Math.PI * 2,
-    }));
-
-    // Traces (static circuit-like lines)
-    const traces = Array.from({ length: 20 }, () => ({
-      x1: Math.random() * canvas.width,
-      y1: Math.random() * canvas.height,
-      x2: Math.random() * canvas.width,
-      y2: Math.random() * canvas.height,
-      alpha: Math.random() * 0.08 + 0.02,
-    }));
-
-    let t = 0;
-    function draw() {
-      requestAnimationFrame(draw);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      t += 0.005;
-
-      // Draw traces
-      traces.forEach(tr => {
-        ctx.strokeStyle = `rgba(0,212,255,${tr.alpha})`;
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        // Right-angle routing
-        const mx = tr.x1 + (tr.x2 - tr.x1) / 2;
-        ctx.moveTo(tr.x1, tr.y1);
-        ctx.lineTo(mx, tr.y1);
-        ctx.lineTo(mx, tr.y2);
-        ctx.lineTo(tr.x2, tr.y2);
-        ctx.stroke();
-        // Pad dots
-        ctx.fillStyle = `rgba(0,212,255,${tr.alpha * 3})`;
-        ctx.beginPath();
-        ctx.arc(tr.x1, tr.y1, 2, 0, Math.PI * 2);
-        ctx.arc(tr.x2, tr.y2, 2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Update & draw nodes
-      nodes.forEach(n => {
-        n.x += n.vx;
-        n.y += n.vy;
-        n.pulse += 0.02;
-        if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
-        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
-
-        const alpha = 0.15 + Math.sin(n.pulse) * 0.1;
-        ctx.fillStyle = `rgba(0,212,255,${alpha})`;
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Draw connections between nearby nodes
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            const alpha = (1 - dist / 120) * 0.06;
-            ctx.strokeStyle = `rgba(0,212,255,${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-    }
-    draw();
   }
 
   /* ── Navigation ─────────────────────────────────────────────── */
