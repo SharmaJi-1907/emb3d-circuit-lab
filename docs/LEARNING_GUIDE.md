@@ -28,7 +28,7 @@ A single-page website for learning electronics. It has one HTML page with 9 "scr
 | Tool | What it is | Where |
 |---|---|---|
 | **Vite** | A dev server + bundler. `npm run dev` serves the files with live reload. `npm run build` packs everything into `dist/`. | [package.json](../package.json), [vite.config.js](../vite.config.js) |
-| **Three.js** (r128) | A library for 3D graphics in the browser (WebGL) | Loaded from a CDN in [index.html](../index.html) |
+| **Three.js** (r186) | A library for 3D graphics in the browser (WebGL) | Installed with npm and imported in [three-viewer/index.js](../src/engines/three-viewer/index.js) |
 | **Canvas 2D** | The browser's built-in drawing surface, used for the background, simulator, oscilloscope and board drawing | Plain JS |
 | **Google Fonts** | Fonts | CDN |
 

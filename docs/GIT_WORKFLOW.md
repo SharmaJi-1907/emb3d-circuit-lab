@@ -154,7 +154,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 22d | `fix/topbar-buttons` | C9: the top bar's New Project and Share buttons; E17 (a slow 3D test timed out under load, found here and blocking the merge gate) | ✅ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models) | ✅ |
 | 23b | `feat/passive-components` | Add a resistor, capacitor and LED (values from their datasheets, not the unsourced `legacy/` data), so `buildResistor`, `buildCapacitor` and `buildLED` have parts to draw (D8 follow-up, E1); D30 logged | ✅ |
-| 24 | `chore/upgrade-threejs` | E7 | ⏳ |
+| 24 | `chore/upgrade-threejs` | E7: Three.js r128 CDN → r186 from npm, works offline; E18 logged | ✅ |
 | 25 | `chore/cleanup-assets` | E2–E5, E10 (GSAP and FontAwesome removed), E12 (dead CSS), E14 (font CDN errors fail tests) | ✅ |
 | 25b | `chore/remove-unused-leftovers` | E16: the empty `#particle-field` div, `loadProjects()` and `state.projects` | ⏳ |
 | 26 | `chore/update-dependencies` | E6 | ⏳ |
