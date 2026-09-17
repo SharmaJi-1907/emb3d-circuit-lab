@@ -55,7 +55,7 @@ test('component data is loaded', async ({ page, errors }) => {
       aiResponses: Object.keys(d.aiResponses ?? {}).length,
     };
   });
-  expect(data, 'window.CircuitLabData should exist (src/data/data.js imported in src/main.js)').not.toBeNull();
+  expect(data, 'window.CircuitLabData should exist (src/data/index.js imported in src/main.js)').not.toBeNull();
   for (const [key, count] of Object.entries(data)) {
     expect(count, `${key} should not be empty`).toBeGreaterThan(0);
   }

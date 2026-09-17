@@ -41,7 +41,7 @@ test('every part gets a model with its own pin count (D8)', async ({ page, error
 test('the resistor, capacitor and LED use their own models with 2 pins (#23b)', async ({ page, errors }) => {
   await openApp(page);
   await waitForViewer(page);
-  // Real parts, each checked against its datasheet (sources in data.js).
+  // Real parts, each checked against its datasheet (sources in src/data/components.js).
   for (const id of ['cfr-25', 'eca-1em101', 'wp7113id']) {
     await loadPart(page, id);
     const info = await modelInfo(page);

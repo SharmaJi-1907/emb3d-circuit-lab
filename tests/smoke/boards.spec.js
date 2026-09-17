@@ -183,7 +183,7 @@ test('every board\'s pin data is well-formed', async ({ page, errors }) => {
 
 test('key pins match the official pinouts (D24)', async ({ page, errors }) => {
   await openApp(page);
-  // [board, pin name, type] from the official pinouts (sources in src/data/data.js)
+  // [board, pin name, type] from the official pinouts (sources in src/data/boards.js)
   const expected = [
     ['arduino-mega', 'D0/RX0', 'uart'], ['arduino-mega', 'D14/TX3', 'uart'], ['arduino-mega', 'D19/RX1', 'uart'],
     ['arduino-mega', 'D20/SDA', 'i2c'], ['arduino-mega', 'D21/SCL', 'i2c'], ['arduino-mega', 'D13~', 'pwm'],
