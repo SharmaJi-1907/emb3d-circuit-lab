@@ -6,7 +6,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
-- Only one animation draws the page background (D4). `initBackground()` is removed from `app.js`, and `circuit-bg.js` (the circuit grid) is kept, so the background now shows the grid instead of floating dots. The lint warning cap drops from 13 to 12.
+- The lint warning cap drops from 13 to 12: the unused `t` in the removed background animation is gone (D4).
+- Docs brought up to date: the README, LEARNING_GUIDE, ARCHITECTURE and CLAUDE.md no longer mention GSAP or FontAwesome (removed in #25), the guide describes the DC solver, localStorage and hash routing as they are now, and the fix plan's finished steps are ticked. The D4 entry moved from Changed to Fixed.
 - The lint warning cap drops from 15 to 13: the two unused `label` parameters are used now that chips are labelled.
 - Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
 - Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
@@ -72,6 +73,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
 
 ### Fixed
+- Only one animation draws the page background (D4). Measured: the canvas was cleared 108 times in 54 frames, two full redraws every frame. `initBackground()` is removed from `app.js` and `circuit-bg.js` is kept, so the background now shows the circuit grid instead of floating dots.
 - The address follows the screen (D9). Opening a screen sets `#<screen>`, so a refresh keeps you there, Back and Forward move between screens, and a link such as `/#simulator` opens that screen. Before, the address never changed and a refresh always went back to the Dashboard. An unknown screen in the address shows the Dashboard instead of a blank page.
 - The 3D Viewer no longer leaks graphics memory (D16). Every model that leaves the scene now has its geometries, materials and textures freed. Measured: 61 → 61 geometries after 5 visits (was 61 → 297), and 48 after switching through 6 parts (was 449).
 - Every part gets a model with its real pin count (D8). The L298N is drawn as a Multiwatt-15 and the AMS1117 as a SOT-223 through a new single-row builder; the nRF24L01+ as a DIP-8 module. Cases for `nrf52840` and `bme280`, which are not in the data, are gone, and the fallback follows the part's own pin count instead of always drawing 8 pins. The **ESP32 and HC-SR04 had no interactive pins at all** — their headers were built but never tagged — so hover, click and pin-table highlighting now work on them too.
@@ -116,6 +118,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Exploding the 3D model no longer makes it vanish, and quick toggling no longer makes the parts bounce (D13).
 - The 3D Viewer shows the part as soon as the app opens (it used to stay empty until you reopened it), and the "Rendering 3D Model..." text now hides once the part is drawn (D15).
 ### Found
+- D28: the background ignores the theme (it looks for a `dark-theme` class nothing sets, so dark mode gets light grey lines). D29: background electrons keep running on the old grid after a window resize.
 - C9: the top bar's New Project and Share buttons have no code. E16: an empty `#particle-field` div and `state.projects` are unused. D9's "Open Workspace" button is never visible, because the Projects screen replaces it.
 - New issues from linting: D8 (4 unused 3D models), D10 (sort ignores its option), D11 (chip labels never drawn), D12 (unused simulator values), E10 (GSAP loaded but unused), E11 (lint warning cap).
 - F1: most of `index.html` has no matching CSS. The CSS and `app.js` were written for a different page layout. Decided in ADR 0002.
