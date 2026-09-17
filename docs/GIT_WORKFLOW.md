@@ -150,7 +150,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 21 | `fix/single-background` | D4; D28, D29 logged | ✅ |
 | 22 | `feat/hash-routing` | D9; C9, E16 logged | ✅ |
 | 22b | `docs/fix-changelog-and-guides` | CHANGELOG sections for #21, out-of-date README, LEARNING_GUIDE, ARCHITECTURE and CLAUDE.md, fix plan ticks | ✅ |
-| 22c | `fix/background-theme` | D28 (background follows the theme), D29 (particles after a resize) | ⏳ |
+| 22c | `fix/background-theme` | D28 (background follows the theme), D29 (particles after a resize) | ✅ |
 | 22d | `fix/topbar-buttons` | C9: the top bar's New Project and Share buttons | ⏳ |
 | 23 | `fix/3d-model-mapping` | D8, D11, D16 (free old models) | ✅ |
 | 23b | `feat/passive-components` | Restore the resistor and capacitor entries from `legacy/` history (`git show 3cd518a:legacy/database.js`), so `buildResistor`, `buildCapacitor` and `buildLED` have parts to draw (E9) | ⏳ |
