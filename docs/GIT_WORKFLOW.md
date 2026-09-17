@@ -157,7 +157,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 24 | `chore/upgrade-threejs` | E7: Three.js r128 CDN → r186 from npm, works offline; E18 logged | ✅ |
 | 25 | `chore/cleanup-assets` | E2–E5, E10 (GSAP and FontAwesome removed), E12 (dead CSS), E14 (font CDN errors fail tests) | ✅ |
 | 25b | `chore/remove-unused-leftovers` | E16: the empty `#particle-field` div, `loadProjects()` and `state.projects` | ⏳ |
-| 26 | `chore/update-dependencies` | E6 | ⏳ |
+| 26 | `chore/update-dependencies` | E6: `npm audit fix` and Vite 5 → 8, 0 vulnerabilities | ✅ |
 | 27+ | `refactor/split-*` | Split `app.js`, `data.js`, `main.css` into `src/` folders | ⏳ |
 
 Status: ⏳ not started · 🔄 in progress · ✅ merged
