@@ -22,7 +22,12 @@ emmb3d/
 │   │       └── circuit-bg.js  Animated circuit background
 │   ├── ui/                    Reusable UI: toast, modal, search  (empty)
 │   ├── data/
-│   │   └── data.js            Components, boards, datasheets, projects, AI answers (to be split)
+│   │   ├── index.js           Joins the parts below into window.CircuitLabData (ADR 0003)
+│   │   ├── components.js      Parts: specs and pinouts
+│   │   ├── boards.js          Development boards: pin positions
+│   │   ├── datasheets.js      Datasheet sections
+│   │   ├── projects.js        Sample projects
+│   │   └── ai-responses.js    Stored AI answers
 │   ├── services/              AI answers, localStorage          (empty)
 │   ├── utils/                 DOM / HTML / formatting helpers  (empty)
 │   ├── styles/
@@ -65,7 +70,7 @@ emmb3d/
 └── docs/                      Documentation
 ```
 
-Folders marked _(empty)_ are part of the target layout. They get filled while the big files (`app.js`, `data.js`, `main.css`) are split during the fixes.
+Folders marked _(empty)_ are part of the target layout. They get filled while the big files (`app.js` and `main.css`; `data.js` was split in #27a) are split during the fixes.
 
 ## Load order
 
@@ -75,12 +80,12 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 2. `styles/components/panels.css` and `styles/components/notifications.css`: shared page styles. Must come after `main.css` so they can build on its design tokens.
 3. `styles/views/simulator.css`, `styles/views/boards.css`, `styles/views/datasheet.css`, `styles/views/ai.css` and `styles/views/projects.css`: per-screen styles. After the shared styles, so they can build on them.
 4. `engines/background/circuit-bg.js`
-5. `data/data.js` → `window.CircuitLabData`. Must come before the files that read it (the 3D viewer and the app).
+5. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the 3D viewer and the app).
 6. `engines/three-viewer/index.js` → `window.ThreeViewer`
 7. `engines/simulator/index.js` → `window.CircuitSimulator`
 8. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
 
-The smoke test "component data is loaded" fails if `data.js` is ever dropped from this list again (bug A1, fixed in branch #3).
+The smoke test "component data is loaded" fails if `data/index.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
 Three.js comes from npm (`three`, pinned) and is imported by `engines/three-viewer/index.js`, so Vite bundles it and the 3D Viewer works offline (E7, #24). Nothing reads `window.THREE` any more. GSAP and FontAwesome were removed in #25 (E10).
 
@@ -102,7 +107,7 @@ main.js
 
 - **engines/** know nothing about screens or the DOM outside the canvas they're given.
 - **views/** own one `<section class="view">` each and wire its buttons.
-- **data/** is plain data only — no DOM, no side effects.
+- **data/** is plain data only — no DOM, no side effects. The one exception is `data/index.js`, which sets `window.CircuitLabData` ([ADR 0003](decisions/0003-es-modules.md)).
 - **utils/** import nothing from the project.
 
 ## Where does new code go?

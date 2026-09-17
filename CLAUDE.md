@@ -85,7 +85,8 @@ npm run test:report   # open the HTML report
 - **Page markup follows [ADR 0002](docs/decisions/0002-screen-markup.md), per screen.**
   - **Viewer, Database (→ Component Library) and Dashboard** use the markup that `app.js` and `main.css` expect. Change `index.html` to match them.
   - **All other screens** (Simulator, Boards, Datasheet, AI, Projects, Settings, sidebar, top bar) keep `index.html`. Change the JS or CSS to match the page.
-- Modules currently talk through `window` globals (`CircuitApp`, `ThreeViewer`, `CircuitSimulator`, `CircuitLabData`). Every file must be imported in [src/main.js](src/main.js) in dependency order.
+- **Modules follow [ADR 0003](docs/decisions/0003-es-modules.md):** files split out of the big ones use `import`/`export`. `CircuitApp`, `ThreeViewer`, `CircuitSimulator` and `CircuitLabData` stay on `window` as the public API (inline handlers and tests use them), each set in one place. Each part's entry file is imported in [src/main.js](src/main.js) in dependency order.
+- **Refactor branches change no behaviour:** take a snapshot before (data checksum, computed styles, public API, screen HTML) and prove it identical after, instead of a test that fails before.
 - Wire each button once, on the first visit to a screen, never on every visit.
 - Escape user text before putting it into `innerHTML`.
 - No secrets or API keys in browser code.
