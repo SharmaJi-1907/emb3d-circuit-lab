@@ -7,7 +7,8 @@ export default defineConfig({
     host: true
   },
   build: {
-    outDir: 'dist',
-    minify: 'esbuild'
+    outDir: 'dist'
+    // No `minify` setting: Vite 8's default minifier (Oxc) is used. `minify: 'esbuild'`
+    // would need esbuild installed on its own, which Vite 8 no longer includes (E6).
   }
 });
