@@ -160,6 +160,6 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 26 | `chore/update-dependencies` | E6: `npm audit fix` and Vite 5 → 8, 0 vulnerabilities | ✅ |
 | 27a | `refactor/split-data` | `data.js` → `src/data/` modules (byte-identical data); [ADR 0003](decisions/0003-es-modules.md) | ✅ |
 | 27b | `refactor/split-styles` | All of `main.css` → `base/`, `layout/`, `components/`, `views/`, same cascade order (every computed style identical) | ✅ |
-| 27c | `refactor/split-app` | All of `app.js`: `utils/`, `ui/`, `services/`, state and a router; one `views/<screen>.view.js` per screen; 3D model builders → `engines/three-viewer/models/`; docs wrap-up | ⏳ |
+| 27c | `refactor/split-app` | All of `app.js`: `utils/`, `ui/`, `services/`, state and a router; one `views/<screen>.view.js` per screen; 3D model builders → `engines/three-viewer/models/`; docs wrap-up | ✅ |
 
 Status: ⏳ not started · 🔄 in progress · ✅ merged

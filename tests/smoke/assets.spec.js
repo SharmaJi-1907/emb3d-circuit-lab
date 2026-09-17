@@ -142,7 +142,10 @@ test('unused leftovers are gone (E16)', async ({ page, errors }) => {
   // Your projects live under circuitlab.my-projects (C4); the old key was only ever read.
   const state = await page.evaluate(() => window.CircuitApp.getState());
   expect('projects' in state, 'state.projects was never read').toBe(false);
-  const src = await (await page.request.get('/src/app/app.js')).text();
+  // app.js was split into src/app, ui, views, services and utils in #27c, so search all of src/.
+  const dir = new URL('../../src/', import.meta.url);
+  const files = (await readdir(dir, { recursive: true })).filter((f) => f.endsWith('.js'));
+  const src = (await Promise.all(files.map((f) => readFile(new URL(f, dir), 'utf8')))).join('\n');
   expect(src, 'nothing writes circuitlab-projects, so nothing should read it').not.toContain('circuitlab-projects');
   expectNoErrors(errors);
 });

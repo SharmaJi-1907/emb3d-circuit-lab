@@ -31,7 +31,7 @@ _Status updated after branch #3 (`fix/load-component-data`): no screen throws an
 
 **Root cause:** `app.js` and the CSS were written together for a page layout that isn't in this project, and most of `index.html` was built separately (F1). On top of that, `data.js` was never loaded (A1, fixed in #3). **Which markup each screen uses is decided in [ADR 0002](decisions/0002-screen-markup.md).**
 
-> **Paths:** this report was written before the restructure. File paths below use the new layout (see [ARCHITECTURE.md](ARCHITECTURE.md)). Line numbers are unchanged, because the files were moved without edits. _Since #27a, `data.js` is split into `src/data/*.js`, so older `data.js:NN` links point to a file that no longer exists; search the part, board or datasheet name in `src/data/` instead._
+> **Paths:** this report was written before the restructure. File paths below use the new layout (see [ARCHITECTURE.md](ARCHITECTURE.md)). Line numbers are unchanged, because the files were moved without edits. _Since #27a, `data.js` is split into `src/data/*.js`, so older `data.js:NN` links point to a file that no longer exists; search the part, board or datasheet name in `src/data/` instead. Since #27c the same goes for `app.js:NN` links (the code is in `src/app`, `ui`, `views`, `services` and `utils`) and for the 3D builders (`src/engines/three-viewer/models/`)._
 
 ---
 

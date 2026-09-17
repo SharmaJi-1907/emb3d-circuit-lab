@@ -10,17 +10,22 @@ emmb3d/
 ├── src/
 │   ├── main.js                Entry point: imports styles, engines, then the app
 │   ├── app/                   App shell
-│   │   └── app.js             Startup, screen switching, search, shortcuts, all screen logic (to be split)
-│   ├── views/                 One file per screen            (empty — filled while fixing)
+│   │   ├── app.js             Startup and the window.CircuitApp API (ADR 0003); imports every screen
+│   │   ├── router.js          Screen switching, sidebar, #screen address (D9); screens register here
+│   │   ├── state.js           App state shared by every screen
+│   │   └── pin-types.js       Colour, label and icon per pin type
+│   ├── views/                 One file per screen; each registers itself with the router
+│   │   ├── dashboard.view.js, library.view.js, viewer.view.js, simulator.view.js
+│   │   └── boards.view.js, datasheet.view.js, ai.view.js, projects.view.js
 │   ├── engines/
 │   │   ├── three-viewer/
-│   │   │   ├── index.js       3D scene, camera, orbit, pin picking, procedural models
-│   │   │   └── models/        One file per 3D model builder   (empty — filled while fixing)
+│   │   │   ├── index.js       3D scene, camera, orbit, pin picking, loading models
+│   │   │   └── models/        Model builders, given a `kit` by index.js: chips.js, boards.js, passives.js
 │   │   ├── simulator/
 │   │   │   └── index.js       Breadboard canvas, parts, wires, DC solver (nodal analysis), oscilloscope
 │   │   └── background/
 │   │       └── circuit-bg.js  Animated circuit background
-│   ├── ui/                    Reusable UI: toast, modal, search  (empty)
+│   ├── ui/                    Page-wide UI: toast.js, search.js, shortcuts.js, notifications.js, theme.js, topbar.js
 │   ├── data/
 │   │   ├── index.js           Joins the parts below into window.CircuitLabData (ADR 0003)
 │   │   ├── components.js      Parts: specs and pinouts
@@ -28,8 +33,8 @@ emmb3d/
 │   │   ├── datasheets.js      Datasheet sections
 │   │   ├── projects.js        Sample projects
 │   │   └── ai-responses.js    Stored AI answers
-│   ├── services/              AI answers, localStorage          (empty)
-│   ├── utils/                 DOM / HTML / formatting helpers  (empty)
+│   ├── services/              ai.js (answer matching), my-projects.js (localStorage)
+│   ├── utils/                 html.js (escapeHtml), markdown.js (AI replies), canvas.js (roundRect)
 │   ├── styles/
 │   │   ├── base/
 │   │   │   ├── fonts.css      Web fonts
@@ -79,7 +84,7 @@ emmb3d/
 └── docs/                      Documentation
 ```
 
-Folders marked _(empty)_ are part of the target layout. They get filled while the big files (`app.js`; `data.js` was split in #27a and `main.css` in #27b) are split during the fixes.
+Folders marked _(empty)_ are part of the target layout. They get filled while the big files (all split now: `data.js` in #27a, `main.css` in #27b, `app.js` and the 3D model builders in #27c) are split during the fixes.
 
 ## Load order
 
@@ -90,7 +95,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 3. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the 3D viewer and the app).
 4. `engines/three-viewer/index.js` → `window.ThreeViewer`
 5. `engines/simulator/index.js` → `window.CircuitSimulator`
-6. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`
+6. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`. It imports the router, `ui/`, `services/` and every `views/*.view.js`; each screen registers what runs when it opens, so the router imports no screen (no import cycle).
 
 The smoke test "component data is loaded" fails if `data/index.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
