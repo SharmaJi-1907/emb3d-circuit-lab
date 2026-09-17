@@ -1,0 +1,44 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — Tags and badges
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tags & Badges ────────────────────────────────────────────── */
+.tag {
+  display: inline-block;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.proto-tag {
+  display: inline-block;
+  background: var(--cyan-dim);
+  color: var(--cyan);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.comp-type-badge {
+  display: inline-block;
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.type-mcu     { background: rgba(0,212,255,0.15); color: var(--cyan); }
+.type-sensor  { background: rgba(0,255,136,0.15); color: var(--green); }
+.type-power   { background: rgba(255,149,0,0.15); color: var(--orange); }
+.type-passive { background: rgba(136,136,136,0.15); color: #888; }
+.type-wireless{ background: rgba(123,47,255,0.15); color: var(--purple); }
+.type-display { background: rgba(255,45,120,0.15); color: #ff2d78; }

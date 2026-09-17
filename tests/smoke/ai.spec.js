@@ -272,7 +272,7 @@ const HARD_CODED = {
   border: 'rgb(34, 34, 34)',    // #222
   white: 'rgb(255, 255, 255)',  // #fff
 };
-// Design tokens from main.css.
+// Design tokens from src/styles/base/tokens.css.
 const TOKEN = {
   border: 'rgba(0, 212, 255, 0.08)',
   borderActive: 'rgba(0, 212, 255, 0.4)',

@@ -1,0 +1,235 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITLAB — 3D Viewer screen
+   Split out of main.css (#27b)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   3D VIEWER
+═══════════════════════════════════════════════════════════════ */
+#view-viewer {
+  display: grid !important;
+  grid-template-columns: 220px 1fr 280px;
+  grid-template-rows: 1fr 200px;
+  gap: 0;
+}
+
+#viewer-sidebar {
+  grid-row: 1 / 3;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.viewer-comp-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.viewer-comp-icon { font-size: 24px; }
+.viewer-comp-name { font-size: 14px; font-weight: 600; }
+.viewer-comp-mfr { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+
+.viewer-specs { display: flex; flex-direction: column; gap: 4px; }
+.viewer-spec-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.viewer-spec-key { color: var(--text-muted); }
+.viewer-spec-val { color: var(--text-secondary); }
+
+.viewer-protocols { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.viewer-controls { display: flex; flex-direction: column; gap: 10px; }
+.viewer-ctrl-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.viewer-ctrl-group label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.viewer-comp-select { display: flex; flex-direction: column; gap: 6px; }
+.viewer-comp-select label { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; }
+
+/* 3D Canvas Area */
+#viewer-canvas-area {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  background: radial-gradient(ellipse at center, #0a0a1e 0%, #05050a 100%);
+  overflow: hidden;
+}
+
+#viewer-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.viewer-canvas-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.viewer-hint {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* Pin Table */
+#viewer-pin-panel {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pin-panel-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+
+.pin-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.pin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+.pin-table th {
+  padding: 6px 8px;
+  text-align: left;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.pin-table td { padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.pin-row { cursor: pointer; transition: background var(--t-fast); }
+.pin-row:hover { background: var(--bg-hover); }
+.pin-row.selected { background: var(--cyan-dim); }
+.pin-num { color: var(--text-muted); font-weight: 600; }
+.pin-name { color: var(--text-primary); font-weight: 500; }
+.pin-alt { color: var(--text-muted); }
+.pin-voltage { color: var(--orange); }
+.pin-protocol { }
+.pin-warning { color: var(--orange); cursor: help; }
+.pin-type-badge {
+  display: inline-block;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.no-pinout { text-align: center; padding: 20px; color: var(--text-muted); }
+
+/* Pin Detail Panel */
+#pin-detail-panel {
+  grid-column: 2;
+  grid-row: 2;
+  background: rgba(8,8,18,0.95);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+
+.pin-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+  border-left: 3px solid;
+  padding-left: 10px;
+}
+.pin-detail-num {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.pin-detail-name { font-size: 14px; font-weight: 600; }
+.pin-detail-alt { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+.pin-detail-body { display: flex; flex-direction: column; gap: 6px; }
+.pin-detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+.pin-detail-row span:first-child { color: var(--text-muted); }
+
+.pin-warning-box {
+  background: rgba(255,149,0,0.1);
+  border: 1px solid rgba(255,149,0,0.3);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 10px;
+  color: var(--orange);
+  margin-top: 6px;
+}
+
+.pin-signal-viz {
+  margin-top: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+}
+#signal-canvas { display: block; }
+
+/* Narrow windows (was in main.css "Responsive") */
+@media (max-width: 900px) {
+  #view-viewer {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr auto !important;
+  }
+  #viewer-sidebar { grid-row: 1; grid-column: 1; max-height: 200px; }
+  #viewer-canvas-area { grid-column: 1; grid-row: 2; }
+  #viewer-pin-panel { grid-column: 1; grid-row: 3; max-height: 200px; }
+  #pin-detail-panel { display: none; }
+}

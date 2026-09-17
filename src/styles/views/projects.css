@@ -1,5 +1,65 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROJECTS
+═══════════════════════════════════════════════════════════════ */
+.projects-layout { display: flex; flex-direction: column; gap: 16px; }
+
+.projects-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.projects-header h2 { font-size: 18px; font-weight: 700; }
+
+.projects-grid-full {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-card-full {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent, var(--cyan));
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: all var(--t-base);
+  cursor: pointer;
+}
+.project-card-full:hover {
+  border-color: var(--accent, var(--border-hover));
+  background: var(--bg-hover);
+}
+.project-card-full-icon { font-size: 28px; flex-shrink: 0; }
+.project-card-full-body { flex: 1; min-width: 0; }
+.project-card-full-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.project-card-full-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.project-card-full-comps { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.comp-chip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+.project-card-full-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.project-card-full-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.project-modified { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+
+/* ── Rules added for this screen's own markup ──────────────── */
+
 /* ── Projects screen (C4, ADR 0002) ─────────────────────────────
-   The cards themselves are styled in main.css. This file covers the
+   The cards themselves are styled in the first part of this file. This file covers the
    parts C4 added: the "name your project" form and the cards for
    projects you made. Design tokens only.
 ──────────────────────────────────────────────────────────────── */

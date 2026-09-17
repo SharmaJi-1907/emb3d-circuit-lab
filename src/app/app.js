@@ -2129,7 +2129,7 @@ Could you be more specific about what you're trying to build? For example:
   }
 
   /* ── Light / dark theme (C5) ────────────────────────────────────
-     The palette lives in main.css under :root[data-theme="light"],
+     The palette lives in styles/base/tokens.css under :root[data-theme="light"],
      so only the attribute changes here. The choice is remembered.
   ──────────────────────────────────────────────────────────────── */
   const THEME_KEY = 'circuitlab.theme';

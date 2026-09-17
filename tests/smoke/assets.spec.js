@@ -5,7 +5,7 @@
    E7 (Three.js from a CDN, so no 3D without the internet), E16 (unused leftovers).
 ═══════════════════════════════════════════════════════════════════ */
 
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 import { test, expect, openApp, appReady, expectNoErrors, waitForViewer, goToView, waitForStableModel } from './helpers.js';
 
@@ -70,7 +70,11 @@ test('the stylesheet is loaded once, not twice (E3)', async ({ page, errors }) =
 
 test('the dead simulator and datasheet CSS is gone (E12)', async () => {
   // Read the source: the dev server wraps CSS in a JS module for hot reload.
-  const css = await readFile(new URL('../../src/styles/main.css', import.meta.url), 'utf8');
+  // main.css was split into src/styles/*/ in #27b, so read every stylesheet.
+  const dir = new URL('../../src/styles/', import.meta.url);
+  const files = (await readdir(dir, { recursive: true })).filter((f) => f.endsWith('.css'));
+  expect(files.length, 'the stylesheets are found').toBeGreaterThan(10);
+  const css = (await Promise.all(files.map((f) => readFile(new URL(f, dir), 'utf8')))).join('\n');
   // IDs the page has never had — the working styles live in styles/views/.
   for (const dead of ['#sim-toolbar', '#sim-palette', '#sim-canvas-area', '#sim-instruments',
     '.datasheet-toc', '.toc-item', '.datasheet-content', '#ai-input-area']) {
