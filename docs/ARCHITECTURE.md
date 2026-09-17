@@ -55,7 +55,7 @@ emmb3d/
 │   │   ├── topbar.spec.js     Notifications drawer, the search pop-up's arrow keys, New Project and Share (C6, D14, C9)
 │   │   ├── routing.spec.js    Hash routing: address, links, refresh, Back/Forward (D9)
 │   │   ├── background.spec.js  Animated background: one animation, theme colours, dots after a resize (D4, D28, D29)
-│   │   ├── assets.spec.js     What the page loads: manifest, favicon, no GSAP/FontAwesome, dead CSS (E2–E14)
+│   │   ├── assets.spec.js     What the page loads: manifest, favicon, no GSAP/FontAwesome, dead CSS, Three.js offline (E2–E14, E7)
 │   │   ├── viewer-models.spec.js  3D models: pin counts per part, chip labels, freeing old models, passive parts (D8, D11, D16, #23b)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
@@ -82,7 +82,7 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 The smoke test "component data is loaded" fails if `data.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
-Three.js is loaded from a CDN in `index.html` as the global `window.THREE` (E7). GSAP and FontAwesome were removed in #25 (E10).
+Three.js comes from npm (`three`, pinned) and is imported by `engines/three-viewer/index.js`, so Vite bundles it and the 3D Viewer works offline (E7, #24). Nothing reads `window.THREE` any more. GSAP and FontAwesome were removed in #25 (E10).
 
 The cross-file globals are declared for ESLint in [eslint.config.js](../eslint.config.js). Only `app/app.js` reads them by bare name.
 

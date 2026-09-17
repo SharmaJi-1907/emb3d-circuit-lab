@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════
    Project hygiene: what the page loads and what it no longer loads.
    E2 (missing manifest/favicon), E3 (CSS loaded twice), E10 (GSAP
-   loaded but unused), E12 (dead CSS), E14 (font CDN fails tests).
+   loaded but unused), E12 (dead CSS), E14 (font CDN fails tests),
+   E7 (Three.js from a CDN, so no 3D without the internet).
 ═══════════════════════════════════════════════════════════════════ */
 
 import { readFile } from 'node:fs/promises';
 
-import { test, expect, openApp, appReady, expectNoErrors } from './helpers.js';
+import { test, expect, openApp, appReady, expectNoErrors, waitForViewer, goToView, waitForStableModel } from './helpers.js';
 
 test('the page loads with no console errors at all (E2)', async ({ page, errors }) => {
   // The known-noise list used to hide a missing favicon and manifest.
@@ -98,5 +99,34 @@ test('a font CDN hiccup does not fail a test (E14)', async ({ page, errors }) =>
   await page.goto('/');
   await appReady(page);
   await expect(page.locator('#view-dashboard')).toBeVisible();
+  expectNoErrors(errors);
+});
+
+test('Three.js is bundled, not downloaded from a CDN (E7)', async ({ page, errors }) => {
+  const asked = [];
+  page.on('request', (r) => {
+    // Only other hosts count: in dev, Vite serves the bundled copy from /node_modules/.vite/deps/three.js.
+    const url = new URL(r.url());
+    if (url.hostname !== 'localhost' && /three|cdnjs/i.test(r.url())) asked.push(r.url());
+  });
+
+  await openApp(page);
+  await waitForViewer(page);
+  expect(asked, 'Three.js comes from the app bundle').toEqual([]);
+  expectNoErrors(errors);
+});
+
+test('the 3D Viewer works with no internet (E7)', async ({ page, errors }) => {
+  // Block everything that is not this app. The font CDNs failing is known noise (E14).
+  const warnings = [];
+  page.on('console', (msg) => { if (msg.type() === 'warning' && /THREE/.test(msg.text())) warnings.push(msg.text()); });
+  await page.route((url) => url.hostname !== 'localhost', (route) => route.abort());
+
+  await page.goto('/');
+  await appReady(page);
+  await waitForViewer(page);
+  await goToView(page, 'viewer');
+  await waitForStableModel(page);
+  expect(warnings, 'no Three.js deprecation warnings').toEqual([]);
   expectNoErrors(errors);
 });

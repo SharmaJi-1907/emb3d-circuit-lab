@@ -16,7 +16,6 @@ export default [
       sourceType: 'module',
       globals: {
         ...globals.browser,
-        THREE: 'readonly', // Three.js, loaded from a CDN <script> in index.html
       },
     },
     rules: {
