@@ -10,6 +10,8 @@ export const datasheets = [
     manufacturer: 'Microchip Technology',
     revision: 'Rev. DS40002061B',
     pages: 294,
+    // The official PDF of this revision, on microchip.com (D48)
+    pdf: 'https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf',
     sections: {
       overview: {
         title: 'Overview',
@@ -138,6 +140,8 @@ void loop() {
     manufacturer: 'Espressif Systems',
     revision: 'v3.2',
     pages: 42,
+    // The official PDF, on espressif.com (D48)
+    pdf: 'https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf',
     sections: {
       overview: {
         title: 'Overview',
