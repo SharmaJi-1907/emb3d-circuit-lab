@@ -27,6 +27,8 @@ class CircuitBackground {
         this.width = this.canvas.width = window.innerWidth;
         this.height = this.canvas.height = window.innerHeight;
         this.generateGridNodes();
+        // Start the particles again on the new grid; the old ones still point at the old nodes (D29)
+        this.spawnParticles();
     }
     
     generateGridNodes() {
@@ -98,8 +100,8 @@ class CircuitBackground {
     animate() {
         this.ctx.clearRect(0, 0, this.width, this.height);
         
-        // Check theme colors dynamically
-        const isDark = document.body.classList.contains('dark-theme');
+        // Check theme colors dynamically. Dark is the default; light sets data-theme on <html> (D28)
+        const isDark = document.documentElement.dataset.theme !== 'light';
         const gridColor = isDark ? 'rgba(48, 54, 61, 0.25)' : 'rgba(210, 215, 220, 0.4)';
         const nodeColor = isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(6, 182, 212, 0.25)';
         
