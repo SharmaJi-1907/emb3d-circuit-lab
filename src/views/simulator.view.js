@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Simulator screen: toolbar, palette and instruments (C2, C7)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { registerScreen } from '../app/router.js';
 import { showToast } from '../ui/toast.js';
+import { saveOpenProject } from './projects.view.js';
 
 function initSimulatorPanel() {
   const panel = document.getElementById('view-simulator');
@@ -15,6 +15,7 @@ function initSimulatorPanel() {
   // Set the simulator up on the first visit only (D3). It sizes itself each time its screen is shown.
   if (!CircuitSimulator.getState().ready) {
     CircuitSimulator.init(document.getElementById('sim-canvas'), document.getElementById('osc-canvas'));
+    CircuitSimulator.onChange(saveOpenProject); // your open project keeps its circuit (D47)
   }
 }
 
@@ -30,7 +31,6 @@ function wireSimulatorControls() {
   on('sim-stop', 'click', after(() => CircuitSimulator.stopSim(true)));
   on('sim-clear', 'click', after(() => CircuitSimulator.resetSim()));
   on('sim-export', 'click', () => CircuitSimulator.exportCircuit());
-  on('sim-upload-code', 'click', () => showToast('Uploading code isn\'t available yet', 'info'));
   on('sim-speed', 'input', (e) => {
     CircuitSimulator.setSimSpeed(e.target.value);
     document.getElementById('sim-speed-val').textContent = `${e.target.value}x`;
@@ -56,7 +56,7 @@ function wireSimulatorControls() {
     item.addEventListener('click', () => {
       const type = item.dataset.component;
       if (type === 'wire') showToast('To add a wire, drag from one pin to another on the board', 'info');
-      else if (!CircuitSimulator.addComponentToCanvas(type)) showToast(`${item.textContent.trim()} isn't available in the simulator yet`, 'info');
+      else CircuitSimulator.addComponentToCanvas(type);
     });
   });
 }

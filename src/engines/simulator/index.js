@@ -19,11 +19,39 @@ window.CircuitSimulator = (function () {
   let simSpeed = 1;
   let dragOffset = { x: 0, y: 0 };
   let nextId = 1;
-
-  // Instruments
+  let boardW = 0; // the board's size on screen, in CSS pixels (D45)
+  let boardH = 0;
+  let oscW = 0;
+  let oscH = 0;
+  let onChange = null; // told about every change to the circuit (D47)
 
   // Grid
   const GRID = 20;
+
+  /* ── Colours ──────────────────────────────────────────────────
+     Parts are drawn in the theme's colours (--sim-* in tokens.css), read
+     again when the theme changes, so they stand out on a light board too
+     (F11). Batteries, LEDs and resistor bands keep their real colours.
+  ──────────────────────────────────────────────────────────────── */
+  const C = { part: '#c0c0c0', label: '#8888aa', accent: '#00d4ff', live: '#00ff88', red: '#ff4444', gold: '#ffd700', purple: '#7b2fff' };
+  let coloursFor = null;
+
+  function readColours() {
+    const theme = document.documentElement.dataset.theme || 'dark';
+    if (theme === coloursFor) return;
+    coloursFor = theme;
+    const css = getComputedStyle(canvas);
+    const token = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+    Object.assign(C, {
+      part: token('--sim-part', C.part),
+      label: token('--sim-label', C.label),
+      accent: token('--sim-accent', C.accent),
+      live: token('--sim-live', C.live),
+      red: token('--red', C.red),
+      gold: token('--gold', C.gold),
+      purple: token('--purple', C.purple),
+    });
+  }
 
   /* ── Component Definitions ──────────────────────────────────── */
   const COMPONENT_DEFS = {
@@ -33,10 +61,9 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 0, y: 10, name: 'A' }, { x: 60, y: 10, name: 'B' }],
       value: 1000,
       unit: 'Ω',
-      color: '#8b4513',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Leads
         ctx.beginPath();
@@ -54,7 +81,7 @@ window.CircuitSimulator = (function () {
           ctx.fillRect(x + 18 + i * 8, y + 2, 4, h - 4);
         });
         // Label
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText(formatValue(comp.value, comp.unit), x + w / 2, y - 4);
@@ -66,13 +93,12 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 0, y: 15, name: 'A' }, { x: 40, y: 15, name: 'K' }],
       value: 2.0,
       unit: 'V',
-      color: '#00ff00',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         const cx = x + w / 2;
         const cy = y + h / 2;
         const isOn = comp.state && comp.state.on;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Leads
         ctx.beginPath();
@@ -87,7 +113,7 @@ window.CircuitSimulator = (function () {
         ctx.lineTo(cx - 10, cy + 10);
         ctx.lineTo(cx + 8, cy);
         ctx.closePath();
-        ctx.fillStyle = isOn ? (comp.ledColor || '#00ff00') : 'rgba(0,255,0,0.2)';
+        ctx.fillStyle = isOn ? '#00ff00' : 'rgba(0,255,0,0.2)'; // the LED's own light
         ctx.fill();
         ctx.stroke();
         // Bar
@@ -108,7 +134,7 @@ window.CircuitSimulator = (function () {
           ctx.restore();
         }
         // Label
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('LED', cx, y - 4);
@@ -120,12 +146,11 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 0, y: 15, name: '+' }, { x: 50, y: 15, name: '-' }],
       value: 9,
       unit: 'V',
-      color: '#ffd700',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         const cx = x + w / 2;
         const cy = y + h / 2;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Leads
         ctx.beginPath();
@@ -146,13 +171,13 @@ window.CircuitSimulator = (function () {
         ctx.lineTo(cx + 8, cy + 6);
         ctx.stroke();
         // +/- labels
-        ctx.fillStyle = '#ffd700';
+        ctx.fillStyle = C.gold;
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('+', cx - 8, cy - 13);
         ctx.fillText('−', cx + 8, cy - 9);
         // Value
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.fillText(comp.value + 'V', cx, y - 4);
       }
@@ -163,12 +188,11 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 0, y: 15, name: '+' }, { x: 40, y: 15, name: '-' }],
       value: 100,
       unit: 'µF',
-      color: '#1a3a6a',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         const cx = x + w / 2;
         const cy = y + h / 2;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Leads
         ctx.beginPath();
@@ -185,7 +209,7 @@ window.CircuitSimulator = (function () {
         ctx.lineTo(cx + 5, cy + 10);
         ctx.stroke();
         // Label
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText(formatValue(comp.value, comp.unit), cx, y - 4);
@@ -197,12 +221,11 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 0, y: 12, name: 'A' }, { x: 50, y: 12, name: 'B' }],
       value: 0,
       unit: '',
-      color: '#888888',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         const cy = y + h / 2;
         const closed = comp.state && comp.state.closed;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Leads
         ctx.beginPath();
@@ -215,7 +238,7 @@ window.CircuitSimulator = (function () {
         ctx.beginPath();
         ctx.arc(x + 12, cy, 3, 0, Math.PI * 2);
         ctx.arc(x + w - 12, cy, 3, 0, Math.PI * 2);
-        ctx.fillStyle = '#c0c0c0';
+        ctx.fillStyle = C.part;
         ctx.fill();
         // Lever
         ctx.beginPath();
@@ -225,11 +248,11 @@ window.CircuitSimulator = (function () {
         } else {
           ctx.lineTo(x + w - 12, cy - 12);
         }
-        ctx.strokeStyle = closed ? '#00ff88' : '#ff4444';
+        ctx.strokeStyle = closed ? C.live : C.red;
         ctx.lineWidth = 2;
         ctx.stroke();
         // Label
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText(closed ? 'CLOSED' : 'OPEN', x + w / 2, y - 4);
@@ -241,11 +264,10 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 15, y: 0, name: 'GND' }],
       value: 0,
       unit: 'V',
-      color: '#888888',
       draw(ctx, comp) {
         const { x, y, w } = comp.bounds;
         const cx = x + w / 2;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#888888';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         ctx.beginPath();
         ctx.moveTo(cx, y);
@@ -271,12 +293,11 @@ window.CircuitSimulator = (function () {
       ],
       value: 100,
       unit: 'hFE',
-      color: '#7b2fff',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         const cx = x + 20;
         const cy = y + h / 2;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Base lead
         ctx.beginPath();
@@ -309,11 +330,11 @@ window.CircuitSimulator = (function () {
         ctx.lineTo(-6, -3);
         ctx.lineTo(-6, 3);
         ctx.closePath();
-        ctx.fillStyle = '#c0c0c0';
+        ctx.fillStyle = C.part;
         ctx.fill();
         ctx.restore();
         // Label
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('NPN', x + w / 2, y - 4);
@@ -329,10 +350,9 @@ window.CircuitSimulator = (function () {
       ],
       value: 100000,
       unit: 'V/V',
-      color: '#ff6b2b',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Triangle body
         ctx.beginPath();
@@ -340,12 +360,12 @@ window.CircuitSimulator = (function () {
         ctx.lineTo(x + 10, y + h - 5);
         ctx.lineTo(x + w - 5, y + h / 2);
         ctx.closePath();
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#ff6b2b';
+        ctx.strokeStyle = comp.selected ? C.accent : '#ff6b2b';
         ctx.stroke();
         ctx.fillStyle = 'rgba(255,107,43,0.1)';
         ctx.fill();
         // Input leads
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.beginPath();
         ctx.moveTo(x, y + 15);
         ctx.lineTo(x + 10, y + 15);
@@ -355,13 +375,13 @@ window.CircuitSimulator = (function () {
         ctx.lineTo(x + w, y + h / 2);
         ctx.stroke();
         // +/- symbols
-        ctx.fillStyle = '#c0c0c0';
+        ctx.fillStyle = C.part;
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'left';
         ctx.fillText('+', x + 13, y + 19);
         ctx.fillText('−', x + 13, y + 49);
         // Label
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('Op-Amp', x + w / 2, y - 4);
@@ -373,12 +393,11 @@ window.CircuitSimulator = (function () {
       nodes: [{ x: 0, y: 12, name: 'A' }, { x: 40, y: 12, name: 'K' }],
       value: 0.7,
       unit: 'V',
-      color: '#888888',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         const cx = x + w / 2;
         const cy = y + h / 2;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         ctx.beginPath();
         ctx.moveTo(x, cy);
@@ -398,7 +417,7 @@ window.CircuitSimulator = (function () {
         ctx.moveTo(cx + 8, cy - 9);
         ctx.lineTo(cx + 8, cy + 9);
         ctx.stroke();
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('1N4148', cx, y - 4);
@@ -414,10 +433,9 @@ window.CircuitSimulator = (function () {
       ],
       value: 0,
       unit: '',
-      color: '#00d4ff',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#c0c0c0';
+        ctx.strokeStyle = comp.selected ? C.accent : C.part;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         // Gate lead
         ctx.beginPath();
@@ -450,14 +468,14 @@ window.CircuitSimulator = (function () {
         ctx.moveTo(x + 20, y + h / 2);
         ctx.lineTo(x + 35, y + h / 2);
         ctx.stroke();
-        ctx.fillStyle = '#c0c0c0';
+        ctx.fillStyle = C.part;
         ctx.beginPath();
         ctx.moveTo(x + 20, y + h / 2);
         ctx.lineTo(x + 26, y + h / 2 - 4);
         ctx.lineTo(x + 26, y + h / 2 + 4);
         ctx.closePath();
         ctx.fill();
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('NMOS', x + w / 2, y - 4);
@@ -482,11 +500,10 @@ window.CircuitSimulator = (function () {
       ],
       value: 0,
       unit: '',
-      color: '#00979D',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         ctx.fillStyle = comp.selected ? 'rgba(0,212,255,0.1)' : 'rgba(0,151,157,0.15)';
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#00979D';
+        ctx.strokeStyle = comp.selected ? C.accent : '#00979D';
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         ctx.beginPath();
         ctx.roundRect(x + 5, y + 5, w - 10, h - 10, 4);
@@ -499,7 +516,7 @@ window.CircuitSimulator = (function () {
         ctx.fillText('ARDUINO', x + w / 2, y + h / 2 + 4);
         // Pin labels
         ctx.font = '8px JetBrains Mono, monospace';
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         const leftPins = ['D2','D3','D4','D5','D6','GND'];
         const rightPins = ['5V','A0','A1','SDA','SCL','GND'];
         leftPins.forEach((p, i) => {
@@ -533,22 +550,21 @@ window.CircuitSimulator = (function () {
       ],
       value: 0,
       unit: '',
-      color: '#7b2fff',
       draw(ctx, comp) {
         const { x, y, w, h } = comp.bounds;
         ctx.fillStyle = comp.selected ? 'rgba(0,212,255,0.1)' : 'rgba(123,47,255,0.1)';
-        ctx.strokeStyle = comp.selected ? '#00d4ff' : '#7b2fff';
+        ctx.strokeStyle = comp.selected ? C.accent : C.purple;
         ctx.lineWidth = comp.selected ? 2 : 1.5;
         ctx.beginPath();
         ctx.roundRect(x + 5, y + 5, w - 10, h - 10, 4);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#7b2fff';
+        ctx.fillStyle = C.purple;
         ctx.font = 'bold 11px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('ESP32', x + w / 2, y + h / 2 + 4);
         ctx.font = '8px JetBrains Mono, monospace';
-        ctx.fillStyle = '#8888aa';
+        ctx.fillStyle = C.label;
         const leftPins = ['GPIO2','GPIO4','GPIO5','GPIO18','GPIO19','GPIO21','GND'];
         const rightPins = ['3V3','GPIO22','GPIO23','GPIO25','GPIO26','GPIO27','GND'];
         leftPins.forEach((p, i) => {
@@ -607,7 +623,6 @@ window.CircuitSimulator = (function () {
       unit: def.unit,
       selected: false,
       state: { on: false, closed: false, voltage: 0, current: 0, drop: 0 },
-      ledColor: '#00ff00',
       get bounds() {
         return { x: this.x, y: this.y, w: this.def.width, h: this.def.height };
       }
@@ -622,12 +637,17 @@ window.CircuitSimulator = (function () {
     ctx = canvas.getContext('2d');
     if (oscCanvas) oscCtx = oscCanvas.getContext('2d');
 
+    // Follow the board's size: a window resize, the sidebar being hidden (D35),
+    // and the screen being shown again after a resize while it was hidden.
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    const observer = new ResizeObserver(resizeCanvas);
+    observer.observe(canvas);
+    if (oscCanvas) observer.observe(oscCanvas);
 
     canvas.addEventListener('mousedown', onMouseDown);
     canvas.addEventListener('mousemove', onMouseMove);
-    canvas.addEventListener('mouseup', onMouseUp);
+    // On the window, so letting go outside the board still ends a drag (D41)
+    window.addEventListener('mouseup', onMouseUp);
     canvas.addEventListener('dblclick', onDblClick);
     canvas.addEventListener('contextmenu', onContextMenu);
 
@@ -645,16 +665,23 @@ window.CircuitSimulator = (function () {
     render();
   }
 
+  // Size each canvas to its box on screen. On a high-DPI screen it gets that
+  // many pixels per CSS pixel, so lines are sharp; drawing and the mouse
+  // still use CSS pixels (D45). A hidden canvas (0 × 0) keeps its last size.
   function resizeCanvas() {
-    if (oscCanvas) {
-      const box = oscCanvas.getBoundingClientRect();
-      if (box.width) { oscCanvas.width = box.width; oscCanvas.height = box.height; }
-    }
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    if (!rect.width) return; // hidden: keep the last size until the screen is shown again
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    const dpr = window.devicePixelRatio || 1;
+    const fit = (el, context) => {
+      const box = el.getBoundingClientRect();
+      if (!box.width) return null;
+      el.width = Math.round(box.width * dpr);
+      el.height = Math.round(box.height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return box;
+    };
+    const osc = oscCanvas && fit(oscCanvas, oscCtx);
+    if (osc) { oscW = osc.width; oscH = osc.height; }
+    const board = canvas && fit(canvas, ctx);
+    if (board) { boardW = board.width; boardH = board.height; }
   }
 
   /* ── Mouse Events ───────────────────────────────────────────── */
@@ -696,6 +723,7 @@ window.CircuitSimulator = (function () {
     if (draggingComponent) {
       draggingComponent.x = snap(mx - dragOffset.x);
       draggingComponent.y = snap(my - dragOffset.y);
+      updateWirePositions(); // its wires follow while it moves (D41)
     }
 
     if (drawingWire) {
@@ -733,20 +761,20 @@ window.CircuitSimulator = (function () {
             to: { comp, nodeIdx: ni },
             x1: wireStart.x, y1: wireStart.y,
             x2: endNode.x, y2: endNode.y,
-            color: '#00d4ff',
-            animated: simRunning,
           });
           runSimulation();
         }
       }
     }
 
+    const moved = draggingComponent !== null;
     drawingWire = false;
     wireStart = null;
     draggingComponent = null;
 
     // Update wire positions
     updateWirePositions();
+    if (moved) notifyChange();
   }
 
   function onDblClick(e) {
@@ -867,6 +895,11 @@ window.CircuitSimulator = (function () {
         0;
     });
     components.forEach(c => { if (c.type === 'led') c.state.on = c.state.current > I_LED_ON; });
+    notifyChange();
+  }
+
+  function notifyChange() {
+    if (onChange) onChange(getCircuit());
   }
 
   function voltAt(volts, n) {
@@ -936,8 +969,7 @@ window.CircuitSimulator = (function () {
     // Don't draw while the Simulator screen is hidden (D5): offsetParent is null under display:none.
     // The simulation pauses too, and restarts its clock when the screen comes back.
     if (!ctx || canvas.offsetParent === null) { lastFrame = 0; return; }
-    // First frame since the screen was shown: size the canvases, as the window may have changed meanwhile
-    if (!lastFrame) resizeCanvas();
+    readColours();
     frameCount++;
 
     // Time-based clock (D20): real seconds since the last frame, at most 1 s
@@ -945,7 +977,7 @@ window.CircuitSimulator = (function () {
     const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 1) : 0;
     lastFrame = now;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, boardW, boardH);
 
     if (simRunning) {
       simTime += dt * simSpeed;
@@ -957,7 +989,7 @@ window.CircuitSimulator = (function () {
 
     // Draw wire being drawn
     if (drawingWire && wireStart) {
-      ctx.strokeStyle = '#00d4ff';
+      ctx.strokeStyle = C.accent;
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]);
       ctx.beginPath();
@@ -992,13 +1024,13 @@ window.CircuitSimulator = (function () {
 
       if (isActive && simRunning) {
         // Animated current flow
-        ctx.strokeStyle = '#00ff88';
-        ctx.shadowColor = '#00ff88';
+        ctx.strokeStyle = C.live;
+        ctx.shadowColor = C.live;
         ctx.shadowBlur = 4;
         ctx.setLineDash([8, 8]);
         ctx.lineDashOffset = -wireAnimOffset;
       } else {
-        ctx.strokeStyle = wire.color || '#00d4ff';
+        ctx.strokeStyle = C.accent;
         ctx.setLineDash([]);
       }
 
@@ -1016,7 +1048,7 @@ window.CircuitSimulator = (function () {
       ctx.restore();
 
       // Junction dots
-      ctx.fillStyle = '#00d4ff';
+      ctx.fillStyle = C.accent;
       ctx.beginPath();
       ctx.arc(wire.x1, wire.y1, 3, 0, Math.PI * 2);
       ctx.arc(wire.x2, wire.y2, 3, 0, Math.PI * 2);
@@ -1032,15 +1064,17 @@ window.CircuitSimulator = (function () {
 
       ctx.beginPath();
       ctx.arc(nx, ny, isHovered ? 5 : 3, 0, Math.PI * 2);
-      ctx.fillStyle = isHovered ? '#00d4ff' : 'rgba(0,212,255,0.5)';
+      ctx.fillStyle = C.accent;
+      ctx.globalAlpha = isHovered ? 1 : 0.5;
       ctx.fill();
+      ctx.globalAlpha = 1;
 
       if (isHovered) {
-        ctx.strokeStyle = '#00d4ff';
+        ctx.strokeStyle = C.accent;
         ctx.lineWidth = 1;
         ctx.stroke();
         // Node label
-        ctx.fillStyle = '#00d4ff';
+        ctx.fillStyle = C.accent;
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText(node.name, nx, ny - 8);
@@ -1066,9 +1100,11 @@ window.CircuitSimulator = (function () {
     Object.assign(scope, settings);
   }
 
+  // The scope screen looks like real hardware, dark in both themes, so it
+  // keeps its own colours.
   function drawOscilloscope() {
-    const w = oscCanvas.width;
-    const h = oscCanvas.height;
+    const w = oscW;
+    const h = oscH;
     const { ch1, ch2 } = scopeChannels();
 
     if (simRunning) {
@@ -1181,7 +1217,6 @@ window.CircuitSimulator = (function () {
   function startSim() {
     simRunning = true;
     runSimulation();
-    wires.forEach(w => w.animated = true);
     showToast('Simulation started', 'success');
   }
 
@@ -1189,7 +1224,6 @@ window.CircuitSimulator = (function () {
   function stopSim(rewind = false) {
     simRunning = false;
     if (rewind) { simTime = 0; scopeSamples = []; }
-    wires.forEach(w => w.animated = false);
     showToast(rewind ? 'Simulation stopped' : 'Simulation paused', 'info');
   }
 
@@ -1204,8 +1238,8 @@ window.CircuitSimulator = (function () {
   }
 
   function addComponentToCanvas(type) {
-    const w = canvas ? canvas.width : 400;
-    const h = canvas ? canvas.height : 300;
+    const w = boardW || 400;
+    const h = boardH || 300;
     const comp = createComponent(type, w / 2 + Math.random() * 60 - 30, h / 2 + Math.random() * 60 - 30);
     if (comp) {
       components.push(comp);
@@ -1229,33 +1263,40 @@ window.CircuitSimulator = (function () {
       comp.x = d.x;
       comp.y = d.y;
       if (d.value !== undefined) comp.value = d.value;
+      if (d.closed) comp.state.closed = true; // a switch keeps its position (D44)
       components.push(comp);
       byId.set(d.id ?? i, comp);
     });
     (data.wires || []).forEach(w => {
       const from = byId.get(w.from.compId);
       const to = byId.get(w.to.compId);
-      if (from && to) wires.push({ id: nextId++, from: { comp: from, nodeIdx: w.from.nodeIdx }, to: { comp: to, nodeIdx: w.to.nodeIdx }, color: '#00d4ff' });
+      if (from && to) wires.push({ id: nextId++, from: { comp: from, nodeIdx: w.from.nodeIdx }, to: { comp: to, nodeIdx: w.to.nodeIdx } });
     });
     runSimulation();
   }
 
-  function exportCircuit() {
-    const data = {
+  // The circuit as plain data: what Export saves and loadCircuit() reads.
+  function getCircuit() {
+    return {
       components: components.map(c => ({
-        id: c.id, type: c.type, x: c.x, y: c.y, value: c.value
+        id: c.id, type: c.type, x: c.x, y: c.y, value: c.value,
+        ...(c.type === 'switch' ? { closed: c.state.closed } : {}),
       })),
       wires: wires.map(w => ({
         from: { compId: w.from.comp.id, nodeIdx: w.from.nodeIdx },
         to: { compId: w.to.comp.id, nodeIdx: w.to.nodeIdx }
       }))
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  }
+
+  function exportCircuit() {
+    const blob = new Blob([JSON.stringify(getCircuit(), null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'circuit.json';
     a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0); // free the file once the download has it (D44)
     showToast('Circuit exported', 'success');
   }
 
@@ -1276,11 +1317,15 @@ window.CircuitSimulator = (function () {
     setScope,
     exportCircuit,
     loadCircuit,
+    getCircuit,
+    onChange: (fn) => { onChange = fn; },
     isRunning: () => simRunning,
     getFrameCount: () => frameCount,
     getState: () => ({
       ready: Boolean(ctx), parts: components.map(c => c.type), wires: wires.length, running: simRunning, time: simTime, speed: simSpeed,
       readings: components.map(c => ({ type: c.type, on: c.state.on, volts: +c.state.voltage.toFixed(3), mA: +(c.state.current * 1000).toFixed(2) })),
+      positions: components.map(c => [c.x, c.y]),
+      wireEnds: wires.map(w => [w.x1, w.y1, w.x2, w.y2]),
       scope: { ...scope, ...scopeChannels(), samples: scopeSamples.length },
     }),
   };
