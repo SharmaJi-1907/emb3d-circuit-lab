@@ -92,7 +92,6 @@ export function buildSIP(kit, pinCount, label) {
 
 export function buildDIP(kit, pinCount, label) {
   const group = new THREE.Group();
-  const cols = 2;
   const rows = pinCount / 2;
   const pitch = 0.3;
   const bodyW = 0.8;
