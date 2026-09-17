@@ -46,7 +46,7 @@ index.html  ── the page: all 9 screens, buttons, panels (each with an id="..
       src/main.js ── the entry point: imports everything in order
          ├─ styles/main.css                   how it looks
          ├─ engines/background/circuit-bg.js  animated background
-         ├─ data/data.js                      all the data   → window.CircuitLabData
+         ├─ data/index.js                     all the data   → window.CircuitLabData
          ├─ engines/three-viewer/index.js     3D engine      → window.ThreeViewer
          ├─ engines/simulator/index.js        circuit engine → window.CircuitSimulator
          └─ app/app.js                        the "brain"    → window.CircuitApp
@@ -128,7 +128,7 @@ The chips aren't loaded from model files. They're **built from boxes and cylinde
 4. Useful console commands while the app is running:
    ```js
    CircuitApp.getState()          // see the app's current data
-   typeof CircuitLabData          // "undefined" = data.js not loaded (bug A1)
+   typeof CircuitLabData          // "undefined" = data/index.js not loaded (bug A1)
    CircuitApp.navigateTo('ai')    // jump to a screen
    ThreeViewer.isReady()          // is 3D running?
    ```
