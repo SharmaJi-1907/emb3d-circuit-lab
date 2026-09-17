@@ -22,7 +22,10 @@ async function loadPart(page, id) {
 test('every part gets a model with its own pin count (D8)', async ({ page, errors }) => {
   // Deliberately NOT on the Viewer screen: the engine still builds models, but
   // the scene is not drawn while hidden (D5), so loading all of them stays cheap.
+  // One visit starts the engine, which is only downloaded for the Viewer (E18).
   await openApp(page);
+  await goToView(page, 'viewer');
+  await goToView(page, 'dashboard');
   await waitForViewer(page);
   const parts = await page.evaluate(() =>
     window.CircuitLabData.components.map((c) => ({ id: c.id, pins: c.pins, name: c.name })));
@@ -40,6 +43,7 @@ test('every part gets a model with its own pin count (D8)', async ({ page, error
 
 test('the resistor, capacitor and LED use their own models with 2 pins (#23b)', async ({ page, errors }) => {
   await openApp(page);
+  await goToView(page, 'viewer');
   await waitForViewer(page);
   // Real parts, each checked against its datasheet (sources in src/data/components.js).
   for (const id of ['cfr-25', 'eca-1em101', 'wp7113id']) {
@@ -62,6 +66,7 @@ test('the 3D loader has no cases for parts that do not exist (D8)', async ({ pag
 
 test('the chip has its name printed on it (D11)', async ({ page, errors }) => {
   await openApp(page);
+  await goToView(page, 'viewer');
   await waitForViewer(page);
   for (const id of ['atmega328p', 'ne555', 'stm32f103']) {
     await loadPart(page, id);

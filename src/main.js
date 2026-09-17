@@ -1,4 +1,4 @@
-// EMB3D Entry Point
+// CircuitLab entry point: the styles, then every module in dependency order (docs/ARCHITECTURE.md)
 // Styles, in cascade order: later files may override earlier ones (#27b)
 import './styles/base/tokens.css';
 import './styles/base/reset.css';
@@ -25,8 +25,6 @@ import './styles/views/ai.css';
 import './styles/views/projects.css';
 import './engines/background/circuit-bg.js';
 import './data/index.js';
-import './engines/three-viewer/index.js';
+// engines/three-viewer is loaded by views/viewer.view.js when the Viewer first opens (E18)
 import './engines/simulator/index.js';
 import './app/app.js';
-
-console.log('EMB3D: All modules successfully loaded.');

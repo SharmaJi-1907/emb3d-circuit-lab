@@ -115,6 +115,7 @@ test('Three.js is bundled, not downloaded from a CDN (E7)', async ({ page, error
   });
 
   await openApp(page);
+  await goToView(page, 'viewer');
   await waitForViewer(page);
   expect(asked, 'Three.js comes from the app bundle').toEqual([]);
   expectNoErrors(errors);
@@ -128,8 +129,8 @@ test('the 3D Viewer works with no internet (E7)', async ({ page, errors }) => {
 
   await page.goto('/');
   await appReady(page);
-  await waitForViewer(page);
   await goToView(page, 'viewer');
+  await waitForViewer(page);
   await waitForStableModel(page);
   expect(warnings, 'no Three.js deprecation warnings').toEqual([]);
   expectNoErrors(errors);
@@ -156,4 +157,70 @@ test('the web fonts are requested once (E19)', async ({ page, errors }) => {
   await openApp(page);
   expect(fontCss, 'only the <link> in index.html, not a second CSS @import').toHaveLength(1);
   expectNoErrors(errors);
+});
+
+/* ── Final clean-up (E18, E20, E21) ───────────────────────────── */
+test('Three.js is downloaded only when the 3D Viewer first opens (E18)', async ({ page, errors }) => {
+  const asked = [];
+  page.on('request', (r) => { if (/three/i.test(new URL(r.url()).pathname)) asked.push(r.url()); });
+  await openApp(page);
+  for (const view of ['simulator', 'database', 'boards', 'datasheet', 'ai', 'projects', 'settings', 'dashboard']) {
+    await goToView(page, view);
+  }
+  expect(asked, 'no screen but the Viewer needs the 3D library').toEqual([]);
+
+  await goToView(page, 'viewer');
+  await waitForViewer(page);
+  await waitForStableModel(page);
+  expect(asked.length, 'the Viewer loads it').toBeGreaterThan(0);
+  expectNoErrors(errors);
+});
+
+test('every class in the stylesheets is used by the page or the code (E20)', async () => {
+  const read = async (base, ext) => {
+    const dir = new URL(base, import.meta.url);
+    const files = (await readdir(dir, { recursive: true })).filter((f) => f.endsWith(ext));
+    return (await Promise.all(files.map((f) => readFile(new URL(f, dir), 'utf8')))).join('\n');
+  };
+  const css = (await read('../../src/styles/', '.css')).replace(/\/\*[\s\S]*?\*\//g, '');
+  const code = (await readFile(new URL('../../index.html', import.meta.url), 'utf8')) + (await read('../../src/', '.js'));
+  // Classes the code builds from data at run time: type-${category}, toast-${type}.
+  const built = /^(type|toast)-/;
+  const classes = [...new Set([...css.replace(/url\([^)]*\)/g, '').matchAll(/\.(-?[a-z_][\w-]*)/gi)].map((m) => m[1]))]
+    .filter((c) => !/^\d/.test(c) && !built.test(c));
+  const unused = classes.filter((c) => !new RegExp(`(^|[^\\w-])${c}([^\\w-]|$)`).test(code));
+  expect(unused, 'CSS for classes nothing uses').toEqual([]);
+});
+
+test('no leftovers: the hidden project card and empty folders are gone (E20, E21)', async ({ page, errors }) => {
+  const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
+  expect(html, 'the static card in #projects-grid was never visible').not.toContain('Astable Multivibrator');
+  for (const dir of ['../../src/assets/', '../../scripts/', '../../tests/unit/']) {
+    const exists = await readdir(new URL(dir, import.meta.url)).then(() => true, () => false);
+    expect(exists, `${dir} held only a .gitkeep`).toBe(false);
+  }
+  await openApp(page);
+  expectNoErrors(errors);
+});
+
+test('every link in the docs points to a real file and line (E22)', async () => {
+  const root = new URL('../../', import.meta.url);
+  const docs = ['README.md', 'CHANGELOG.md', 'CLAUDE.md', '.github/pull_request_template.md',
+    ...(await readdir(new URL('docs/', root), { recursive: true })).filter((f) => f.endsWith('.md')).map((f) => `docs/${f}`)];
+  const broken = [];
+  for (const doc of docs) {
+    const text = await readFile(new URL(doc, root), 'utf8').catch(() => null);
+    if (text === null) continue;
+    for (const [, target] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
+      if (/^(https?:|mailto:|#)/.test(target)) continue;
+      const [path, anchor = ''] = target.split('#');
+      const file = new URL(path, new URL(doc, root));
+      const body = await readFile(file, 'utf8').catch((e) => (e.code === 'EISDIR' ? '' : null));
+      if (body === null) { broken.push(`${doc} → ${target} (no such file)`); continue; }
+      const line = anchor.match(/^L(\d+)(?:-L(\d+))?$/);
+      const lines = body.split('\n').length;
+      if (line && Number(line[2] || line[1]) > lines) broken.push(`${doc} → ${target} (file has ${lines} lines)`);
+    }
+  }
+  expect(broken, 'broken links in the docs').toEqual([]);
 });
