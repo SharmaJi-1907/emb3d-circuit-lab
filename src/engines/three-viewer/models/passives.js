@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — 3D models: Two-lead parts: resistor, capacitor and LED (#23b)
-   Moved out of three-viewer/index.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import * as THREE from 'three';

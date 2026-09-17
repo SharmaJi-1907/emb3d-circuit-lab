@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — 3D models: Chip packages: DIP, QFP and single-row (SIP), with the part name printed on top
-   Moved out of three-viewer/index.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import * as THREE from 'three';

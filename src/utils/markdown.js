@@ -1,13 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — Markdown → HTML for AI replies (D6, D7, D18)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { escapeHtml } from './html.js';
 
-// Chat text → HTML. The text is escaped first, so typed HTML shows as text (D6).
-// Code blocks are set aside before the other rules and put back last, so the
-// inline-code, bold and line-break rules can't break them (D7).
 // Turn the stored answers' markdown into HTML. The text is escaped first, so
 // anything a user typed shows as text and never runs (D6). Code blocks are set
 // aside before the other rules and put back last, so their contents keep their
