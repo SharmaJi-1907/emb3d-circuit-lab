@@ -5,8 +5,7 @@
 ```
 emmb3d/
 ├── index.html                 Page markup — all 9 screens. Vite entry, stays at root.
-├── public/                    Copied to dist/ unchanged, served from "/"
-│   └── icons/
+├── public/                    Copied to dist/ unchanged, served from "/": favicon.svg, manifest.json
 ├── src/
 │   ├── main.js                Entry point: imports styles, engines, then the app
 │   ├── app/                   App shell
@@ -34,7 +33,7 @@ emmb3d/
 │   │   ├── projects.js        Sample projects
 │   │   └── ai-responses.js    Stored AI answers
 │   ├── services/              ai.js (answer matching), my-projects.js (localStorage)
-│   ├── utils/                 html.js (escapeHtml), markdown.js (AI replies), canvas.js (roundRect)
+│   ├── utils/                 html.js (escapeHtml), markdown.js (AI replies), canvas.js (roundRect), css.js (a design token as a real colour, for canvases)
 │   ├── styles/
 │   │   ├── base/
 │   │   │   ├── tokens.css     Design tokens (dark default) and the light theme (C5)
@@ -56,11 +55,10 @@ emmb3d/
 │   │       ├── datasheet.css  Datasheet sidebar, search box, list, section bar, layout fit (F5)
 │   │       ├── ai.css         AI screen layout, chat box, chips row, input row (F8)
 │   │       └── projects.css   Projects screen: cards, the new-project form, your own cards (C4)
-│   └── assets/                fonts, models, images imported by code
 ├── eslint.config.js           Lint rules, allowed globals, ignored folders
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
 ├── tests/
-│   ├── smoke/                 Playwright browser tests
+│   └── smoke/                 Playwright browser tests
 │   │   ├── app.spec.js        Every screen, data, 3D first load, search, AI chat
 │   │   ├── keyboard.spec.js   Every keyboard shortcut, plus the 3D explode fix (D13)
 │   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
@@ -77,13 +75,11 @@ emmb3d/
 │   │   ├── viewer-models.spec.js  3D models: pin counts per part, chip labels, freeing old models, passive parts (D8, D11, D16, #23b)
 │   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
 │   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
-│   │   └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
-│   └── unit/                  Small function tests            (empty)
-├── scripts/                   Developer helper scripts
+│       └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
 └── docs/                      Documentation
 ```
 
-Folders marked _(empty)_ are part of the target layout. They get filled while the big files (all split now: `data.js` in #27a, `main.css` in #27b, `app.js` and the 3D model builders in #27c) are split during the fixes.
+The big files are all split now: `data.js` in #27a, `main.css` in #27b, `app.js` and the 3D model builders in #27c. Empty placeholder folders (`src/assets/`, `scripts/`, `tests/unit/`) were removed in #31 (E21); add one back when something real goes in it.
 
 ## Load order
 
@@ -91,14 +87,15 @@ Folders marked _(empty)_ are part of the target layout. They get filled while th
 
 1. **Styles, in cascade order** (a later file wins over an earlier one when selectors tie, so the order in `src/main.js` matters): `base/` tokens, reset, `layout/`, the shared `components/`, `views/` dashboard, library and viewer, `base/animations.css`, `components/search-modal.css`, `components/panels.css` and `notifications.css`, then `views/` simulator, boards, datasheet, ai and projects. Split out of `main.css` in #27b with every computed style checked identical.
 2. `engines/background/circuit-bg.js`
-3. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the 3D viewer and the app).
-4. `engines/three-viewer/index.js` → `window.ThreeViewer`
-5. `engines/simulator/index.js` → `window.CircuitSimulator`
-6. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`. It imports the router, `ui/`, `services/` and every `views/*.view.js`; each screen registers what runs when it opens, so the router imports no screen (no import cycle).
+3. `data/index.js` → `window.CircuitLabData`. It imports the five data modules itself, and must come before the files that read the global (the simulator and the app).
+4. `engines/simulator/index.js` → `window.CircuitSimulator`
+5. `app/app.js` → `window.CircuitApp`, starts on `DOMContentLoaded`. It imports the router, `ui/`, `services/` and every `views/*.view.js`; each screen registers what runs when it opens, so the router imports no screen (no import cycle).
 
 The smoke test "component data is loaded" fails if `data/index.js` is ever dropped from this list again (bug A1, fixed in branch #3).
 
-Three.js comes from npm (`three`, pinned) and is imported by `engines/three-viewer/index.js`, so Vite bundles it and the 3D Viewer works offline (E7, #24). Nothing reads `window.THREE` any more. GSAP and FontAwesome were removed in #25 (E10).
+`engines/three-viewer/index.js` → `window.ThreeViewer` is **not** in that list: `views/viewer.view.js` loads it with a dynamic `import()` the first time the 3D Viewer opens, so the 550 kB of Three.js is a separate file that the other screens never download (E18, #31). Everything that uses the engine checks `window.ThreeViewer?.isReady()` first.
+
+Three.js comes from npm (`three`, pinned), so Vite bundles it and the 3D Viewer works offline (E7, #24). Nothing reads `window.THREE` any more. GSAP and FontAwesome were removed in #25 (E10).
 
 The cross-file globals are declared for ESLint in [eslint.config.js](../eslint.config.js). Only `app/app.js` reads them by bare name.
 
@@ -133,4 +130,4 @@ main.js
 | Something that talks to storage or an API | `src/services/` |
 | A small pure helper function | `src/utils/` |
 | A favicon, manifest or robots.txt | `public/` |
-| An image or font used by CSS/JS | `src/assets/` |
+| An image or font used by CSS/JS | a new `src/assets/` folder |

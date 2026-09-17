@@ -5,7 +5,32 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Your projects keep their circuit: "Open →" loads the board you left, and every change is saved into the open project (D47).
+- "Download PDF" opens the maker's official datasheet — Microchip for the ATmega328P, Espressif for the ESP32-WROOM-32 (D48).
+- Search finds boards and datasheets as well as components, and opens the right screen (D46).
+- 36 new tests (**213** in total), including the light theme, high-DPI screens, hard-coded colours in generated HTML, unused CSS and broken links in the docs.
+
+### Fixed
+- A project name typed with HTML in it can no longer run code in the "Created" message, and a project id edited by hand in the browser's storage can no longer run code either (D31).
+- The 3D Viewer's buttons now show what the engine is really doing: "Wire" is marked when you click it, the mode and Auto Rotate survive leaving the screen or switching part, and `W` and `E` update the buttons too (D32).
+- Switching part clears the pin details of the old part (D33), and a pin highlighted twice goes back to its own colour instead of staying cyan (D34).
+- Hiding the sidebar resizes the 3D Viewer, the Simulator board and the Board Explorer, so the Simulator's pins can still be clicked where they are drawn (D35).
+- The Datasheet screen shows, marks and explains the same datasheet, instead of showing one part and asking the AI about another (D36).
+- The search pop-up stays open when reopened straight after closing (D37), and two quick questions to the AI are answered in the order they were asked (D38).
+- The nRF24L01+ is filed as an IC, not a microcontroller (D39), and a part with no pin list fills all 7 table columns (D40).
+- In the Simulator, letting go of a part outside the board stops the drag, and wires follow a part while it moves (D41). Export keeps whether a switch is closed (D44).
+- The 3D model turns at the same speed whatever the frame rate (D42), and your projects say when they were made instead of "just now" for ever (D43).
+- Sharp drawings on high-DPI screens: the Simulator board, the oscilloscope, the Board Explorer and the background (D45).
+- Light theme: the 3D pin details panel, the search pop-up, the shortcuts pop-up and the Simulator's parts are readable (F11).
+
 ### Changed
+- **Three.js is downloaded only when the 3D Viewer first opens (E18).** The app is 146 kB (43 kB gzipped) instead of 693 kB (179 kB); the 550 kB 3D file is a separate download that only the Viewer needs. `npm run build` no longer warns.
+- Colours everywhere come from design tokens, including pin types, the Dashboard cards, the sample projects' accents and the Simulator's parts. New tokens: `--pin-*`, `--pink`, `--blue`, `--coral`, `--grey`, `--on-accent`, `--sim-*`, `--bg-scrim`, `--viewport-bg` (F12).
+- Removed what nothing used: ~90 CSS rules, the "Upload Code" and "NE555 IC" buttons (both only said "not available"), a hidden project card in the page, `state.searchQuery`, unused part fields in the simulator, five unused entries in the `CircuitApp` API, and the empty `src/assets/`, `scripts/` and `tests/unit/` folders (E20, E21).
+- The Dashboard's "Protocols" stat counts the protocols it lists instead of a fixed 12, and the stat bars compare the four numbers (E20).
+- A datasheet section with no data now says so plainly instead of showing placeholder text (E20).
+- 46 links in the fix plan pointed past the end of their file after the big files were split; they point at the file now, and a test checks every link in every doc (E22).
 - Docs brought up to date for the end of the plan: README (status, Node 20.19+, structure, tech), CONTRIBUTING (modules, tokens, 0 lint warnings, the repeat-run rule), LEARNING_GUIDE (tools), FIX_PLAN (summary; E9 closed), GIT_WORKFLOW (#30 done, #31 E18 open).
 - The Simulator's scope dials and multimeter are styled in `views/simulator.css` with design tokens instead of inline hard-coded colours (F10). They look the same, and stay dark in the light theme on purpose.
 - Lint warnings 7 → **0**, and the cap is 0 (E11): unused variables and the never-used Arduino Uno 3D model are removed.

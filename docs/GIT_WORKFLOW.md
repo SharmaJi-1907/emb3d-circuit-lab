@@ -164,6 +164,8 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](FIX_
 | 28 | `fix/remaining-issues` | D30 (ICs filed as passive), D29 follow-up (time-based background speed), E11 (last 7 lint warnings, cap 0), E19 (fonts loaded twice). F9, F10 and E18 left open | ✅ |
 | 29 | `style/simulator-inline-colours` | F10: the Simulator dials and multimeter move from inline colours to CSS tokens | ✅ |
 | 30 | `fix/final-cleanup` | F9 (Datasheet inline colours to tokens), E9 closed, final pass over every doc | ✅ |
-| 31 | `perf/lazy-three` | E18: load Three.js only when the 3D Viewer first opens (open) | ⏳ |
+| 31 | `fix/final-remaining-issues` | The last branch: D31–D48 (unsafe toast, Viewer controls and pin highlight, canvas sizes, datasheet mismatch, search, AI order, drag, high-DPI, saved circuits, PDF link…), E18 (Three.js loaded only for the Viewer), E20–E22 (dead code, empty folders, doc links), F11, F12 (light theme and design tokens) | ✅ |
 
 Status: ⏳ not started · 🔄 in progress · ✅ merged
+
+Every issue in [FIX_PLAN.md](FIX_PLAN.md) is fixed. New work starts a new branch, following the same cycle.

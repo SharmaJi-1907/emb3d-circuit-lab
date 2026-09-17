@@ -2,7 +2,7 @@
 
 An electronics learning web app: a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant — all in the browser.
 
-> **Status:** all 9 screens work, with 177 browser smoke tests, 0 lint warnings and 0 `npm audit` issues. One improvement is still open (E18, loading Three.js only when the 3D Viewer opens); see [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
+> **Status:** every issue in [docs/FIX_PLAN.md](docs/FIX_PLAN.md) is fixed. All 9 screens work in both themes, with 213 browser smoke tests, 0 lint warnings, 0 `npm audit` issues and a clean build. Ideas for new features are listed at the end of the fix plan.
 
 ## Quick start
 
@@ -36,11 +36,9 @@ The smoke tests use the Google Chrome installed on your machine. Without Chrome,
 │   ├── ui/             Page-wide UI: toast, search, shortcuts, notifications, theme, top bar
 │   ├── data/           Component, board, datasheet and project data
 │   ├── services/       AI answers, local storage
-│   ├── utils/          Small helpers (DOM, HTML escaping, formatting)
-│   ├── styles/         CSS: base/, layout/, components/, views/
-│   └── assets/         Fonts, models, images imported by code
-├── tests/              Smoke and unit tests
-├── scripts/            Developer helper scripts
+│   ├── utils/          Small helpers (HTML escaping, markdown, canvas, design tokens)
+│   └── styles/         CSS: base/, layout/, components/, views/
+├── tests/smoke/        Playwright browser tests
 └── docs/               All documentation
 ```
 

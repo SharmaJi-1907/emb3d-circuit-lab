@@ -31,7 +31,7 @@ A single-page website for learning electronics. It has one HTML page with 9 "scr
 | **Three.js** (r186) | A library for 3D graphics in the browser (WebGL) | Installed with npm and imported in [three-viewer/index.js](../src/engines/three-viewer/index.js) |
 | **Canvas 2D** | The browser's built-in drawing surface, used for the background, simulator, oscilloscope and board drawing | Plain JS |
 | **Google Fonts** | Fonts | CDN, one `<link>` in [index.html](../index.html) |
-| **Playwright** | Opens the app in Chrome and checks every screen (177 smoke tests) | [tests/smoke/](../tests/smoke/) |
+| **Playwright** | Opens the app in Chrome and checks every screen (213 smoke tests) | [tests/smoke/](../tests/smoke/) |
 | **ESLint** | Finds mistakes without running the code (0 warnings allowed) | [eslint.config.js](../eslint.config.js) |
 
 There is **no framework** (no React or Vue). Everything is plain JavaScript that changes the page directly.
@@ -49,10 +49,14 @@ index.html  ── the page: all 9 screens, buttons, panels (each with an id="..
          ├─ styles/**/*.css                   how it looks (base, layout, components, views)
          ├─ engines/background/circuit-bg.js  animated background
          ├─ data/index.js                     all the data   → window.CircuitLabData
-         ├─ engines/three-viewer/index.js     3D engine      → window.ThreeViewer
          ├─ engines/simulator/index.js        circuit engine → window.CircuitSimulator
          └─ app/app.js                        the "brain"    → window.CircuitApp
                (imports app/router.js, ui/, services/, utils/ and one views/*.view.js per screen)
+
+      engines/three-viewer/index.js  the 3D engine → window.ThreeViewer
+         is NOT loaded at startup: views/viewer.view.js downloads it the first
+         time you open the 3D Viewer, because it is 550 kB and no other screen
+         uses it. That is why code says `window.ThreeViewer?.isReady()` first.
 ```
 
 An older version of the app (`script.js` + `database.js`) used to sit in a `legacy/` folder. It was never loaded, and it was deleted in branch #6. See [decisions/0002-screen-markup.md](decisions/0002-screen-markup.md) for why the project had two versions.
@@ -119,7 +123,10 @@ The chips aren't loaded from model files. They're **built from boxes and cylinde
 `getAIResponse()` in [services/ai.js](../src/services/ai.js) looks for words in your question and returns a pre-written answer from `data.js`. It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
 
 ### 4.9 localStorage
-`localStorage` keeps data in the browser. It stays after a page refresh, but only on that one browser. This project saves the theme under `circuitlab.theme` and your own projects under `circuitlab.my-projects`.
+`localStorage` keeps data in the browser. It stays after a page refresh, but only on that one browser. This project saves the theme under `circuitlab.theme` and your own projects — name, when you made it and the circuit on the board — under `circuitlab.my-projects`.
+
+### 4.10 Design tokens
+Colours are never written into the code. They are CSS variables in [tokens.css](../src/styles/base/tokens.css) (`--cyan`, `--bg-card`, `--pin-power`…), and the light theme just gives the same names other values. A `<canvas>` cannot read `var(--cyan)`, so [utils/css.js](../src/utils/css.js) turns a token into the real colour before drawing.
 
 ---
 
@@ -132,7 +139,7 @@ The chips aren't loaded from model files. They're **built from boxes and cylinde
    ```js
    CircuitApp.getState()          // see the app's current data
    typeof CircuitLabData          // "undefined" = data/index.js not loaded (bug A1)
-   CircuitApp.navigateTo('ai')    // jump to a screen
+   CircuitApp.navigate('ai')      // jump to a screen
    ThreeViewer.isReady()          // is 3D running?
    ```
 5. **Elements tab**: right-click a button, choose **Inspect**, and see its `id`. Then search the JS for that id. If you find nothing, the button isn't hooked up.
