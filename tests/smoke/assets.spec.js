@@ -149,3 +149,11 @@ test('unused leftovers are gone (E16)', async ({ page, errors }) => {
   expect(src, 'nothing writes circuitlab-projects, so nothing should read it').not.toContain('circuitlab-projects');
   expectNoErrors(errors);
 });
+
+test('the web fonts are requested once (E19)', async ({ page, errors }) => {
+  const fontCss = [];
+  page.on('request', (r) => { if (/fonts\.googleapis\.com\/css2/.test(r.url())) fontCss.push(r.url()); });
+  await openApp(page);
+  expect(fontCss, 'only the <link> in index.html, not a second CSS @import').toHaveLength(1);
+  expectNoErrors(errors);
+});
