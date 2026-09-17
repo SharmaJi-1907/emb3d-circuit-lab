@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    Light / dark theme (C5): the Settings button and the top-bar button.
    The choice is kept in the browser. Colours come from the design
-   tokens, overridden under :root[data-theme="light"] in main.css.
+   tokens, overridden under :root[data-theme="light"] in src/styles/base/tokens.css.
 ═══════════════════════════════════════════════════════════════════ */
 
 import { test, expect, openApp, appReady, goToView, expectNoErrors, styleOf } from './helpers.js';
