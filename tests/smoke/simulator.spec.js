@@ -397,3 +397,19 @@ test('the board keeps its real size when the window changes size while it is hid
   }), { message: 'drawing size should match the board on screen' }).toBe(true);
   expectNoErrors(errors);
 });
+
+test('the dials and multimeter have no inline colours and stay dark in the light theme (F10)', async ({ page, errors }) => {
+  await openApp(page);
+  await goToView(page, 'simulator');
+  for (const sel of ['#dial-ch1-volt', '#dial-timebase', '#multimeter .mm-display', '#multimeter-val', '#multimeter-unit']) {
+    expect(await page.locator(sel).getAttribute('style'), `${sel}: styled in simulator.css, not inline`).toBeNull();
+  }
+  const dark = await styleOf(page, '#multimeter .mm-display', ['backgroundColor']);
+  expect(dark.backgroundColor).toBe('rgb(5, 5, 8)');
+  expect((await styleOf(page, '#multimeter-val', ['color'])).color).toBe('rgb(0, 255, 136)');
+
+  await page.locator('#theme-toggle').click();
+  expect((await styleOf(page, '#multimeter .mm-display', ['backgroundColor'])).backgroundColor,
+    'the meter looks like real hardware in both themes').toBe('rgb(5, 5, 8)');
+  expectNoErrors(errors);
+});
