@@ -322,7 +322,7 @@ export const components = [
     id: 'nrf24l01',
     name: 'nRF24L01+',
     manufacturer: 'Nordic Semiconductor',
-    category: 'mcu',
+    category: 'ic', // a radio transceiver IC with no CPU to program, not an MCU (D39)
     icon: '📶',
     package: 'QFN-20',
     voltage: '1.9–3.6V',

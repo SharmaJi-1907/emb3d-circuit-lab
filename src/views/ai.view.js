@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
    CIRCUITLAB — AI Assistant screen: chat (B1–B3)
-   Split out of app/app.js (#27c)
 ═══════════════════════════════════════════════════════════════════ */
 
 import { registerScreen } from '../app/router.js';
@@ -60,6 +59,10 @@ function renderAIMessages() {
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
+// Replies wait a moment, as if the assistant were typing. The waits are
+// chained, so two quick questions are still answered in order (D38).
+let replying = Promise.resolve();
+
 export function sendAIMessage(text) {
   if (!text.trim()) return;
 
@@ -76,15 +79,16 @@ export function sendAIMessage(text) {
   renderAIMessages();
 
   // Simulate AI response
-  setTimeout(() => {
-    const response = getAIResponse(text);
+  const wait = 600 + Math.random() * 400;
+  replying = replying.then(() => new Promise(done => setTimeout(() => {
     state.aiMessages.push({
       role: 'assistant',
-      content: response,
+      content: getAIResponse(text),
       time: new Date().toLocaleTimeString()
     });
     renderAIMessages();
-  }, 600 + Math.random() * 400);
+    done();
+  }, wait)));
 }
 
 registerScreen('ai', initAIPanel);
