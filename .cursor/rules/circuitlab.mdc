@@ -1,0 +1,17 @@
+---
+description: CircuitLab project rules. Follow AGENTS.md at the repository root.
+alwaysApply: true
+---
+
+# CircuitLab rules for Cursor
+
+All the rules for this project are in `AGENTS.md` at the repository root, shared with every AI tool. Read it and follow it. The rules below are the ones that must never be missed:
+
+- **Start of a session:** read `docs/context/PROJECT_CONTEXT.md`, the latest entry in `docs/context/SESSION_LOG.md`, and `docs/tracking/PROGRESS.md`.
+- **End of a session / before proposing a commit:** add an entry to `docs/context/SESSION_LOG.md`, update `docs/context/PROJECT_CONTEXT.md`, and update every doc the change touched (see "Keeping the docs current" in `AGENTS.md`).
+- **Git:** never run git commands that change anything (no add, commit, push, pull, merge, switch, checkout, reset, restore, stash, rebase, tag). Give the owner the exact commands instead. Commit messages are `type: short description`, lowercase, under 72 characters, with no AI attribution.
+- **Branches:** never edit code on `main` or a `phase/*` branch. Work on a feature branch made from the current phase branch.
+- **Analyse first and wait for "go"** before editing files. In the discussion stage, only docs are written.
+- **Tests:** `npm test` and `npm run build` must pass; a new test must fail before the change and pass after it.
+- **Security:** no secrets or API keys in the repo or browser code (the repo is public). Escape user text before `innerHTML`.
+- **Style:** design tokens only (no hard-coded colours), nothing dead, simple English in replies.
