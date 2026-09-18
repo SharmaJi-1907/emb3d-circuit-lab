@@ -6,51 +6,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- A professional docs structure (from the owner's AI-DEV-FRAMEWORK): `docs/context/` (PROJECT_CONTEXT, SESSION_LOG, RESUME_PROMPT, KNOWLEDGE_BASE, OBSERVATIONS), `docs/planning/` (ROADMAP, ARCHITECTURE, RISK_REGISTER), `docs/rules/` (CODING_STANDARDS, TESTING_STRATEGY, SECURITY_RULES, REVIEW_CHECKLIST), `docs/tracking/` (PROGRESS, BUGS, EXPERIMENTS), `docs/guides/` and `docs/archive/` (the finished FIX_PLAN).
+- `AGENTS.md`: one rulebook for every AI tool, loaded by `CLAUDE.md` and by `.cursor/rules/circuitlab.mdc`, with a start-and-end-of-session routine and a rule that docs are updated in the same PR as the work.
+- `SECURITY.md` (how to report a problem) and `CONTRIBUTING.md` at the root; the docs link test also checks `AGENTS.md`, `CONTRIBUTING.md` and `SECURITY.md`.
+- `docs/planning/ROADMAP.md`: the plan from demo to a public product (research, system design, free-tier limits and when to pay, page map, admin panel, phases), with proposed decisions in ADRs 0004–0007 (backend and login, simulator engine, admin panel, AI access) and a roadmap branch plan (now in `docs/tracking/PROGRESS.md`).
+- Phase branches (ADR 0008): each roadmap phase has its own branch, feature branches merge into it, and `main` only receives finished, verified phases, tagged as versions.
+- The Simulator palette has Switch, Diode and Ground buttons, the three other parts the solver really simulates; double-click a switch to open or close it (E23).
+- Every header pin of the Arduino Uno (31), ESP32 DevKit (30), Raspberry Pi 4 (40) and STM32 Blue Pill (40), with sources (D50).
+- 7 new tests (**220** in total), each failing before its fix.
 - Your projects keep their circuit: "Open →" loads the board you left, and every change is saved into the open project (D47).
 - "Download PDF" opens the maker's official datasheet — Microchip for the ATmega328P, Espressif for the ESP32-WROOM-32 (D48).
 - Search finds boards and datasheets as well as components, and opens the right screen (D46).
 - 36 new tests (**213** in total), including the light theme, high-DPI screens, hard-coded colours in generated HTML, unused CSS and broken links in the docs.
-
-### Fixed
-- A project name typed with HTML in it can no longer run code in the "Created" message, and a project id edited by hand in the browser's storage can no longer run code either (D31).
-- The 3D Viewer's buttons now show what the engine is really doing: "Wire" is marked when you click it, the mode and Auto Rotate survive leaving the screen or switching part, and `W` and `E` update the buttons too (D32).
-- Switching part clears the pin details of the old part (D33), and a pin highlighted twice goes back to its own colour instead of staying cyan (D34).
-- Hiding the sidebar resizes the 3D Viewer, the Simulator board and the Board Explorer, so the Simulator's pins can still be clicked where they are drawn (D35).
-- The Datasheet screen shows, marks and explains the same datasheet, instead of showing one part and asking the AI about another (D36).
-- The search pop-up stays open when reopened straight after closing (D37), and two quick questions to the AI are answered in the order they were asked (D38).
-- The nRF24L01+ is filed as an IC, not a microcontroller (D39), and a part with no pin list fills all 7 table columns (D40).
-- In the Simulator, letting go of a part outside the board stops the drag, and wires follow a part while it moves (D41). Export keeps whether a switch is closed (D44).
-- The 3D model turns at the same speed whatever the frame rate (D42), and your projects say when they were made instead of "just now" for ever (D43).
-- Sharp drawings on high-DPI screens: the Simulator board, the oscilloscope, the Board Explorer and the background (D45).
-- Light theme: the 3D pin details panel, the search pop-up, the shortcuts pop-up and the Simulator's parts are readable (F11).
-
-### Changed
-- **Three.js is downloaded only when the 3D Viewer first opens (E18).** The app is 146 kB (43 kB gzipped) instead of 693 kB (179 kB); the 550 kB 3D file is a separate download that only the Viewer needs. `npm run build` no longer warns.
-- Colours everywhere come from design tokens, including pin types, the Dashboard cards, the sample projects' accents and the Simulator's parts. New tokens: `--pin-*`, `--pink`, `--blue`, `--coral`, `--grey`, `--on-accent`, `--sim-*`, `--bg-scrim`, `--viewport-bg` (F12).
-- Removed what nothing used: ~90 CSS rules, the "Upload Code" and "NE555 IC" buttons (both only said "not available"), a hidden project card in the page, `state.searchQuery`, unused part fields in the simulator, five unused entries in the `CircuitApp` API, and the empty `src/assets/`, `scripts/` and `tests/unit/` folders (E20, E21).
-- The Dashboard's "Protocols" stat counts the protocols it lists instead of a fixed 12, and the stat bars compare the four numbers (E20).
-- A datasheet section with no data now says so plainly instead of showing placeholder text (E20).
-- 46 links in the fix plan pointed past the end of their file after the big files were split; they point at the file now, and a test checks every link in every doc (E22).
-- Docs brought up to date for the end of the plan: README (status, Node 20.19+, structure, tech), CONTRIBUTING (modules, tokens, 0 lint warnings, the repeat-run rule), LEARNING_GUIDE (tools), FIX_PLAN (summary; E9 closed), GIT_WORKFLOW (#30 done, #31 E18 open).
-- The Simulator's scope dials and multimeter are styled in `views/simulator.css` with design tokens instead of inline hard-coded colours (F10). They look the same, and stay dark in the light theme on purpose.
-- Lint warnings 7 → **0**, and the cap is 0 (E11): unused variables and the never-used Arduino Uno 3D model are removed.
-- `src/app/app.js` is split into ES modules (#27c): `app/` (startup and `window.CircuitApp`, router, state, pin types), one `views/<screen>.view.js` per screen, `ui/` (toast, search, shortcuts, notifications, theme, top bar), `services/` (AI matching, your projects) and `utils/` (HTML escaping, markdown, canvas). The router's switch became a registry each screen fills in. The 3D model builders moved to `engines/three-viewer/models/` and get a `kit` from the engine. Checked unchanged with snapshots: the public API and 49 screens and actions (0 differences, whitespace aside) and all 15 3D models (identical).
-- `src/styles/main.css` is split into `base/`, `layout/`, `components/` and `views/` (#27b), imported in cascade order from `src/main.js`. Each screen's narrow-window rules now sit in that screen's file. Checked with a computed-style snapshot of every element on all 9 screens, in both themes and at 1280, 1100 and 800 px wide: 0 differences. The snapshot first caught one: the Datasheet's narrow-window rule lost to its base rule when they were in separate files, so it now sits right after it.
-- `src/data/data.js` is split into ES modules (#27a): `components.js`, `boards.js`, `datasheets.js`, `projects.js` and `ai-responses.js`, joined by `data/index.js` into the same `window.CircuitLabData`. Checked byte-identical (same SHA-256 of the whole data). Decision recorded in [ADR 0003](docs/decisions/0003-es-modules.md).
-- **Vite 5.4.21 → 8.3.0** and `npm audit fix` (E6): `npm audit` goes from 4 vulnerabilities (1 moderate, 3 high, all in dev tools) to 0. Needs Node 20.19+ or 22.12+; run `npm install` after pulling. `vite.config.js` no longer sets `minify: 'esbuild'`, since Vite 8 does not include esbuild. Builds take 0.25 s instead of 1.35 s.
-- **Three.js r128 → r186**, installed from npm and bundled instead of loaded from a CDN (E7). The 3D Viewer now works with no internet. Light intensities are scaled as the Three.js migration guide advises, so the models look the same as before; shadows use `PCFShadowMap` (the soft one was deprecated). Run `npm install` after pulling. The bundle is 688 kB (179 kB gzipped), about the same total download as before.
-- The lint warning cap drops from 12 to 9: `buildResistor`, `buildCapacitor` and `buildLED` are used now.
-- The lint warning cap drops from 13 to 12: the unused `t` in the removed background animation is gone (D4).
-- Docs brought up to date: the README, LEARNING_GUIDE, ARCHITECTURE and CLAUDE.md no longer mention GSAP or FontAwesome (removed in #25), the guide describes the DC solver, localStorage and hash routing as they are now, and the fix plan's finished steps are ticked. The D4 entry moved from Changed to Fixed.
-- The lint warning cap drops from 15 to 13: the two unused `label` parameters are used now that chips are labelled.
-- Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
-- Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
-- Lint warning cap lowered from 27 to 25, then to 24, then to 18, then to 17, then to 15.
-- 3D explode and grow-in animations are time-based (~320 ms / ~200 ms), so slow frames no longer stretch them.
-- The 3D canvas sizes itself from its container and is resized whenever the Viewer is shown.
-- Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
-
-### Added
 - A test that the Datasheet's generated HTML has no hard-coded colours (177 tests in total).
 - A test that the Simulator's dials and multimeter have no inline styles and stay dark in the light theme (176 tests in total).
 - Tests: the IC filter (D30) and a single font request (E19) (175 tests in total).
@@ -101,21 +68,64 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/simulator.spec.js`: 5 tests for the oscilloscope and the multimeter's resistance (87 tests in total). Simulator: `setScope()` for the oscilloscope settings.
 - `tests/smoke/simulator.spec.js`: 4 tests for the Simulator's setup and drawing loop (91 tests in total). Simulator: read-only `getFrameCount()`.
 
+### Changed
+- Sample projects have no circuit, so their button is "View in 3D →" and shows the project's main part; the Dashboard's sample cards do the same (D49, D53).
+- The AI screen says its answers are stored, and the Settings theme row is labelled plainly (E25).
+- Docs brought up to date: fix-plan line links, the learning guide, the architecture tree and import rules, and one section of each kind in this changelog (E27).
+- **Three.js is downloaded only when the 3D Viewer first opens (E18).** The app is 146 kB (43 kB gzipped) instead of 693 kB (179 kB); the 550 kB 3D file is a separate download that only the Viewer needs. `npm run build` no longer warns.
+- Colours everywhere come from design tokens, including pin types, the Dashboard cards, the sample projects' accents and the Simulator's parts. New tokens: `--pin-*`, `--pink`, `--blue`, `--coral`, `--grey`, `--on-accent`, `--sim-*`, `--bg-scrim`, `--viewport-bg` (F12).
+- Removed what nothing used: ~90 CSS rules, the "Upload Code" and "NE555 IC" buttons (both only said "not available"), a hidden project card in the page, `state.searchQuery`, unused part fields in the simulator, five unused entries in the `CircuitApp` API, and the empty `src/assets/`, `scripts/` and `tests/unit/` folders (E20, E21).
+- The Dashboard's "Protocols" stat counts the protocols it lists instead of a fixed 12, and the stat bars compare the four numbers (E20).
+- A datasheet section with no data now says so plainly instead of showing placeholder text (E20).
+- 46 links in the fix plan pointed past the end of their file after the big files were split; they point at the file now, and a test checks every link in every doc (E22).
+- Docs brought up to date for the end of the plan: README (status, Node 20.19+, structure, tech), CONTRIBUTING (modules, tokens, 0 lint warnings, the repeat-run rule), LEARNING_GUIDE (tools), FIX_PLAN (summary; E9 closed), GIT_WORKFLOW (#30 done, #31 E18 open).
+- The Simulator's scope dials and multimeter are styled in `views/simulator.css` with design tokens instead of inline hard-coded colours (F10). They look the same, and stay dark in the light theme on purpose.
+- Lint warnings 7 → **0**, and the cap is 0 (E11): unused variables and the never-used Arduino Uno 3D model are removed.
+- `src/app/app.js` is split into ES modules (#27c): `app/` (startup and `window.CircuitApp`, router, state, pin types), one `views/<screen>.view.js` per screen, `ui/` (toast, search, shortcuts, notifications, theme, top bar), `services/` (AI matching, your projects) and `utils/` (HTML escaping, markdown, canvas). The router's switch became a registry each screen fills in. The 3D model builders moved to `engines/three-viewer/models/` and get a `kit` from the engine. Checked unchanged with snapshots: the public API and 49 screens and actions (0 differences, whitespace aside) and all 15 3D models (identical).
+- `src/styles/main.css` is split into `base/`, `layout/`, `components/` and `views/` (#27b), imported in cascade order from `src/main.js`. Each screen's narrow-window rules now sit in that screen's file. Checked with a computed-style snapshot of every element on all 9 screens, in both themes and at 1280, 1100 and 800 px wide: 0 differences. The snapshot first caught one: the Datasheet's narrow-window rule lost to its base rule when they were in separate files, so it now sits right after it.
+- `src/data/data.js` is split into ES modules (#27a): `components.js`, `boards.js`, `datasheets.js`, `projects.js` and `ai-responses.js`, joined by `data/index.js` into the same `window.CircuitLabData`. Checked byte-identical (same SHA-256 of the whole data). Decision recorded in [ADR 0003](docs/decisions/0003-es-modules.md).
+- **Vite 5.4.21 → 8.3.0** and `npm audit fix` (E6): `npm audit` goes from 4 vulnerabilities (1 moderate, 3 high, all in dev tools) to 0. Needs Node 20.19+ or 22.12+; run `npm install` after pulling. `vite.config.js` no longer sets `minify: 'esbuild'`, since Vite 8 does not include esbuild. Builds take 0.25 s instead of 1.35 s.
+- **Three.js r128 → r186**, installed from npm and bundled instead of loaded from a CDN (E7). The 3D Viewer now works with no internet. Light intensities are scaled as the Three.js migration guide advises, so the models look the same as before; shadows use `PCFShadowMap` (the soft one was deprecated). Run `npm install` after pulling. The bundle is 688 kB (179 kB gzipped), about the same total download as before.
+- The lint warning cap drops from 12 to 9: `buildResistor`, `buildCapacitor` and `buildLED` are used now.
+- The lint warning cap drops from 13 to 12: the unused `t` in the removed background animation is gone (D4).
+- Docs brought up to date: the README, LEARNING_GUIDE, ARCHITECTURE and CLAUDE.md no longer mention GSAP or FontAwesome (removed in #25), the guide describes the DC solver, localStorage and hash routing as they are now, and the fix plan's finished steps are ticked. The D4 entry moved from Changed to Fixed.
+- The lint warning cap drops from 15 to 13: the two unused `label` parameters are used now that chips are labelled.
+- Restructured the project into a professional folder layout (`src/`, `docs/`, `public/`, `tests/`, `scripts/`). Files were moved without changing their code. See [docs/decisions/0001-folder-structure.md](docs/decisions/0001-folder-structure.md).
+- Moved `js/script.js` and `js/database.js` (unused old code) to `legacy/` for review.
+- Lint warning cap lowered from 27 to 25, then to 24, then to 18, then to 17, then to 15.
+- 3D explode and grow-in animations are time-based (~320 ms / ~200 ms), so slow frames no longer stretch them.
+- The 3D canvas sizes itself from its container and is resized whenever the Viewer is shown.
+- Branch plan reorganised to follow ADR 0002. The three Viewer branches merge into one, the Database branch becomes small, and the Dashboard, shared-styles and per-screen styling branches are added.
+- 12 hard-coded dark surfaces in `main.css` became design tokens (`--bg-panel`, `--bg-panel-soft`, `--bg-overlay`, `--glass`, `--bg-code`), so they follow the theme. The 16 `<kbd>` keys in Settings and the shortcuts pop-up lost their inline `background:#222` and are styled in `panels.css` instead — in light mode they had been black boxes with invisible text.
+- The smoke-test timeout is back to 30 s. It was raised to 60 s in #18 as a stop-gap after 4 tests timed out with no assertion failing. Only the 3D tests wait for the 3D engine now (E15), and 572 slots pass clean at 30 s where 516 failed 4 at 30 s before.
+- Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
+
 ### Removed
+- Simulator parts no one could place (transistor, op-amp, MOSFET, Arduino, ESP32), 8 unused exports, 2 unused public API entries, 5 unused 3D materials, a fake "JD" user avatar, made-up "2 days ago" times on the sample projects, and leftover `.gitkeep` files (E23, E24, D54).
 - Unused leftovers (E16): the empty `#particle-field` div, `state.projects` and `loadProjects()`, which read a `circuitlab-projects` key nothing ever wrote. The lint warning cap drops from 9 to 7.
 - GSAP and ScrollTrigger, downloaded on every page load and used by nothing (E10). FontAwesome went too — a whole CDN stylesheet for one glyph, the robot in the AI header, now a 🤖 character. Three CDN requests gone from every page load.
 - 29 dead CSS rules from `main.css` (E12): 2267 → 2072 lines, built CSS 54.76 kB → 52.97 kB. Every selector was checked against the live app first; all 22 matched nothing on any of the 9 screens.
 - The duplicate `<link rel="stylesheet">` for `main.css` (E3) — `src/main.js` already imports it.
 - The empty `public/icons` folder (E4).
 - The Simulator's unused signal generator and its `setSigGen()` function (nothing called it; it only fed the made-up oscilloscope sine).
-- `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/FIX_PLAN.md).
-
-### Changed
-- 12 hard-coded dark surfaces in `main.css` became design tokens (`--bg-panel`, `--bg-panel-soft`, `--bg-overlay`, `--glass`, `--bg-code`), so they follow the theme. The 16 `<kbd>` keys in Settings and the shortcuts pop-up lost their inline `background:#222` and are styled in `panels.css` instead — in light mode they had been black boxes with invisible text.
-- The smoke-test timeout is back to 30 s. It was raised to 60 s in #18 as a stop-gap after 4 tests timed out with no assertion failing. Only the 3D tests wait for the 3D engine now (E15), and 572 slots pass clean at 30 s where 516 failed 4 at 30 s before.
-- Smoke tests: `openApp()` waits only for the app, not the 3D engine. `waitForViewer()` and `openViewer()` wait for it where it is actually needed. **This did not speed the suite up** — 160.9 s to 158.2 s, which is noise; the #18 note claiming the waiting was the real cost was wrong and is corrected in FIX_PLAN. It is kept because a screen with no 3D should not fail when WebGL is slow.
+- `legacy/` (the old, never-loaded `script.js` and `database.js`) and its lint ignore rule (E1). The built app is byte-identical before and after. Old data worth reusing is listed under E1 in [docs/FIX_PLAN.md](docs/archive/FIX_PLAN.md).
 
 ### Fixed
+- Opening a sample project no longer shows, or saves into, your own project's circuit (D49).
+- The ESP32 3D model's pin headers run along their pins instead of across the board (D51).
+- A question with "difference", "compare" or "vs" no longer always gets the SPI vs I2C answer (D52).
+- The Weather Station no longer lists an MPU-6050, and the Robot Arm no longer claims an Arduino Mega (D54).
+- A project name typed with HTML in it can no longer run code in the "Created" message, and a project id edited by hand in the browser's storage can no longer run code either (D31).
+- The 3D Viewer's buttons now show what the engine is really doing: "Wire" is marked when you click it, the mode and Auto Rotate survive leaving the screen or switching part, and `W` and `E` update the buttons too (D32).
+- Switching part clears the pin details of the old part (D33), and a pin highlighted twice goes back to its own colour instead of staying cyan (D34).
+- Hiding the sidebar resizes the 3D Viewer, the Simulator board and the Board Explorer, so the Simulator's pins can still be clicked where they are drawn (D35).
+- The Datasheet screen shows, marks and explains the same datasheet, instead of showing one part and asking the AI about another (D36).
+- The search pop-up stays open when reopened straight after closing (D37), and two quick questions to the AI are answered in the order they were asked (D38).
+- The nRF24L01+ is filed as an IC, not a microcontroller (D39), and a part with no pin list fills all 7 table columns (D40).
+- In the Simulator, letting go of a part outside the board stops the drag, and wires follow a part while it moves (D41). Export keeps whether a switch is closed (D44).
+- The 3D model turns at the same speed whatever the frame rate (D42), and your projects say when they were made instead of "just now" for ever (D43).
+- Sharp drawings on high-DPI screens: the Simulator board, the oscilloscope, the Board Explorer and the background (D45).
+- Light theme: the 3D pin details panel, the search pop-up, the shortcuts pop-up and the Simulator's parts are readable (F11).
 - The Datasheet's electrical table and code examples use design tokens instead of hard-coded `#333`, `#222` and `#07070a`, so their borders follow the light theme (F9).
 - NE555 and LM358 are listed as ICs, with their own IC filter, instead of passive parts (D30).
 - The background dots move at the same speed however fast the page draws (D29 follow-up).
@@ -167,7 +177,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - both shortcut lists show every key
 - Exploding the 3D model no longer makes it vanish, and quick toggling no longer makes the parts bounce (D13).
 - The 3D Viewer shows the part as soon as the app opens (it used to stay empty until you reopened it), and the "Rendering 3D Model..." text now hides once the part is drawn (D15).
-### Found
+
+### Notes
+Issues found along the way. Each one is fixed and marked ✅ in [docs/FIX_PLAN.md](docs/archive/FIX_PLAN.md).
+
 - E18: since Three.js is bundled, the app is one 688 kB file and every screen waits for the 3D library.
 - D30: the NE555 and LM358 are filed as passive parts, so the PASSIVE filter lists them next to the resistor, capacitor and LED.
 - D28: the background ignores the theme (it looks for a `dark-theme` class nothing sets, so dark mode gets light grey lines). D29: background electrons keep running on the old grid after a window resize.

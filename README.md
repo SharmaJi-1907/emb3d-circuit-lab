@@ -2,7 +2,7 @@
 
 An electronics learning web app: a 3D component viewer, circuit simulator, component database, board pinouts, datasheets and an assistant — all in the browser.
 
-> **Status:** every issue in [docs/FIX_PLAN.md](docs/FIX_PLAN.md) is fixed. All 9 screens work in both themes, with 213 browser smoke tests, 0 lint warnings, 0 `npm audit` issues and a clean build. Ideas for new features are listed at the end of the fix plan.
+> **Status:** every issue in [docs/FIX_PLAN.md](docs/archive/FIX_PLAN.md) is fixed. All 9 screens work in both themes, with 220 browser smoke tests, 0 lint warnings, 0 `npm audit` issues and a clean build. Ideas for new features are listed at the end of the fix plan.
 
 ## Quick start
 
@@ -42,17 +42,16 @@ The smoke tests use the Google Chrome installed on your machine. Without Chrome,
 └── docs/               All documentation
 ```
 
-Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+Details: [docs/ARCHITECTURE.md](docs/planning/ARCHITECTURE.md)
 
 ## Documentation
 
-- [docs/README.md](docs/README.md) — index of all docs
-- [docs/FIX_PLAN.md](docs/FIX_PLAN.md) — known bugs and the fix plan
-- [docs/LEARNING_GUIDE.md](docs/LEARNING_GUIDE.md) — how the code works, in plain English
-- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — code style rules
-- [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) — branches, commits, pull requests and the branch plan
-- [docs/decisions/](docs/decisions/) — why things are the way they are (folder structure, screen markup, ES modules)
-- [CHANGELOG.md](CHANGELOG.md) — everything that changed
+- [docs/README.md](docs/README.md): the index of every doc
+- [docs/context/PROJECT_CONTEXT.md](docs/context/PROJECT_CONTEXT.md): where the project is right now
+- [docs/planning/ROADMAP.md](docs/planning/ROADMAP.md): the plan from demo to a real, public product
+- [docs/guides/LEARNING_GUIDE.md](docs/guides/LEARNING_GUIDE.md): how the code works, in plain English
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to help · [AGENTS.md](AGENTS.md): rules for AI tools · [SECURITY.md](SECURITY.md): reporting a problem
+- [CHANGELOG.md](CHANGELOG.md): everything that changed
 
 ## Tech
 
