@@ -19,8 +19,7 @@ export default [
       },
     },
     rules: {
-      // Known leftovers are warnings, capped by --max-warnings in package.json.
-      // Fix them in the branch that owns that code (see docs/FIX_PLAN.md), then lower the cap.
+      // Warnings, but `npm run lint` allows none (--max-warnings 0 in package.json).
       'no-unused-vars': 'warn',
       'no-empty': 'warn',
       'no-case-declarations': 'warn',
@@ -28,8 +27,8 @@ export default [
   },
 
   /* ── Cross-file globals ───────────────────────────────────────── */
-  // Each module assigns itself to window (see docs/ARCHITECTURE.md → Load order).
-  // The app code split out of app.js (#27c) still reads them by bare name (ADR 0003).
+  // The 4 public globals, each set on window in one place (ADR 0003).
+  // The app code reads them by bare name.
   {
     files: ['src/app/**/*.js', 'src/ui/**/*.js', 'src/views/**/*.js', 'src/services/**/*.js', 'src/utils/**/*.js'],
     languageOptions: {

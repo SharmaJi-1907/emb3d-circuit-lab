@@ -139,13 +139,6 @@ window.ThreeViewer = (function () {
       envMapIntensity: 0.5,
     });
 
-    // PCB dark
-    MAT.pcbDark = new THREE.MeshStandardMaterial({
-      color: 0x0d2a0d,
-      roughness: 0.4,
-      metalness: 0.05,
-    });
-
     // Chip black
     MAT.chip = new THREE.MeshStandardMaterial({
       color: 0x111111,
@@ -160,31 +153,10 @@ window.ThreeViewer = (function () {
       metalness: 0.9,
     });
 
-    // Gold (pads)
-    MAT.gold = new THREE.MeshStandardMaterial({
-      color: 0xffd700,
-      roughness: 0.1,
-      metalness: 0.95,
-    });
-
-    // Ceramic (capacitor)
-    MAT.ceramic = new THREE.MeshStandardMaterial({
-      color: 0xd4a843,
-      roughness: 0.6,
-      metalness: 0.0,
-    });
-
     // Epoxy (resistor body)
     MAT.epoxy = new THREE.MeshStandardMaterial({
       color: 0x8b4513,
       roughness: 0.7,
-      metalness: 0.0,
-    });
-
-    // Silkscreen white
-    MAT.silk = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.8,
       metalness: 0.0,
     });
 
@@ -196,12 +168,6 @@ window.ThreeViewer = (function () {
       metalness: 0.5,
       emissive: 0x00d4ff,
       emissiveIntensity: 0.5,
-    });
-
-    // Wireframe
-    MAT.wireframe = new THREE.MeshBasicMaterial({
-      color: 0x00d4ff,
-      wireframe: true,
     });
   }
 
@@ -629,7 +595,6 @@ window.ThreeViewer = (function () {
     highlightPinByNumber,
     onMouseMove,
     onMouseClick,
-    onResize,
     isReady: () => isInitialized,
     isWireframe: () => wireframeMode,
     isExploded: () => explodeMode,

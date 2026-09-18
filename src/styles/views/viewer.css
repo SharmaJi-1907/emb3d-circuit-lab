@@ -200,7 +200,7 @@
 }
 #signal-canvas { display: block; }
 
-/* Narrow windows (was in main.css "Responsive") */
+/* Narrow windows */
 @media (max-width: 900px) {
   #view-viewer {
     grid-template-columns: 1fr !important;

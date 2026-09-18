@@ -1,4 +1,4 @@
-// CircuitLab entry point: the styles, then every module in dependency order (docs/ARCHITECTURE.md)
+// CircuitLab entry point: the styles, then every module in dependency order (docs/planning/ARCHITECTURE.md)
 // Styles, in cascade order: later files may override earlier ones (#27b)
 import './styles/base/tokens.css';
 import './styles/base/reset.css';

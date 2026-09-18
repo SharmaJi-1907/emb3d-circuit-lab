@@ -49,7 +49,7 @@ function startViewerEngine() {
 }
 
 // Draw the selected component in the 3D viewer, once the engine is ready.
-export function showSelectedModel() {
+function showSelectedModel() {
   if (!state.selectedComponent || !window.ThreeViewer || !ThreeViewer.isReady()) return;
   // Loading a new model hides the tooltip of the old one's pins.
   document.getElementById('pin-tooltip')?.style.setProperty('display', 'none');
@@ -136,7 +136,7 @@ function renderViewerSidebar() {
 // Mark the view mode and Auto Rotate the engine is really in. The sidebar is
 // drawn again on every visit and part switch, and W / E change the mode
 // from the keyboard, so the buttons follow the engine, not the other way (D32).
-export function syncViewerControls() {
+function syncViewerControls() {
   const engine = window.ThreeViewer?.isReady() ? ThreeViewer : null;
   const mode = engine?.isExploded() ? 'explode' : engine?.isWireframe() ? 'wireframe' : 'solid';
   document.querySelectorAll('#viewer-sidebar [data-mode]').forEach(btn => {
@@ -290,7 +290,7 @@ function drawSignalWaveform(type) {
   }
 }
 
-export function onPinHover(e) {
+function onPinHover(e) {
   const tooltip = document.getElementById('pin-tooltip');
   if (!tooltip) return;
 
@@ -317,7 +317,7 @@ export function onPinHover(e) {
   tooltip.style.top = (screenY - 10) + 'px';
 }
 
-export function onPinSelect(e) {
+function onPinSelect(e) {
   if (!e.detail) return;
   selectPin(e.detail.pinNum);
 }

@@ -91,7 +91,7 @@
   color: var(--green);
 }
 
-/* Narrow windows (was in main.css "Responsive"). It must come after the
+/* Narrow windows. It must come after the
    layout rule above, or the two-column layout wins on narrow windows. */
 @media (max-width: 900px) {
   .datasheet-layout { grid-template-columns: 1fr; }

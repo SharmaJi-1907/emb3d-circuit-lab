@@ -127,7 +127,7 @@ function initBoardExplorer() {
   selectBoard(state.selectedBoard || 'arduino-uno');
 }
 
-export function selectBoard(id) {
+function selectBoard(id) {
   if (id !== state.selectedBoard) state.selectedBoardPin = null; // a pin number means nothing on another board
   state.selectedBoard = id;
   // Mark the tab of the board on show, however it was chosen (a tab, or search)

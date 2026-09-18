@@ -27,7 +27,7 @@ function applyTheme(theme) {
   }
 }
 
-export function toggleTheme() {
+function toggleTheme() {
   applyTheme(state.theme === 'light' ? 'dark' : 'light');
 }
 
