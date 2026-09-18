@@ -177,3 +177,51 @@ test('your project keeps its circuit, and each project has its own (D47)', async
   await expect.poll(parts, { message: 'the battery is still there after a reload' }).toEqual(['battery']);
   expectNoErrors(errors);
 });
+
+/* ── Sample projects (D49, D53, D54) ─────────────────────────────── */
+const samples = (page) => page.locator('#projects-grid .project-card:not(.is-mine):not(.project-card-new)');
+
+test('a sample project shows its main part and leaves your project alone (D49)', async ({ page, errors }) => {
+  const saved = () => page.evaluate(() =>
+    JSON.parse(localStorage.getItem('circuitlab.my-projects'))[0].circuit.components.map((c) => c.type));
+  await openProjects(page);
+  await createProject(page, 'My rig');
+  await mine(page).locator('.btn-primary').click();
+  await expect(page.locator('#view-simulator')).toBeVisible();
+  await page.locator('#ws-add-battery').click();
+
+  await goToView(page, 'projects');
+  await samples(page).first().locator('.btn-primary').click();
+  const first = await page.evaluate(() => window.CircuitLabData.projects[0].components[0]);
+  await expect(page.locator('#view-viewer')).toBeVisible();
+  expect(await page.evaluate(() => window.CircuitApp.getState().selectedComponent.id)).toBe(first);
+  // Opening the sample did not touch your project's circuit
+  expect(await saved()).toEqual(['battery']);
+  expectNoErrors(errors);
+});
+
+test('the Dashboard sample cards open their project (D53)', async ({ page, errors }) => {
+  await openApp(page);
+  const first = await page.evaluate(() => window.CircuitLabData.projects[0].components[0]);
+  await page.locator('#view-dashboard .project-card').first().click();
+  await expect(page.locator('#view-viewer')).toBeVisible();
+  expect(await page.evaluate(() => window.CircuitApp.getState().selectedComponent.id)).toBe(first);
+  expectNoErrors(errors);
+});
+
+test('sample projects show no made-up times and list real parts (D54)', async ({ page, errors }) => {
+  await openProjects(page);
+  await expect(samples(page).first()).toBeVisible();
+  expect(await samples(page).locator('.project-modified').count()).toBe(0);
+  const projects = await page.evaluate(() => window.CircuitLabData.projects);
+  const ids = await page.evaluate(() => window.CircuitLabData.components.map((c) => c.id));
+  for (const p of projects) {
+    expect(p.lastModified, p.id).toBeUndefined();
+    expect(p.components.length, p.id).toBeGreaterThan(0);
+    for (const c of p.components) expect(ids, `${p.id} lists ${c}`).toContain(c);
+  }
+  const byId = Object.fromEntries(projects.map((p) => [p.id, p]));
+  expect(byId['weather-station'].components).not.toContain('mpu6050'); // it uses a BME280, not an IMU
+  expect(byId['robot-arm'].description).not.toMatch(/Mega/); // it lists the ATmega328P (Uno), not the Mega's chip
+  expectNoErrors(errors);
+});

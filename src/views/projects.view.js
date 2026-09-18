@@ -4,9 +4,14 @@
 
 import { navigateTo, registerScreen } from '../app/router.js';
 import { state } from '../app/state.js';
-import { loadMyProjects, saveMyProjects } from '../services/my-projects.js';
+import { loadMyProjects, saveMyProjects as storeMyProjects } from '../services/my-projects.js';
 import { showToast } from '../ui/toast.js';
 import { escapeHtml } from '../utils/html.js';
+import { selectComponent } from './viewer.view.js';
+
+function saveMyProjects(list) {
+  if (!storeMyProjects(list)) showToast('This browser will not save projects', 'warning');
+}
 
 function renderProjects() {
   const panel = document.getElementById('view-projects');
@@ -80,8 +85,7 @@ function renderProjects() {
         </div>
       </div>
       <div class="project-card-footer">
-        <span class="project-modified">${p.lastModified}</span>
-        <button class="btn-primary btn-sm" onclick="CircuitApp.openProject('${p.id}')">Open →</button>
+        <button class="btn-primary btn-sm" onclick="CircuitApp.openProject('${p.id}')">View in 3D →</button>
       </div>
     </div>
   `).join('');
@@ -127,7 +131,7 @@ function createProject() {
   showToast(`Created "${name}"`, 'success');
 }
 
-export function deleteMyProject(id) {
+function deleteMyProject(id) {
   saveMyProjects(loadMyProjects().filter(p => p.id !== id));
   if (state.openProjectId === id) state.openProjectId = null;
   renderProjects();
@@ -135,7 +139,7 @@ export function deleteMyProject(id) {
 
 // Open your project in the Simulator with the circuit it was left with.
 // While it is open, every change to the board is saved into it (D47).
-export function openMyProject(id) {
+function openMyProject(id) {
   const project = loadMyProjects().find(p => p.id === id);
   if (!project) return;
   state.openProjectId = id;
@@ -167,12 +171,12 @@ function whenMade(project) {
   return n ? `${n} ${unit}${n === 1 ? '' : 's'} ago` : 'just now';
 }
 
+// A sample project has no circuit, so it shows its main part in the 3D
+// Viewer. It used to open the Simulator, which was empty, or still held
+// your own project and kept saving into it (D49).
 export function openProject(id) {
   const proj = CircuitLabData.projects.find(p => p.id === id);
-  if (proj) {
-    showToast(`Opening ${proj.name}...`, 'info');
-    navigateTo('simulator');
-  }
+  if (proj?.components.length) selectComponent(proj.components[0]);
 }
 
 registerScreen('projects', renderProjects);

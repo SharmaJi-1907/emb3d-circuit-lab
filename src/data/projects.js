@@ -11,18 +11,16 @@ export const projects = [
     icon: '🌤',
     color: 'cyan', // the card's accent: a design token name (--cyan)
     tags: ['IoT', 'ESP32', 'MQTT', 'Sensors'],
-    components: ['esp32-wroom', 'mpu6050'],
-    lastModified: '2 days ago'
+    components: ['esp32-wroom']
   },
   {
     id: 'robot-arm',
     name: 'Servo Robot Arm',
-    description: '6-DOF robot arm controlled by Arduino Mega with inverse kinematics and PS2 controller input.',
+    description: '6-DOF robot arm controlled by an Arduino Uno (ATmega328P) with inverse kinematics and PS2 controller input.',
     icon: '🦾',
     color: 'purple',
     tags: ['Robotics', 'Servo', 'Arduino', 'IK'],
-    components: ['atmega328p', 'l298n'],
-    lastModified: '1 week ago'
+    components: ['atmega328p', 'l298n']
   },
   {
     id: 'audio-viz',
@@ -31,8 +29,7 @@ export const projects = [
     icon: '🎵',
     color: 'orange',
     tags: ['Audio', 'FFT', 'STM32', 'LED'],
-    components: ['stm32f103', 'lm358'],
-    lastModified: '3 days ago'
+    components: ['stm32f103', 'lm358']
   },
   {
     id: 'drone-fc',
@@ -41,8 +38,7 @@ export const projects = [
     icon: '🚁',
     color: 'green',
     tags: ['Drone', 'PID', 'IMU', 'RF'],
-    components: ['mpu6050', 'nrf24l01', 'atmega328p'],
-    lastModified: '5 days ago'
+    components: ['mpu6050', 'nrf24l01', 'atmega328p']
   },
   {
     id: 'smart-lock',
@@ -51,8 +47,7 @@ export const projects = [
     icon: '🔐',
     color: 'pink',
     tags: ['Security', 'RFID', 'BLE', 'ESP32'],
-    components: ['esp32-wroom'],
-    lastModified: '1 day ago'
+    components: ['esp32-wroom']
   },
   {
     id: 'oscilloscope',
@@ -61,7 +56,6 @@ export const projects = [
     icon: '📊',
     color: 'gold',
     tags: ['Test Equipment', 'ADC', 'STM32', 'TFT'],
-    components: ['stm32f103', 'lm358'],
-    lastModified: '2 weeks ago'
+    components: ['stm32f103', 'lm358']
   },
 ];

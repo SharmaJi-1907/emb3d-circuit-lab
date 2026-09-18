@@ -94,7 +94,7 @@ function renderDashboard() {
         <h3 class="dash-section-title">Sample Projects</h3>
         <div class="projects-grid">
           ${CircuitLabData.projects.slice(0, 4).map(p => `
-            <div class="project-card" style="--accent:var(--${p.color})">
+            <div class="project-card" style="--accent:var(--${p.color})" onclick="CircuitApp.openProject('${p.id}')">
               <div class="project-card-icon">${p.icon}</div>
               <div class="project-card-body">
                 <div class="project-card-name">${p.name}</div>
@@ -103,7 +103,6 @@ function renderDashboard() {
                   ${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}
                 </div>
               </div>
-              <div class="project-card-meta">${p.lastModified}</div>
             </div>
           `).join('')}
         </div>

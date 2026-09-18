@@ -2,8 +2,6 @@
    CIRCUITLAB — Projects you make, kept in localStorage (C4)
 ═══════════════════════════════════════════════════════════════════ */
 
-import { showToast } from '../ui/toast.js';
-
 /* ── Projects you make (C4) ─────────────────────────────────────
    Kept in the browser under MY_PROJECTS_KEY, separate from the
    stored example projects in CircuitLabData.
@@ -19,10 +17,13 @@ export function loadMyProjects() {
   }
 }
 
+// Returns false when the browser will not store it (private mode, storage full),
+// so the screen can say so. A service shows no messages itself (docs/planning/ARCHITECTURE.md).
 export function saveMyProjects(list) {
   try {
     localStorage.setItem(MY_PROJECTS_KEY, JSON.stringify(list));
+    return true;
   } catch {
-    showToast('This browser will not save projects', 'warning');
+    return false;
   }
 }

@@ -180,7 +180,6 @@
 .project-card-name { font-size: 12px; font-weight: 600; }
 .project-card-desc { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
 .project-card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-.project-card-meta { font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); flex-shrink: 0; }
 
 /* Protocol Reference Grid */
 .protocol-grid {
@@ -200,7 +199,7 @@
 .protocol-detail { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
 .protocol-detail span { color: var(--text-secondary); }
 
-/* Narrow windows (was in main.css "Responsive") */
+/* Narrow windows */
 @media (max-width: 1200px) {
   .quick-access-grid { grid-template-columns: repeat(3, 1fr); }
   .protocol-grid { grid-template-columns: repeat(3, 1fr); }
