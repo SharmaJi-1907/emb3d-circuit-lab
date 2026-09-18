@@ -183,6 +183,20 @@ test('questions are matched by their topic words, not their first word (D1)', as
   expectNoErrors(errors);
 });
 
+test('comparison words alone do not pick the SPI vs I2C answer (D52)', async ({ page, errors }) => {
+  await openApp(page);
+  const picked = await answersFor(page, [
+    'what is the difference between a diode and an LED',
+    'compare arduino boards',
+    'arduino uno vs mega',
+  ]);
+  for (const [question, answer] of Object.entries(picked)) {
+    expect(answer, question).not.toBe(SPI);
+  }
+  await expectAnswers(page, [['spi vs i2c', SPI], ['compare spi and i2c', SPI]]);
+  expectNoErrors(errors);
+});
+
 test('a named part gets that part\'s card, however it is written (D1)', async ({ page, errors }) => {
   await openApp(page);
   await expectAnswers(page, [

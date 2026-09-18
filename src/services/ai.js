@@ -7,7 +7,9 @@
 // match longer words ("blink" → "blinking"). On a tie the earlier topic wins,
 // so specific topics come first and the general ones (LED, Arduino) last.
 const AI_TOPICS = [
-  { answer: 'SPI vs I2C',                                 keys: ['spi', 'mosi', 'miso', 'vs', 'versus', 'difference', 'compare'] },
+  // No "vs", "difference" or "compare": on their own they sent any comparison
+  // ("a diode vs an LED") here (D52). "spi vs i2c" still wins its tie with I2C.
+  { answer: 'SPI vs I2C',                                 keys: ['spi', 'mosi', 'miso'] },
   { answer: 'How do I wire an I2C sensor to Arduino?',   keys: ['i2c', 'sda', 'scl', 'twi'] },
   { answer: 'PWM frequency',                              keys: ['pwm', 'duty', 'analogwrite'] },
   { answer: 'Explain how an ESP32 works',                 keys: ['esp32', 'wifi', 'bluetooth'] },
