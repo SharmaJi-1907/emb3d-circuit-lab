@@ -62,8 +62,8 @@ export function buildESP32(kit) {
   // Pin headers. The list is started first: it used to be cleared after the
   // headers were added, so the ESP32 had no pins to hover or highlight (D8).
   kit.pins.length = 0;
-  addPinHeader(kit, group, 19, 0.1, 0.08, 0.45, 'horizontal-left', 1);
-  addPinHeader(kit, group, 19, 0.1, 0.08, -0.45, 'horizontal-right', 20);
+  addPinHeader(kit, group, 19, 0.1, 0.08, 0.45, 'row', 1);
+  addPinHeader(kit, group, 19, 0.1, 0.08, -0.45, 'row', 20);
 
   return group;
 }
@@ -113,15 +113,9 @@ function addPinHeader(kit, group, count, pitch, height, zOffset, orientation, fi
   const headerMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
   const header = new THREE.Mesh(headerGeo, headerMat);
 
-  if (orientation === 'vertical') {
-    header.position.set(1.2, 0.1, zOffset);
-  } else if (orientation === 'horizontal-left') {
-    header.rotation.y = Math.PI / 2;
-    header.position.set(0, 0.1, zOffset);
-  } else {
-    header.rotation.y = Math.PI / 2;
-    header.position.set(0, 0.1, zOffset);
-  }
+  // The strip runs along its pins. It used to be turned 90°, so on the
+  // ESP32 it crossed the board and stuck out past its edge (D51).
+  header.position.set(orientation === 'vertical' ? 1.2 : 0, 0.1, zOffset);
   group.add(header);
 
   // Individual pins
@@ -136,13 +130,8 @@ function addPinHeader(kit, group, count, pitch, height, zOffset, orientation, fi
     }));
     pin.userData = { pinNum, type: pinData ? pinData.type : 'digital' };
     kit.pins.push(pin);
-    if (orientation === 'vertical') {
-      pin.position.set(1.2 - (count / 2 - 0.5 - i) * pitch, 0.15, zOffset);
-    } else if (orientation === 'horizontal-left') {
-      pin.position.set(-0.9 + i * pitch, 0.15, zOffset);
-    } else {
-      pin.position.set(-0.9 + i * pitch, 0.15, zOffset);
-    }
+    const x = orientation === 'vertical' ? 1.2 - (count / 2 - 0.5 - i) * pitch : -0.9 + i * pitch;
+    pin.position.set(x, 0.15, zOffset);
     group.add(pin);
   }
 }

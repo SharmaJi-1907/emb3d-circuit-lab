@@ -4,7 +4,7 @@
    resistor, capacitor and LED with their own models (#23b).
 ═══════════════════════════════════════════════════════════════════ */
 
-import { test, expect, openApp, openViewer, waitForViewer, goToView, waitForStableModel, expectNoErrors } from './helpers.js';
+import { test, expect, openApp, openViewer, waitForViewer, goToView, waitForStableModel, modelSize, expectNoErrors } from './helpers.js';
 
 const memory = (page) => page.evaluate(() => window.ThreeViewer.getMemoryInfo());
 const modelInfo = (page) => page.evaluate(() => window.ThreeViewer.getModelInfo());
@@ -128,5 +128,18 @@ test('the model still works after all that switching (D16)', async ({ page, erro
   expect(info.component, 'the last part loaded is the one showing').toBe('atmega328p');
   expect(info.pins, 'its pins are still there').toBe(28);
   await expect(page.locator('#pin-table-body .pin-row')).toHaveCount(28);
+  expectNoErrors(errors);
+});
+
+test('the ESP32 pin headers run along their pins, on the board (D51)', async ({ page, errors }) => {
+  await openViewer(page);
+  await page.evaluate(() => window.CircuitApp.selectComponent('esp32-wroom'));
+  await expect.poll(async () => (await modelInfo(page))?.component).toBe('esp32-wroom');
+  await waitForStableModel(page);
+  // The board is 2.2 wide and 1.1 deep. The headers used to be turned 90°,
+  // which made the model 2.8 deep, sticking out past both edges.
+  const [width, , depth] = await modelSize(page);
+  expect(depth, 'model depth').toBeLessThanOrEqual(1.2);
+  expect(width, 'model width').toBeGreaterThan(depth);
   expectNoErrors(errors);
 });
