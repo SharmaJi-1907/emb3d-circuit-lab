@@ -205,7 +205,7 @@ test('no leftovers: the hidden project card and empty folders are gone (E20, E21
 
 test('every link in the docs points to a real file and line (E22)', async () => {
   const root = new URL('../../', import.meta.url);
-  const docs = ['README.md', 'CHANGELOG.md', 'CLAUDE.md', '.github/pull_request_template.md',
+  const docs = ['README.md', 'CHANGELOG.md', 'CLAUDE.md', 'AGENTS.md', 'CONTRIBUTING.md', 'SECURITY.md', '.github/pull_request_template.md',
     ...(await readdir(new URL('docs/', root), { recursive: true })).filter((f) => f.endsWith('.md')).map((f) => `docs/${f}`)];
   const broken = [];
   for (const doc of docs) {
