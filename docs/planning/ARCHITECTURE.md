@@ -59,24 +59,34 @@ emmb3d/
 ├── playwright.config.js       Test runner config (local Chrome, starts the dev server)
 ├── tests/
 │   └── smoke/                 Playwright browser tests
-│   │   ├── app.spec.js        Every screen, data, 3D first load, search, AI chat
-│   │   ├── keyboard.spec.js   Every keyboard shortcut, plus the 3D explode fix (D13)
-│   │   ├── styles.spec.js     Computed styles of the shared building blocks (F2)
-│   │   ├── viewer.spec.js     3D Viewer layout: canvas sizing, sidebar, pin table/detail, tooltip, controls
-│   │   ├── database.spec.js   Database screen (Component Library): cards, filter, sort, compare, View 3D
-│   │   ├── boards.spec.js     Board Explorer layout, board size, styles, behaviour and board data
-│   │   ├── datasheet.spec.js  Datasheet sidebar and section-bar styles, list clicks, layout fit (F5)
-│   │   ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
-│   │   ├── theme.spec.js      Light/dark theme: both toggles, persistence, readability (C5)
-│   │   ├── topbar.spec.js     Notifications drawer, the search pop-up's arrow keys, New Project and Share (C6, D14, C9)
-│   │   ├── routing.spec.js    Hash routing: address, links, refresh, Back/Forward (D9)
-│   │   ├── background.spec.js  Animated background: one animation, theme colours, dots after a resize (D4, D28, D29)
-│   │   ├── assets.spec.js     What the page loads: manifest, favicon, no GSAP/FontAwesome, dead CSS, Three.js offline (E2–E14, E7)
-│   │   ├── viewer-models.spec.js  3D models: pin counts per part, chip labels, freeing old models, passive parts (D8, D11, D16, #23b)
-│   │   ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
-│   │   ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
+│       ├── app.spec.js        Every screen, data, 3D first load, search, AI chat, Dashboard stats
+│       ├── keyboard.spec.js   Every keyboard shortcut, plus the 3D explode fix (D13)
+│       ├── styles.spec.js     Computed styles of the shared building blocks (F2)
+│       ├── viewer.spec.js     3D Viewer layout: canvas sizing, sidebar, pin table/detail, tooltip, controls
+│       ├── database.spec.js   Database screen (Component Library): cards, filter, sort, compare, View 3D
+│       ├── boards.spec.js     Board Explorer layout, board size, styles, behaviour and board data
+│       ├── datasheet.spec.js  Datasheet sidebar and section-bar styles, list clicks, layout fit (F5)
+│       ├── projects.spec.js   Projects screen: grid, the new-project form, saving and deleting (C4)
+│       ├── theme.spec.js      Light/dark theme: both toggles, persistence, readability (C5)
+│       ├── topbar.spec.js     Notifications drawer, the search pop-up's arrow keys, New Project and Share (C6, D14, C9)
+│       ├── routing.spec.js    Hash routing: address, links, refresh, Back/Forward (D9)
+│       ├── background.spec.js  Animated background: one animation, theme colours, dots after a resize (D4, D28, D29)
+│       ├── assets.spec.js     What the page loads: manifest, favicon, no GSAP/FontAwesome, dead CSS, Three.js offline (E2–E14, E7)
+│       ├── viewer-models.spec.js  3D models: pin counts per part, chip labels, freeing old models, passive parts (D8, D11, D16, #23b)
+│       ├── simulator.spec.js  Simulator: layout and board size, palette, toolbar, status bar, multimeter, circuit logic, oscilloscope, drawing loop
+│       ├── ai.spec.js         AI chat: Send/Enter/chips, welcome message, chat scrolling, message styles, answer matching, safe text, code blocks
 │       └── helpers.js         Error collector, known-noise list, knownBug(), styleOf(), navigation and 3D-model helpers
-└── docs/                      Documentation
+├── AGENTS.md                  Rules for every AI tool and helper (CLAUDE.md and .cursor/rules/ load it)
+├── CONTRIBUTING.md, SECURITY.md, CHANGELOG.md, README.md
+└── docs/                      Documentation (index: docs/README.md)
+    ├── context/               The project's memory: PROJECT_CONTEXT, SESSION_LOG, RESUME_PROMPT, KNOWLEDGE_BASE, OBSERVATIONS
+    ├── planning/              ROADMAP, ARCHITECTURE (this file), RISK_REGISTER
+    ├── decisions/             ADRs 0001–0008
+    ├── tracking/              PROGRESS, BUGS, EXPERIMENTS
+    ├── rules/                 CODING_STANDARDS, TESTING_STRATEGY, SECURITY_RULES, REVIEW_CHECKLIST
+    ├── guides/                GIT_WORKFLOW, LEARNING_GUIDE
+    ├── archive/               FIX_PLAN (finished)
+    └── images/
 ```
 
 The big files are all split now: `data.js` in #27a, `main.css` in #27b, `app.js` and the 3D model builders in #27c. Empty placeholder folders (`src/assets/`, `scripts/`, `tests/unit/`) were removed in #31 (E21); add one back when something real goes in it.
@@ -97,7 +107,7 @@ The smoke test "component data is loaded" fails if `data/index.js` is ever dropp
 
 Three.js comes from npm (`three`, pinned), so Vite bundles it and the 3D Viewer works offline (E7, #24). Nothing reads `window.THREE` any more. GSAP and FontAwesome were removed in #25 (E10).
 
-The cross-file globals are declared for ESLint in [eslint.config.js](../eslint.config.js). Only `app/app.js` reads them by bare name.
+The cross-file globals are declared for ESLint in [eslint.config.js](../../eslint.config.js). Only `app/app.js` reads them by bare name.
 
 ## Dependency rules (target)
 
@@ -108,15 +118,17 @@ main.js
   └─▶ app/
         └─▶ views/
               ├─▶ engines/   ─▶ utils/
-              ├─▶ ui/        ─▶ utils/
+              ├─▶ ui/        ─▶ views/, utils/
               ├─▶ services/  ─▶ data/, utils/
               └─▶ data/
 ```
 
 - **engines/** know nothing about screens or the DOM outside the canvas they're given.
 - **views/** own one `<section class="view">` each and wire its buttons.
-- **data/** is plain data only — no DOM, no side effects. The one exception is `data/index.js`, which sets `window.CircuitLabData` ([ADR 0003](decisions/0003-es-modules.md)).
+- **data/** is plain data only — no DOM, no side effects. The one exception is `data/index.js`, which sets `window.CircuitLabData` ([ADR 0003](../decisions/0003-es-modules.md)).
 - **utils/** import nothing from the project.
+- **ui/ → views/:** the keyboard shortcuts (`ui/shortcuts.js`) and the top bar (`ui/topbar.js`) call screen functions, such as the Viewer's view mode or New Project.
+- **views/** and **ui/** may also import the shared `app/router.js` and `app/state.js`.
 
 ## Where does new code go?
 
@@ -131,3 +143,7 @@ main.js
 | A small pure helper function | `src/utils/` |
 | A favicon, manifest or robots.txt | `public/` |
 | An image or font used by CSS/JS | a new `src/assets/` folder |
+
+## Where it is going
+
+This page describes the app as it is today: static files, no server. The planned shape (a Cloudflare CDN, Supabase for login and data, the simulator in a Web Worker, a separate admin page) is in [ROADMAP.md](ROADMAP.md), under "How the system fits together", with the reasons in [ADRs 0004–0006](../decisions/). Update this page as each part is built.

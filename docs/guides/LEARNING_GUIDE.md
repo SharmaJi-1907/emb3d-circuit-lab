@@ -1,7 +1,7 @@
 # CircuitLab — Learning Guide
 
 A plain-English tour of how this project works, so you can read, fix and extend it with confidence.
-For the list of bugs and the step-by-step fixes, see [FIX_PLAN.md](FIX_PLAN.md).
+For the list of bugs and the step-by-step fixes, see [FIX_PLAN.md](../archive/FIX_PLAN.md).
 
 ---
 
@@ -14,11 +14,11 @@ A single-page website for learning electronics. It has one HTML page with 9 "scr
 | Dashboard | Home screen: stats, quick access to every screen, recently viewed parts |
 | 3D Viewer | Spin a 3D chip or board and click its pins to learn what each pin does |
 | Circuit Simulator | Drag parts onto a breadboard, wire them up, watch an oscilloscope |
-| Component Database | Browse and compare parts |
+| Component Library | Browse, sort and compare parts (the sidebar calls it Database) |
 | Board Explorer | See the pinout of Arduino, ESP32, Raspberry Pi, STM32 boards |
 | Datasheet Viewer | Read simplified datasheets |
 | AI Assistant | Ask electronics questions (currently canned answers, not real AI) |
-| Projects | Example projects like a weather station or robot arm |
+| Projects | Example projects like a weather station, plus your own saved circuits |
 | Settings | Theme and shortcuts |
 
 ---
@@ -27,12 +27,12 @@ A single-page website for learning electronics. It has one HTML page with 9 "scr
 
 | Tool | What it is | Where |
 |---|---|---|
-| **Vite** (8) | A dev server + bundler. `npm run dev` serves the files with live reload. `npm run build` packs everything into `dist/`. | [package.json](../package.json), [vite.config.js](../vite.config.js) |
-| **Three.js** (r186) | A library for 3D graphics in the browser (WebGL) | Installed with npm and imported in [three-viewer/index.js](../src/engines/three-viewer/index.js) |
+| **Vite** (8) | A dev server + bundler. `npm run dev` serves the files with live reload. `npm run build` packs everything into `dist/`. | [package.json](../../package.json), [vite.config.js](../../vite.config.js) |
+| **Three.js** (r186) | A library for 3D graphics in the browser (WebGL) | Installed with npm and imported in [three-viewer/index.js](../../src/engines/three-viewer/index.js) |
 | **Canvas 2D** | The browser's built-in drawing surface, used for the background, simulator, oscilloscope and board drawing | Plain JS |
-| **Google Fonts** | Fonts | CDN, one `<link>` in [index.html](../index.html) |
-| **Playwright** | Opens the app in Chrome and checks every screen (213 smoke tests) | [tests/smoke/](../tests/smoke/) |
-| **ESLint** | Finds mistakes without running the code (0 warnings allowed) | [eslint.config.js](../eslint.config.js) |
+| **Google Fonts** | Fonts | CDN, one `<link>` in [index.html](../../index.html) |
+| **Playwright** | Opens the app in Chrome and checks every screen (220 smoke tests) | [tests/smoke/](../../tests/smoke/) |
+| **ESLint** | Finds mistakes without running the code (0 warnings allowed) | [eslint.config.js](../../eslint.config.js) |
 
 There is **no framework** (no React or Vue). Everything is plain JavaScript that changes the page directly.
 
@@ -59,25 +59,37 @@ index.html  ── the page: all 9 screens, buttons, panels (each with an id="..
          uses it. That is why code says `window.ThreeViewer?.isReady()` first.
 ```
 
-An older version of the app (`script.js` + `database.js`) used to sit in a `legacy/` folder. It was never loaded, and it was deleted in branch #6. See [decisions/0002-screen-markup.md](decisions/0002-screen-markup.md) for why the project had two versions.
+An older version of the app (`script.js` + `database.js`) used to sit in a `legacy/` folder. It was never loaded, and it was deleted in branch #6. See [decisions/0002-screen-markup.md](../decisions/0002-screen-markup.md) for why the project had two versions.
 
-For the full folder map, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For the full folder map, see [ARCHITECTURE.md](../planning/ARCHITECTURE.md).
 
-**Key idea:** each JS file puts one object on `window` (the browser's global scope), and the other files use it by name. If a file is never loaded, its object doesn't exist. That's exactly why most screens crashed until branch #3 added the missing `data/data.js` line (bug A1).
+**Key idea:** files share code with `import` / `export`, so a missing or misspelled file is a build error, not a silent crash. Only 4 objects are still put on `window` (the browser's global scope), as the public API that inline `onclick` handlers, the tests and the console use: `CircuitApp`, `CircuitLabData`, `ThreeViewer` and `CircuitSimulator` ([ADR 0003](../decisions/0003-es-modules.md)). It used to be one `window` object per file, and a file that was never loaded simply had no object. That's exactly why most screens crashed until branch #3 added the missing data file to `main.js` (bug A1).
 
 ---
 
 ## 4. Concepts you'll see in the code
 
-### 4.1 The "module pattern" (IIFE)
+### 4.1 Modules: `import` and `export`
 ```js
-window.CircuitApp = (function () {
-  const state = { ... };          // private: nobody outside can touch it
-  function navigateTo(view) { }   // private helper
-  return { init, navigateTo };    // public: what other files can call
+// app/router.js
+export function navigateTo(view) { }   // public: other files can import it
+function knownView(view) { }           // private: only this file can use it
+
+// app/app.js
+import { navigateTo } from './router.js';
+window.CircuitApp = { init, navigate, getState: () => state };  // the public API
+```
+Each file shares only what it `export`s. `CircuitApp` is a plain object built from those imports in [app/app.js](../../src/app/app.js).
+
+The two engines still use the older **module pattern (IIFE)**: a function that runs immediately and returns only what should be public.
+```js
+window.CircuitSimulator = (function () {
+  let components = [];            // private: nobody outside can touch it
+  function runSimulation() { }    // private helper
+  return { init, startSim };      // public: what other files can call
 })();
 ```
-The function runs immediately and returns only what should be public. It's an older way to organize code. Modern code uses `export` / `import` instead.
+You'll see it in [simulator/index.js](../../src/engines/simulator/index.js) and [three-viewer/index.js](../../src/engines/three-viewer/index.js).
 
 ### 4.2 Finding things on the page by ID
 ```js
@@ -92,7 +104,7 @@ button.addEventListener('click', () => { /* do something */ });
 A button with no listener does nothing when clicked. Also, **adding a new function as a listener on every visit makes it run once per visit**. That's why every screen wires its buttons once, on the first visit (bugs D3 and D22).
 
 ### 4.4 Screen switching ("routing")
-`navigateTo('simulator')` in [router.js](../src/app/router.js):
+`navigateTo('simulator')` in [router.js](../../src/app/router.js):
 1. puts `#simulator` in the address, so refresh, Back/Forward and links work (a `hashchange` listener does the reverse)
 2. hides every `<section class="view">`
 3. shows `<section id="view-simulator">`
@@ -108,7 +120,7 @@ function animate() {
 It's used by the background, the 3D viewer and the simulator. Every loop you start keeps running until you cancel it with `cancelAnimationFrame`.
 
 ### 4.6 Three.js basics (3D viewer)
-Every Three.js app has the same 4 parts. See [three-viewer/index.js](../src/engines/three-viewer/index.js):
+Every Three.js app has the same 4 parts. See [three-viewer/index.js](../../src/engines/three-viewer/index.js):
 - **Scene**: the 3D world that holds objects
 - **Camera**: where you look from
 - **Renderer**: draws the scene onto the `<canvas id="viewer-canvas">`
@@ -117,23 +129,23 @@ Every Three.js app has the same 4 parts. See [three-viewer/index.js](../src/engi
 The chips aren't loaded from model files. They're **built from boxes and cylinders in code** (`buildDIP`, `buildQFP`, `buildESP32`…). Clicking a pin uses a **Raycaster**, which shoots an invisible line from the mouse into the scene to see what it hits.
 
 ### 4.7 The simulator (a small DC solver)
-[simulator/index.js](../src/engines/simulator/index.js) draws parts on a 2D canvas. `runSimulation()` joins wired pins into nets and works out every net's voltage with nodal analysis, so currents follow Ohm's law and an LED lights only in a closed loop, the right way round. It's a teaching simplification (DC only, simple part models), not a full circuit simulator like SPICE.
+[simulator/index.js](../../src/engines/simulator/index.js) draws parts on a 2D canvas. `runSimulation()` joins wired pins into nets and works out every net's voltage with nodal analysis, so currents follow Ohm's law and an LED lights only in a closed loop, the right way round. It's a teaching simplification (DC only, simple part models), not a full circuit simulator like SPICE.
 
 ### 4.8 The "AI"
-`getAIResponse()` in [services/ai.js](../src/services/ai.js) looks for words in your question and returns a pre-written answer from `data.js`. It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
+`getAIResponse()` in [services/ai.js](../../src/services/ai.js) looks for words in your question and returns a pre-written answer from [data/ai-responses.js](../../src/data/ai-responses.js). It doesn't connect to any AI service. To make it real, you'd call an AI API **from a server** (never put API keys in browser code).
 
 ### 4.9 localStorage
 `localStorage` keeps data in the browser. It stays after a page refresh, but only on that one browser. This project saves the theme under `circuitlab.theme` and your own projects — name, when you made it and the circuit on the board — under `circuitlab.my-projects`.
 
 ### 4.10 Design tokens
-Colours are never written into the code. They are CSS variables in [tokens.css](../src/styles/base/tokens.css) (`--cyan`, `--bg-card`, `--pin-power`…), and the light theme just gives the same names other values. A `<canvas>` cannot read `var(--cyan)`, so [utils/css.js](../src/utils/css.js) turns a token into the real colour before drawing.
+Colours are never written into the code. They are CSS variables in [tokens.css](../../src/styles/base/tokens.css) (`--cyan`, `--bg-card`, `--pin-power`…), and the light theme just gives the same names other values. A `<canvas>` cannot read `var(--cyan)`, so [utils/css.js](../../src/utils/css.js) turns a token into the real colour before drawing.
 
 ---
 
 ## 5. How to debug this kind of app (the skill that matters most)
 
 1. `npm run dev`, then open http://localhost:3000
-2. Press **F12**, then the **Console** tab. Red lines are errors, and each one gives the file and line number, like `app.js:983`.
+2. Press **F12**, then the **Console** tab. Red lines are errors, and each one gives the file and line number, like `boards.view.js:42`.
 3. Click around. Each click that shows a red error is a bug with its exact location.
 4. Useful console commands while the app is running:
    ```js
@@ -151,7 +163,7 @@ Colours are never written into the code. They are CSS variables in [tokens.css](
 | What happened | Lesson |
 |---|---|
 | The page was designed for the old code, then the code was swapped for a new version without updating the page | When you replace a big file, check what it depends on (IDs, data, globals) |
-| `data.js` was forgotten in `main.js` | Run tests that open every screen (`npm run test:smoke`), and prefer real `import`/`export` over `window` globals so a missing file breaks the build. A linter alone can't catch this while files share names through `window`. |
+| The data file was forgotten in `main.js` | Run tests that open every screen (`npm run test:smoke`), and prefer real `import`/`export` over `window` globals so a missing file breaks the build. A linter alone can't catch this while files share names through `window`. |
 | Old files (`script.js`, `database.js`) were left behind | Delete dead code once anything useful has been copied out of it |
 | There was no git and no tests | Commit often. One small automated test that opens each screen would catch all the crashes |
 
@@ -160,7 +172,7 @@ Colours are never written into the code. They are CSS variables in [tokens.css](
 ## 7. Commands cheat sheet
 
 ```bash
-npm install        # install dev tools (Vite)
+npm install        # install Vite, Three.js, ESLint and Playwright
 npm run dev        # start dev server → http://localhost:3000
 npm run build      # build the finished site → dist/
 npm run preview    # serve the dist/ build to test it

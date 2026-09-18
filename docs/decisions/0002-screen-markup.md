@@ -69,12 +69,12 @@ Current simulator (canvas not visible, layout unstyled):
 | **Projects, Settings, sidebar, top bar, search** | Current page | Already working and styled. |
 | **All old screens** | — | Add one small shared stylesheet for `glass-panel`, `panel`, `panel-header`, `panel-title`, `view-title`, `view-subtitle` and the shared buttons. |
 
-**Old Viewer extras that won't be kept:** pin legend, "example usage" code, the info overlay (component, package, pins, voltage), the DIP/SMD/QFP/BGA package buttons (never worked) and the screenshot button. They're listed as future ideas in [FIX_PLAN.md](../FIX_PLAN.md) and can be re-added later if wanted.
+**Old Viewer extras that won't be kept:** pin legend, "example usage" code, the info overlay (component, package, pins, voltage), the DIP/SMD/QFP/BGA package buttons (never worked) and the screenshot button. They're listed as future ideas in [FIX_PLAN.md](../archive/FIX_PLAN.md) and can be re-added later if wanted.
 
 ## Consequences
 
 - The code rule changes from "`index.html` is the source of truth" to **"follow this table per screen"**. For new-layout screens, the page uses the IDs and classes that `app.js` and `main.css` expect. For current-page screens, the JS and CSS adapt to `index.html`.
-- **The Viewer branches merge into one small branch**, and the Database branch becomes small (see the branch plan in [GIT_WORKFLOW.md](../GIT_WORKFLOW.md)).
-- **`legacy/` can be deleted next.** It was the reference for the old Viewer and Database wiring, and both screens now use the new design. The old data worth keeping is listed in [FIX_PLAN.md](../FIX_PLAN.md), and can be restored from git with `git show 3cd518a:legacy/database.js`.
+- **The Viewer branches merge into one small branch**, and the Database branch becomes small (see the branch plan in [GIT_WORKFLOW.md](../guides/GIT_WORKFLOW.md)).
+- **`legacy/` can be deleted next.** It was the reference for the old Viewer and Database wiring, and both screens now use the new design. The old data worth keeping is listed in [FIX_PLAN.md](../archive/FIX_PLAN.md), and can be restored from git with `git show 3cd518a:legacy/database.js`.
 - **The Dashboard becomes the start screen.** The number keys become `1–9` (sidebar order, no code change needed), and the tests that assume the Viewer is the start screen are updated in the Dashboard branch.
-- New issue codes F2–F6 cover the styling work per screen (see [FIX_PLAN.md](../FIX_PLAN.md)).
+- New issue codes F2–F6 cover the styling work per screen (see [FIX_PLAN.md](../archive/FIX_PLAN.md)).

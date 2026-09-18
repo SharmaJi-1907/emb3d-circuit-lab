@@ -22,4 +22,4 @@ The project had code in `js/` and `css/` with no clear split. `app.js` (1,787 li
 
 - Each screen and engine gets one obvious home, so bugs are easier to find.
 - The empty folders show the target shape before they're filled.
-- The line numbers in [FIX_PLAN.md](../FIX_PLAN.md) still match, because the moved files weren't edited.
+- The line numbers in [FIX_PLAN.md](../archive/FIX_PLAN.md) still match, because the moved files weren't edited.
