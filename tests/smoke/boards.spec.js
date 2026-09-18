@@ -223,6 +223,17 @@ test('key pins match the official pinouts (D24)', async ({ page, errors }) => {
   expectNoErrors(errors);
 });
 
+test('the older 4 boards list every header pin (D50)', async ({ page, errors }) => {
+  await openApp(page);
+  const counts = await page.evaluate(() => Object.fromEntries(
+    ['arduino-uno', 'esp32-devkit', 'raspberry-pi-4', 'stm32-bluepill']
+      .map((key) => [key, window.CircuitLabData.boards[key]?.pins.length ?? 0])));
+  // Uno: 18 digital-side + 7 power (NC left out) + 6 analog; ESP32 DevKit V1: 2 × 15;
+  // Raspberry Pi 4 and Blue Pill: 2 × 20.
+  expect(counts).toEqual({ 'arduino-uno': 31, 'esp32-devkit': 30, 'raspberry-pi-4': 40, 'stm32-bluepill': 40 });
+  expectNoErrors(errors);
+});
+
 /* ── Final clean-up (D35, D45) ────────────────────────────────── */
 test('the board redraws at its new size when the sidebar is hidden (D35)', async ({ page, errors }) => {
   await openBoards(page);
