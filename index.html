@@ -129,10 +129,6 @@
           </span>
           <span class="nav-label">Settings</span>
         </button>
-        <div class="user-avatar" title="User Profile">
-          <span>JD</span>
-          <div class="avatar-status"></div>
-        </div>
       </div>
     </aside>
 
@@ -276,8 +272,20 @@
                       <div class="palette-icon battery-icon"></div>
                       <span>Battery</span>
                     </button>
-                    <button class="palette-item ws-btn" id="ws-add-wire" data-component="wire" title="Wire">
+                    <button class="palette-item ws-btn" id="ws-add-switch" data-component="switch" title="Switch (double-click it on the board to open or close)">
                       <div class="palette-icon switch-icon"></div>
+                      <span>Switch</span>
+                    </button>
+                    <button class="palette-item ws-btn" id="ws-add-diode" data-component="diode" title="Diode">
+                      <div class="palette-icon diode-icon"></div>
+                      <span>Diode</span>
+                    </button>
+                    <button class="palette-item ws-btn" id="ws-add-ground" data-component="ground" title="Ground (0 V)">
+                      <div class="palette-icon ground-icon"></div>
+                      <span>Ground</span>
+                    </button>
+                    <button class="palette-item ws-btn" id="ws-add-wire" data-component="wire" title="Wire">
+                      <div class="palette-icon wire-icon"></div>
                       <span>Wire</span>
                     </button>
                   </div>
@@ -474,7 +482,7 @@
               </div>
               <div>
                 <h1 class="view-title">AI Electronics Assistant</h1>
-                <p class="view-subtitle">Powered by CircuitLab AI — Ask anything about electronics</p>
+                <p class="view-subtitle">Stored answers about common parts and circuits: it matches your question's key words</p>
               </div>
             </div>
 
@@ -541,8 +549,8 @@
               <div class="settings-card glass-panel" style="padding:20px; border-radius:8px;">
                 <h3>Appearance Settings</h3>
                 <div class="setting-row" style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
-                  <label>Contrast Dark System Mode</label>
-                  <button class="btn btn-secondary" id="theme-btn-toggle">Toggle Dark Mode</button>
+                  <label>Theme (light or dark)</label>
+                  <button class="btn btn-secondary" id="theme-btn-toggle">Switch to Light Mode</button>
                 </div>
               </div>
               <div class="settings-card glass-panel" style="padding:20px; border-radius:8px;">

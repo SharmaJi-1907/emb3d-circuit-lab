@@ -33,7 +33,7 @@ window.CircuitSimulator = (function () {
      again when the theme changes, so they stand out on a light board too
      (F11). Batteries, LEDs and resistor bands keep their real colours.
   ──────────────────────────────────────────────────────────────── */
-  const C = { part: '#c0c0c0', label: '#8888aa', accent: '#00d4ff', live: '#00ff88', red: '#ff4444', gold: '#ffd700', purple: '#7b2fff' };
+  const C = { part: '#c0c0c0', label: '#8888aa', accent: '#00d4ff', live: '#00ff88', red: '#ff4444', gold: '#ffd700' };
   let coloursFor = null;
 
   function readColours() {
@@ -49,7 +49,6 @@ window.CircuitSimulator = (function () {
       live: token('--sim-live', C.live),
       red: token('--red', C.red),
       gold: token('--gold', C.gold),
-      purple: token('--purple', C.purple),
     });
   }
 
@@ -283,110 +282,6 @@ window.CircuitSimulator = (function () {
         });
       }
     },
-    npn: {
-      label: 'NPN BJT',
-      width: 50, height: 50,
-      nodes: [
-        { x: 0, y: 25, name: 'B' },
-        { x: 50, y: 5, name: 'C' },
-        { x: 50, y: 45, name: 'E' }
-      ],
-      value: 100,
-      unit: 'hFE',
-      draw(ctx, comp) {
-        const { x, y, w, h } = comp.bounds;
-        const cx = x + 20;
-        const cy = y + h / 2;
-        ctx.strokeStyle = comp.selected ? C.accent : C.part;
-        ctx.lineWidth = comp.selected ? 2 : 1.5;
-        // Base lead
-        ctx.beginPath();
-        ctx.moveTo(x, cy);
-        ctx.lineTo(cx, cy);
-        ctx.stroke();
-        // Vertical bar
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - 15);
-        ctx.lineTo(cx, cy + 15);
-        ctx.stroke();
-        // Collector
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - 10);
-        ctx.lineTo(cx + 15, cy - 20);
-        ctx.lineTo(x + w, y + 5);
-        ctx.stroke();
-        // Emitter with arrow
-        ctx.beginPath();
-        ctx.moveTo(cx, cy + 10);
-        ctx.lineTo(cx + 15, cy + 20);
-        ctx.lineTo(x + w, y + h - 5);
-        ctx.stroke();
-        // Arrow on emitter
-        ctx.save();
-        ctx.translate(cx + 10, cy + 16);
-        ctx.rotate(Math.atan2(10, 15));
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(-6, -3);
-        ctx.lineTo(-6, 3);
-        ctx.closePath();
-        ctx.fillStyle = C.part;
-        ctx.fill();
-        ctx.restore();
-        // Label
-        ctx.fillStyle = C.label;
-        ctx.font = '9px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('NPN', x + w / 2, y - 4);
-      }
-    },
-    opamp: {
-      label: 'Op-Amp',
-      width: 60, height: 60,
-      nodes: [
-        { x: 0, y: 15, name: 'IN+' },
-        { x: 0, y: 45, name: 'IN-' },
-        { x: 60, y: 30, name: 'OUT' }
-      ],
-      value: 100000,
-      unit: 'V/V',
-      draw(ctx, comp) {
-        const { x, y, w, h } = comp.bounds;
-        ctx.strokeStyle = comp.selected ? C.accent : C.part;
-        ctx.lineWidth = comp.selected ? 2 : 1.5;
-        // Triangle body
-        ctx.beginPath();
-        ctx.moveTo(x + 10, y + 5);
-        ctx.lineTo(x + 10, y + h - 5);
-        ctx.lineTo(x + w - 5, y + h / 2);
-        ctx.closePath();
-        ctx.strokeStyle = comp.selected ? C.accent : '#ff6b2b';
-        ctx.stroke();
-        ctx.fillStyle = 'rgba(255,107,43,0.1)';
-        ctx.fill();
-        // Input leads
-        ctx.strokeStyle = comp.selected ? C.accent : C.part;
-        ctx.beginPath();
-        ctx.moveTo(x, y + 15);
-        ctx.lineTo(x + 10, y + 15);
-        ctx.moveTo(x, y + 45);
-        ctx.lineTo(x + 10, y + 45);
-        ctx.moveTo(x + w - 5, y + h / 2);
-        ctx.lineTo(x + w, y + h / 2);
-        ctx.stroke();
-        // +/- symbols
-        ctx.fillStyle = C.part;
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('+', x + 13, y + 19);
-        ctx.fillText('−', x + 13, y + 49);
-        // Label
-        ctx.fillStyle = C.label;
-        ctx.font = '9px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Op-Amp', x + w / 2, y - 4);
-      }
-    },
     diode: {
       label: 'Diode',
       width: 40, height: 24,
@@ -421,160 +316,6 @@ window.CircuitSimulator = (function () {
         ctx.font = '9px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('1N4148', cx, y - 4);
-      }
-    },
-    mosfet: {
-      label: 'N-MOSFET',
-      width: 55, height: 55,
-      nodes: [
-        { x: 0, y: 27, name: 'G' },
-        { x: 55, y: 5, name: 'D' },
-        { x: 55, y: 50, name: 'S' }
-      ],
-      value: 0,
-      unit: '',
-      draw(ctx, comp) {
-        const { x, y, w, h } = comp.bounds;
-        ctx.strokeStyle = comp.selected ? C.accent : C.part;
-        ctx.lineWidth = comp.selected ? 2 : 1.5;
-        // Gate lead
-        ctx.beginPath();
-        ctx.moveTo(x, y + h / 2);
-        ctx.lineTo(x + 15, y + h / 2);
-        ctx.stroke();
-        // Gate plate
-        ctx.beginPath();
-        ctx.moveTo(x + 15, y + 10);
-        ctx.lineTo(x + 15, y + h - 10);
-        ctx.stroke();
-        // Channel
-        ctx.beginPath();
-        ctx.moveTo(x + 20, y + 10);
-        ctx.lineTo(x + 20, y + h - 10);
-        ctx.stroke();
-        // Drain/Source connections
-        ctx.beginPath();
-        ctx.moveTo(x + 20, y + 10);
-        ctx.lineTo(x + 35, y + 10);
-        ctx.lineTo(x + 35, y + 5);
-        ctx.lineTo(x + w, y + 5);
-        ctx.moveTo(x + 20, y + h - 10);
-        ctx.lineTo(x + 35, y + h - 10);
-        ctx.lineTo(x + 35, y + h - 5);
-        ctx.lineTo(x + w, y + h - 5);
-        ctx.stroke();
-        // Arrow
-        ctx.beginPath();
-        ctx.moveTo(x + 20, y + h / 2);
-        ctx.lineTo(x + 35, y + h / 2);
-        ctx.stroke();
-        ctx.fillStyle = C.part;
-        ctx.beginPath();
-        ctx.moveTo(x + 20, y + h / 2);
-        ctx.lineTo(x + 26, y + h / 2 - 4);
-        ctx.lineTo(x + 26, y + h / 2 + 4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = C.label;
-        ctx.font = '9px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('NMOS', x + w / 2, y - 4);
-      }
-    },
-    arduino: {
-      label: 'Arduino',
-      width: 100, height: 70,
-      nodes: [
-        { x: 0, y: 10, name: 'D2' },
-        { x: 0, y: 20, name: 'D3' },
-        { x: 0, y: 30, name: 'D4' },
-        { x: 0, y: 40, name: 'D5' },
-        { x: 0, y: 50, name: 'D6' },
-        { x: 0, y: 60, name: 'GND' },
-        { x: 100, y: 10, name: '5V' },
-        { x: 100, y: 20, name: 'A0' },
-        { x: 100, y: 30, name: 'A1' },
-        { x: 100, y: 40, name: 'SDA' },
-        { x: 100, y: 50, name: 'SCL' },
-        { x: 100, y: 60, name: 'GND' },
-      ],
-      value: 0,
-      unit: '',
-      draw(ctx, comp) {
-        const { x, y, w, h } = comp.bounds;
-        ctx.fillStyle = comp.selected ? 'rgba(0,212,255,0.1)' : 'rgba(0,151,157,0.15)';
-        ctx.strokeStyle = comp.selected ? C.accent : '#00979D';
-        ctx.lineWidth = comp.selected ? 2 : 1.5;
-        ctx.beginPath();
-        ctx.roundRect(x + 5, y + 5, w - 10, h - 10, 4);
-        ctx.fill();
-        ctx.stroke();
-        // Label
-        ctx.fillStyle = '#00979D';
-        ctx.font = 'bold 11px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('ARDUINO', x + w / 2, y + h / 2 + 4);
-        // Pin labels
-        ctx.font = '8px JetBrains Mono, monospace';
-        ctx.fillStyle = C.label;
-        const leftPins = ['D2','D3','D4','D5','D6','GND'];
-        const rightPins = ['5V','A0','A1','SDA','SCL','GND'];
-        leftPins.forEach((p, i) => {
-          ctx.textAlign = 'left';
-          ctx.fillText(p, x + 8, y + 14 + i * 10);
-        });
-        rightPins.forEach((p, i) => {
-          ctx.textAlign = 'right';
-          ctx.fillText(p, x + w - 8, y + 14 + i * 10);
-        });
-      }
-    },
-    esp32: {
-      label: 'ESP32',
-      width: 100, height: 80,
-      nodes: [
-        { x: 0, y: 10, name: 'GPIO2' },
-        { x: 0, y: 20, name: 'GPIO4' },
-        { x: 0, y: 30, name: 'GPIO5' },
-        { x: 0, y: 40, name: 'GPIO18' },
-        { x: 0, y: 50, name: 'GPIO19' },
-        { x: 0, y: 60, name: 'GPIO21' },
-        { x: 0, y: 70, name: 'GND' },
-        { x: 100, y: 10, name: '3V3' },
-        { x: 100, y: 20, name: 'GPIO22' },
-        { x: 100, y: 30, name: 'GPIO23' },
-        { x: 100, y: 40, name: 'GPIO25' },
-        { x: 100, y: 50, name: 'GPIO26' },
-        { x: 100, y: 60, name: 'GPIO27' },
-        { x: 100, y: 70, name: 'GND' },
-      ],
-      value: 0,
-      unit: '',
-      draw(ctx, comp) {
-        const { x, y, w, h } = comp.bounds;
-        ctx.fillStyle = comp.selected ? 'rgba(0,212,255,0.1)' : 'rgba(123,47,255,0.1)';
-        ctx.strokeStyle = comp.selected ? C.accent : C.purple;
-        ctx.lineWidth = comp.selected ? 2 : 1.5;
-        ctx.beginPath();
-        ctx.roundRect(x + 5, y + 5, w - 10, h - 10, 4);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = C.purple;
-        ctx.font = 'bold 11px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('ESP32', x + w / 2, y + h / 2 + 4);
-        ctx.font = '8px JetBrains Mono, monospace';
-        ctx.fillStyle = C.label;
-        const leftPins = ['GPIO2','GPIO4','GPIO5','GPIO18','GPIO19','GPIO21','GND'];
-        const rightPins = ['3V3','GPIO22','GPIO23','GPIO25','GPIO26','GPIO27','GND'];
-        leftPins.forEach((p, i) => {
-          ctx.textAlign = 'left';
-          ctx.fillText(p, x + 8, y + 14 + i * 10);
-        });
-        rightPins.forEach((p, i) => {
-          ctx.textAlign = 'right';
-          ctx.fillText(p, x + w - 8, y + 14 + i * 10);
-        });
       }
     }
   };
@@ -836,8 +577,7 @@ window.CircuitSimulator = (function () {
   // DC solver (D12). Wires and closed switches join pins into nets; the
   // voltages come from nodal analysis. Batteries have a small internal
   // resistance, LEDs and diodes conduct only forwards (their forward voltage
-  // plus a small resistance), and capacitors don't conduct in DC. Parts
-  // without a model here (transistors, boards…) don't conduct. A tiny leak
+  // plus a small resistance), and capacitors don't conduct in DC. A tiny leak
   // from every net to ground keeps unconnected parts solvable (they read 0 V).
   const R_BATTERY = 0.5;   // Ω
   const R_DIODE_ON = 10;   // Ω
@@ -1317,7 +1057,6 @@ window.CircuitSimulator = (function () {
     setScope,
     exportCircuit,
     loadCircuit,
-    getCircuit,
     onChange: (fn) => { onChange = fn; },
     isRunning: () => simRunning,
     getFrameCount: () => frameCount,

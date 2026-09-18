@@ -510,3 +510,21 @@ test('the dead Upload Code and NE555 buttons are gone (E20)', async ({ page, err
   await expect(page.locator('#ws-add-ic'), 'the simulator has no NE555 part').toHaveCount(0);
   expectNoErrors(errors);
 });
+
+/* ── No dead parts (E23) ──────────────────────────────────────── */
+// Every part the solver really simulates has a palette button; the parts it
+// could only draw (transistor, op-amp, MOSFET, boards) were removed, since no
+// button or Import could ever place them.
+test('switch, diode and ground have palette buttons, and undrawable parts are gone (E23)', async ({ page, errors }) => {
+  await openSimulator(page);
+  for (const type of ['switch', 'diode', 'ground']) {
+    await page.locator(`#view-simulator .palette-item[data-component="${type}"]`).click();
+  }
+  expect(await parts(page)).toEqual(['switch', 'diode', 'ground']);
+
+  const src = await (await page.request.get('/src/engines/simulator/index.js')).text();
+  for (const gone of ['npn:', 'opamp:', 'mosfet:', 'arduino:', 'esp32:']) {
+    expect(src, `${gone} can never be placed, so it should not be defined`).not.toContain(`    ${gone} {`);
+  }
+  expectNoErrors(errors);
+});
