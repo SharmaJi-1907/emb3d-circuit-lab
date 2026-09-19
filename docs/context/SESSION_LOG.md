@@ -16,6 +16,19 @@ Entry format:
 
 ---
 
+## 2026-09-19 — R0: accept the roadmap ADRs, Phase 0 starts
+
+- **Tool / who:** Claude Code (Opus), with the owner.
+- **Branch:** `docs/accept-roadmap-adrs` (row R0), from `phase/0-foundations`. At the start, `main`, `phase/0-foundations` and this branch were all at `a4e221c`, so the "uncommitted on `main`" note in PROJECT_CONTEXT was out of date. It is fixed now.
+- **Done:**
+  1. The owner said "go" on the plan: ADRs 0004–0008 are marked **Accepted (2026-09-19)**.
+  2. New [ADR 0009](../decisions/0009-vanilla-js-with-type-checks.md): stay on vanilla JS, with JSDoc + `checkJs` type checks (roadmap decision 4 had no ADR; row R0d depends on it).
+  3. "Proposed" removed from [docs/README.md](../README.md), [ROADMAP.md](../planning/ROADMAP.md) (decisions table, open questions) and PROJECT_CONTEXT.
+  4. PROGRESS: Phase 0 and R0 🔄, #32 ✅. CHANGELOG updated.
+- **Tests run and results:** `npm test`: **220 passed**, lint 0 warnings, the docs link test passing (it covers the new ADR 0009 links). `npm run build`: clean. No test had to fail first, because only docs changed.
+- **Left open:** the later questions in ROADMAP "Open questions" (hosted AI before Phase 8, which server runs our model); the "check before launch" items in ADR 0004.
+- **Next step:** the owner merges the R0 PR into `phase/0-foundations`, then row R0a `chore/ci-github-actions`.
+
 ## 2026-09-18 — Audit, #32 fixes, roadmap and docs structure
 
 - **Tool / who:** Claude Code (Opus), with the owner.

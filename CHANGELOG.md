@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- ADR 0009: stay on vanilla JS and add JSDoc type checks (`checkJs`), run in CI.
 - A professional docs structure (from the owner's AI-DEV-FRAMEWORK): `docs/context/` (PROJECT_CONTEXT, SESSION_LOG, RESUME_PROMPT, KNOWLEDGE_BASE, OBSERVATIONS), `docs/planning/` (ROADMAP, ARCHITECTURE, RISK_REGISTER), `docs/rules/` (CODING_STANDARDS, TESTING_STRATEGY, SECURITY_RULES, REVIEW_CHECKLIST), `docs/tracking/` (PROGRESS, BUGS, EXPERIMENTS), `docs/guides/` and `docs/archive/` (the finished FIX_PLAN).
 - `AGENTS.md`: one rulebook for every AI tool, loaded by `CLAUDE.md` and by `.cursor/rules/circuitlab.mdc`, with a start-and-end-of-session routine and a rule that docs are updated in the same PR as the work.
 - `SECURITY.md` (how to report a problem) and `CONTRIBUTING.md` at the root; the docs link test also checks `AGENTS.md`, `CONTRIBUTING.md` and `SECURITY.md`.
@@ -69,6 +70,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `tests/smoke/simulator.spec.js`: 4 tests for the Simulator's setup and drawing loop (91 tests in total). Simulator: read-only `getFrameCount()`.
 
 ### Changed
+- ADRs 0004–0008 (backend and login, simulator engine, admin panel, AI access, phase branches) are accepted; Phase 0 has started.
 - Sample projects have no circuit, so their button is "View in 3D →" and shows the project's main part; the Dashboard's sample cards do the same (D49, D53).
 - The AI screen says its answers are stored, and the Settings theme row is labelled plainly (E25).
 - Docs brought up to date: fix-plan line links, the learning guide, the architecture tree and import rules, and one section of each kind in this changelog (E27).

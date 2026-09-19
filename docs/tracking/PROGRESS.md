@@ -8,17 +8,17 @@ Status: ⏳ not started · 🔄 in progress · ✅ merged
 
 | | |
 |---|---|
-| Stage | **Discussion**: the roadmap and ADRs 0004–0008 are proposed, and nothing is built yet |
-| Waiting for | The owner's go/no-go on the whole plan, then committing #32 and the docs on `main` |
-| Next | Accept the ADRs (`docs/accept-roadmap-adrs`), then start `phase/0-foundations` |
+| Stage | **Phase 0 (Foundations)**: the owner accepted the roadmap and ADRs 0004–0009 on 2026-09-19 |
+| Waiting for | The owner to merge R0 into `phase/0-foundations` |
+| Next | R0a `chore/ci-github-actions` |
 
 ## Roadmap (phases and their rows)
 
-The work in [ROADMAP.md](../planning/ROADMAP.md), in order. Each phase has a **phase branch**. Each row is one feature branch, made from its phase branch, with one PR into it. A phase can gain rows when its work is split up further. No row starts until the decisions it depends on ([ADRs 0004–0008](../decisions/)) are accepted.
+The work in [ROADMAP.md](../planning/ROADMAP.md), in order. Each phase has a **phase branch**. Each row is one feature branch, made from its phase branch, with one PR into it. A phase can gain rows when its work is split up further. No row starts until the decisions it depends on ([ADRs 0004–0009](../decisions/)) are accepted.
 
 | Phase | Phase branch | Merged into `main` as | Status |
 |---|---|---|---|
-| 0 Foundations | `phase/0-foundations` | `v0.1.0` | ⏳ |
+| 0 Foundations | `phase/0-foundations` | `v0.1.0` | 🔄 |
 | 1 Simulator v2 | `phase/1-simulator` | `v0.2.0` | ⏳ |
 | 2 Boards and 3D | `phase/2-boards-3d` | `v0.3.0` | ⏳ |
 | 3 Accounts, admin v1, public beta | `phase/3-accounts-beta` | `v0.4.0` | ⏳ |
@@ -33,7 +33,7 @@ The feature rows:
 
 | # | Branch | Phase | What | Status |
 |---|---|---|---|---|
-| R0 | `docs/accept-roadmap-adrs` | 0 | Mark ADRs 0004–0008 "Accepted" (the first PR into `phase/0-foundations`) | ⏳ |
+| R0 | `docs/accept-roadmap-adrs` | 0 | Mark ADRs 0004–0008 "Accepted", add ADR 0009 (the first PR into `phase/0-foundations`) | 🔄 |
 | R0a | `chore/ci-github-actions` | 0 | CI: lint, build and Playwright on every PR (bundled Chromium); protect `main` | ⏳ |
 | R0b | `chore/deploy-cloudflare` | 0 | Deploy to Cloudflare, a preview link per PR, security headers | ⏳ |
 | R0c | `refactor/no-inline-handlers` | 0 | Replace inline `onclick` handlers with `addEventListener`, so the CSP needs no `unsafe-inline` | ⏳ |
@@ -120,7 +120,7 @@ The order the known issues are fixed in. Issue codes refer to [FIX_PLAN.md](../a
 | 29 | `style/simulator-inline-colours` | F10: the Simulator dials and multimeter move from inline colours to CSS tokens | ✅ |
 | 30 | `fix/final-cleanup` | F9 (Datasheet inline colours to tokens), E9 closed, final pass over every doc | ✅ |
 | 31 | `fix/final-remaining-issues` | The last branch: D31–D48 (unsafe toast, Viewer controls and pin highlight, canvas sizes, datasheet mismatch, search, AI order, drag, high-DPI, saved circuits, PDF link…), E18 (Three.js loaded only for the Viewer), E20–E22 (dead code, empty folders, doc links), F11, F12 (light theme and design tokens) | ✅ |
-| 32 | _(on `main`, no PR, by request)_ | Audit pass: D49–D54 (sample projects, board pin data, ESP32 headers, AI comparison words, Dashboard cards, sample data), E23–E27 (unplaceable Simulator parts, unused code, old comments, a service showing a message, stale docs) | 🔄 done on `main`, waiting for the owner's browser check and commit |
+| 32 | _(on `main`, no PR, by request)_ | Audit pass: D49–D54 (sample projects, board pin data, ESP32 headers, AI comparison words, Dashboard cards, sample data), E23–E27 (unplaceable Simulator parts, unused code, old comments, a service showing a message, stale docs) | ✅ committed on `main` |
 
 Status: ⏳ not started · 🔄 in progress · ✅ merged
 
