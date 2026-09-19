@@ -183,16 +183,16 @@ A separate page (`admin.html`, its own Vite entry), so its code never reaches no
 
 ## Decisions
 
-Each decision gets a record in [decisions/](../decisions/). "Proposed" means waiting for the owner's OK.
+Each decision gets a record in [decisions/](../decisions/). All were accepted by the owner on 2026-09-19.
 
 | # | Decision | Recommended | Status |
 |---|---|---|---|
-| 1 | Backend, hosting and login | Supabase (Mumbai) + a separate free Cloudflare account on `*.pages.dev` + Sentry and Doppler (Student Pack); Google and email login (no temporary emails), phone on hold ([ADR 0004](../decisions/0004-backend-and-hosting.md)) | Proposed |
-| 2 | Where the simulator runs, and whose engine | Our own time-step engine in a Web Worker, tested against ngspice ([ADR 0005](../decisions/0005-simulator-engine.md)) | Proposed |
-| 3 | Admin panel | A separate page for the owner only, role checked by the database, MFA, audit log ([ADR 0006](../decisions/0006-admin-panel.md)) | Proposed |
-| 3b | AI assistant | Access by request, approved by the admin; one server function with the model behind a switch; our own fine-tuned model in Phase 8 ([ADR 0007](../decisions/0007-ai-assistant.md)) | Proposed |
-| 4 | Language | Stay on vanilla JS and add type checks with JSDoc + `checkJs`; no rewrite | Proposed |
-| 5 | Microcontrollers | Arduino Uno first (`avr8js`), then Pico (`rp2040js`). No ESP32 in the simulator | Proposed |
+| 1 | Backend, hosting and login | Supabase (Mumbai) + a separate free Cloudflare account on `*.pages.dev` + Sentry and Doppler (Student Pack); Google and email login (no temporary emails), phone on hold ([ADR 0004](../decisions/0004-backend-and-hosting.md)) | Accepted |
+| 2 | Where the simulator runs, and whose engine | Our own time-step engine in a Web Worker, tested against ngspice ([ADR 0005](../decisions/0005-simulator-engine.md)) | Accepted |
+| 3 | Admin panel | A separate page for the owner only, role checked by the database, MFA, audit log ([ADR 0006](../decisions/0006-admin-panel.md)) | Accepted |
+| 3b | AI assistant | Access by request, approved by the admin; one server function with the model behind a switch; our own fine-tuned model in Phase 8 ([ADR 0007](../decisions/0007-ai-assistant.md)) | Accepted |
+| 4 | Language | Stay on vanilla JS and add type checks with JSDoc + `checkJs`; no rewrite ([ADR 0009](../decisions/0009-vanilla-js-with-type-checks.md)) | Accepted |
+| 5 | Microcontrollers | Arduino Uno first (`avr8js`), then Pico (`rp2040js`). No ESP32 in the simulator ([ADR 0005](../decisions/0005-simulator-engine.md)) | Accepted |
 | 6 | 3D boards | The owner's `pcb-board-3d-model` skill | Agreed |
 | 7 | CircuitLab's own licence | **MIT** | Agreed: a `LICENSE` file is added in Phase 0 |
 
@@ -285,4 +285,4 @@ All answered on 2026-09-18 (see [What we need](#what-we-need)).
 Still to decide, later:
 1. Before Phase 4: while our own model isn't ready, should approved users get a hosted API model, or should AI wait for Phase 8?
 2. Before Phase 8: which server runs our model (Oracle Always Free needs a card for sign-up; Azure student credit runs out).
-3. The ADRs 0004–0007 move from "Proposed" to "Accepted" when the owner says OK.
+3. ~~The ADRs 0004–0008 move from "Proposed" to "Accepted" when the owner says OK.~~ Done on 2026-09-19 (with ADR 0009 for the language).
