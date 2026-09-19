@@ -1,6 +1,6 @@
 # 0005 — Simulator engine: our own time-step solver in the browser
 
-- **Status:** Proposed (waiting for the owner's OK)
+- **Status:** Accepted (2026-09-19)
 - **Date:** 2026-09-18
 
 ## Context

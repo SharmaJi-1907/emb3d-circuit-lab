@@ -1,6 +1,6 @@
 # 0008 — Phase branches: `main` only receives finished phases
 
-- **Status:** Proposed (the owner's idea, 2026-09-18; accepted when the plan is agreed)
+- **Status:** Accepted (2026-09-19)
 - **Date:** 2026-09-18
 
 ## Context

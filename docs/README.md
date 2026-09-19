@@ -37,8 +37,9 @@ A change isn't done until its docs are updated, in the same PR. The table of wha
 | [0001](decisions/0001-folder-structure.md) | Folder structure (`src/`, `docs/`, `tests/`…) |
 | [0002](decisions/0002-screen-markup.md) | Which page markup each screen uses: new layout for Viewer, Database and Dashboard; current page for the rest |
 | [0003](decisions/0003-es-modules.md) | ES modules inside the split files; `window.CircuitApp`, `CircuitLabData`, `ThreeViewer` and `CircuitSimulator` stay as the public API |
-| [0004](decisions/0004-backend-and-hosting.md) | _Proposed:_ Supabase (Mumbai) for login and data, a separate free Cloudflare account on `*.pages.dev`, Student Pack extras; Google and email login (no temporary emails), phone login on hold |
-| [0005](decisions/0005-simulator-engine.md) | _Proposed:_ our own time-step simulator in a Web Worker, tested against ngspice; Wokwi's MIT libraries for microcontrollers |
-| [0006](decisions/0006-admin-panel.md) | _Proposed:_ the admin panel is a separate page for the owner only, guarded by database roles, MFA and an audit log |
-| [0007](decisions/0007-ai-assistant.md) | _Proposed:_ AI access by request, approved by the admin; our own fine-tuned open model in an extra phase |
-| [0008](decisions/0008-phase-branches.md) | _Proposed:_ one branch per roadmap phase; feature branches merge into it, and `main` only receives finished, verified phases |
+| [0004](decisions/0004-backend-and-hosting.md) | Supabase (Mumbai) for login and data, a separate free Cloudflare account on `*.pages.dev`, Student Pack extras; Google and email login (no temporary emails), phone login on hold |
+| [0005](decisions/0005-simulator-engine.md) | Our own time-step simulator in a Web Worker, tested against ngspice; Wokwi's MIT libraries for microcontrollers |
+| [0006](decisions/0006-admin-panel.md) | The admin panel is a separate page for the owner only, guarded by database roles, MFA and an audit log |
+| [0007](decisions/0007-ai-assistant.md) | AI access by request, approved by the admin; our own fine-tuned open model in an extra phase |
+| [0008](decisions/0008-phase-branches.md) | One branch per roadmap phase; feature branches merge into it, and `main` only receives finished, verified phases |
+| [0009](decisions/0009-vanilla-js-with-type-checks.md) | Stay on vanilla JS; add type checks with JSDoc + `checkJs`, starting with data and services, run in CI |

@@ -1,6 +1,6 @@
 # 0006 — Admin panel: a separate page, guarded by the database
 
-- **Status:** Proposed (waiting for the owner's OK)
+- **Status:** Accepted (2026-09-19)
 - **Date:** 2026-09-18
 
 ## Context
