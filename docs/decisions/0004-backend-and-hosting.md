@@ -1,6 +1,6 @@
 # 0004 — Backend, hosting and login
 
-- **Status:** Proposed (waiting for the owner's OK). Revised 2026-09-18 with the owner's answers.
+- **Status:** Accepted (2026-09-19). Revised 2026-09-18 with the owner's answers.
 - **Date:** 2026-09-18
 
 ## Context

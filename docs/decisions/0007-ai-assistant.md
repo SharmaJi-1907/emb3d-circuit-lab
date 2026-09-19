@@ -1,6 +1,6 @@
 # 0007 — AI assistant: admin-approved access, then our own model
 
-- **Status:** Proposed (waiting for the owner's OK)
+- **Status:** Accepted (2026-09-19)
 - **Date:** 2026-09-18
 
 ## Context
